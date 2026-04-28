@@ -36,9 +36,13 @@ export async function analyzeSkinLesion(base64Image: string): Promise<ModelResul
 
   try {
     // 3. Point to your local FastAPI server
-    const apiResponse = await fetch('https://fuzzy-wombats-joke.loca.lt', {
-      method: 'POST',
-      body: formData,
+    const apiResponse = await fetch('https://fuzzy-wombats-joke.loca.lt/predict', {
+    method: 'POST',
+    headers: {
+        // Use Capitalized keys to be safe with Localtunnel
+        'Bypass-Tunnel-Reminder': 'true', 
+    },
+    body: formData,
     });
 
     if (!apiResponse.ok) {
