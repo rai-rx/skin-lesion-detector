@@ -1,0 +1,12 @@
+# Ignore the virtual environment inside the backend folder
+backend/.venv/
+
+# Ignore the node_modules in the root and frontend
+node_modules/
+
+# Ignore Python cache
+**/__pycache__/
+
+# Ignore the heavy model files (Optional but recommended if they are on Google Drive/HuggingFace)
+backend/*.keras
+backend/*.npy
