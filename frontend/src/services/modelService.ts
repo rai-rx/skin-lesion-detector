@@ -35,15 +35,22 @@ export async function analyzeSkinLesion(base64Image: string): Promise<ModelResul
   formData.append('file', blob, 'image.jpg');
 
   try {
-    // 3. Point to your local FastAPI server
-    const apiResponse = await fetch('https://fuzzy-wombats-joke.loca.lt/predict', {
-    method: 'POST',
-    headers: {
-        // Use Capitalized keys to be safe with Localtunnel
-        'Bypass-Tunnel-Reminder': 'true', 
-    },
-    body: formData,
+    // This looks at the "VITE_API_URL" you set in the Vercel Dashboard
+    const baseUrl = import.meta.env.VITE_API_URL; 
+
+    const apiResponse = await fetch(`${baseUrl}/predict`, {
+        method: 'POST',
+        headers: {
+            // These headers tell ngrok/localtunnel to let the data through
+            'ngrok-skip-browser-warning': 'true',
+            'Bypass-Tunnel-Reminder': 'true',
+        },
+        body: formData,
     });
+
+    if (!apiResponse.ok) {
+        throw new Error('Prediction failed');
+    }
 
     if (!apiResponse.ok) {
       const errorData = await apiResponse.json();
