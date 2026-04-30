@@ -21,24 +21,57 @@ const classificationInfo: Record<string, {
   dangers: string[];
   recommendations: string[];
 }> = {
-  'Benign Nevus (Mole)': {
-    description: 'A benign nevus, commonly known as a mole, is a non-cancerous growth on the skin formed by clusters of pigment-producing cells called melanocytes. Most people have between 10 to 40 moles on their body.',
+  'Actinic Keratosis': {
+    description: 'A precancerous skin growth caused by long-term sun damage. It is considered the earliest stage in the development of skin cancer.',
     characteristics: [
-      'Usually round or oval in shape with a smooth edge',
-      'Uniform in color (brown, tan, black, or skin-colored)',
-      'Generally smaller than 6mm',
-      'Remain stable in size, shape, and color over time'
+      'Rough, scaly, or "sandpaper-like" texture',
+      'Small, flat spots (usually <1 inch)',
+      'May be pink, red, or brown',
+      'Common on face, scalp, and hands'
     ],
     dangers: [
-      'Most benign nevi pose no health risk',
-      'In rare cases, a benign mole can develop into melanoma',
-      'Atypical nevi have a slightly higher risk'
+      'If left untreated, up to 10% may progress to Squamous Cell Carcinoma',
+      'Indicates significant cumulative UV damage to the skin'
     ],
     recommendations: [
-      'Monitor existing moles for any changes using the ABCDE rule',
-      'Perform regular self-examinations monthly',
-      'Protect moles from sun exposure with sunscreen (SPF 30+)',
-      'Seek immediate evaluation if a mole bleeds or itches'
+      'Consult a dermatologist for removal (Cryotherapy or topical creams)',
+      'Strict sun protection is mandatory to prevent progression',
+      'Regular full-body skin checks'
+    ]
+  },
+  'Basal Cell Carcinoma': {
+    description: 'BCC is the most common type of skin cancer. While it rarely spreads, it can cause significant local tissue damage if left untreated.',
+    characteristics: [
+      'Pearly or waxy bump, often with visible blood vessels',
+      'Flat, flesh-colored or brown scar-like lesion',
+      'Bleeding or oozing sore that heals and returns'
+    ],
+    dangers: [
+      'Rarely metastasizes but can be locally destructive',
+      'Can invade surrounding tissue and bone if untreated',
+      'May recur after treatment'
+    ],
+    recommendations: [
+      'Schedule prompt evaluation with a dermatologist',
+      'Treatment options include surgical excision or Mohs surgery',
+      'Use sun protection to prevent new BCCs'
+    ]
+  },
+  'Other Benign Lesion': {
+    description: 'A general category for non-cancerous skin conditions that do not fit into specific categories like moles or keratosis.',
+    characteristics: [
+      'Generally stable appearance',
+      'Uniform color and symmetrical shape',
+      'No signs of inflammation or rapid growth'
+    ],
+    dangers: [
+      'Poses no immediate health risk',
+      'The primary danger is misdiagnosis without a professional biopsy'
+    ],
+    recommendations: [
+      'Keep a photo log to ensure the lesion remains stable',
+      'No treatment required unless for comfort or aesthetics',
+      'Consult a professional if any change occurs'
     ]
   },
   'Seborrheic Keratosis': {
@@ -59,6 +92,56 @@ const classificationInfo: Record<string, {
       'Have any rapidly changing lesion evaluated'
     ]
   },
+  'Dermatofibroma': {
+    description: 'A common, harmless fibrous growth typically found on the legs. It is often the result of a minor injury like an insect bite.',
+    characteristics: [
+      'Small, firm, "button-like" bump under the skin',
+      'Shows a "dimple sign" (dents inward when pinched)',
+      'Varies from dusky pink to dull brown'
+    ],
+    dangers: [
+      'Harmless and non-cancerous',
+      'Can be itchy or tender in some cases'
+    ],
+    recommendations: [
+      'Usually left alone unless it causes discomfort',
+      'Surgical removal is an option but may leave a small scar',
+      'Ignore unless it changes size or color rapidly'
+    ]
+  },
+  'Infectious Lesion': {
+    description: 'Skin changes caused by bacteria, viruses, or fungi. This category includes conditions like warts, herpes, or fungal infections.',
+    characteristics: [
+      'May present as clusters of small bumps or blisters',
+      'Often accompanied by redness, warmth, or itching',
+      'May have a "crusty" or weeping surface'
+    ],
+    dangers: [
+      'Can spread to other parts of the body or other people',
+      'Secondary bacterial infections can occur if scratched'
+    ],
+    recommendations: [
+      'Seek evaluation for appropriate antimicrobial treatment',
+      'Avoid touching or picking at the lesion',
+      'Practice good hygiene to prevent transmission'
+    ]
+  },
+  'Other Malignant Lesion': {
+    description: 'A rare or atypical form of skin cancer that does not fall under the BCC, SCC, or Melanoma categories.',
+    characteristics: [
+      'Rapidly growing or non-healing mass',
+      'Unusual appearance, texture, or color',
+      'May bleed easily'
+    ],
+    dangers: [
+      'High risk of local destruction and possible spread',
+      'Requires specific specialized treatment'
+    ],
+    recommendations: [
+      'URGENT: Dermatologist evaluation and biopsy required',
+      'Do not delay seeking medical advice'
+    ]
+  },
   'Melanoma': {
     description: 'Melanoma is the most serious type of skin cancer. Early detection and treatment are critical for successful outcomes.',
     characteristics: [
@@ -75,26 +158,59 @@ const classificationInfo: Record<string, {
     recommendations: [
       'URGENT: Seek immediate evaluation by a dermatologist',
       'May require surgical excision and biopsy',
-      'Avoid sun exposure and use broad-spectrum sunscreen daily',
-      'Follow-up care is essential after treatment'
+      'Avoid sun exposure and use broad-spectrum sunscreen daily'
     ]
   },
-  'Basal Cell Carcinoma': {
-    description: 'BCC is the most common type of skin cancer. While it rarely spreads, it can cause significant local tissue damage if left untreated.',
+  'Benign Nevus (Mole)': {
+    description: 'A benign nevus, commonly known as a mole, is a non-cancerous growth on the skin formed by clusters of pigment-producing cells.',
     characteristics: [
-      'Pearly or waxy bump, often with visible blood vessels',
-      'Flat, flesh-colored or brown scar-like lesion',
-      'Bleeding or oozing sore that heals and returns'
+      'Usually round or oval in shape with a smooth edge',
+      'Uniform in color (brown, tan, black, or skin-colored)',
+      'Generally smaller than 6mm',
+      'Remain stable over time'
     ],
     dangers: [
-      'Rarely metastasizes but can be locally destructive',
-      'Can invade surrounding tissue and bone if untreated',
-      'May recur after treatment'
+      'Most benign nevi pose no health risk',
+      'Atypical nevi have a slightly higher risk of changing'
     ],
     recommendations: [
-      'Schedule prompt evaluation with a dermatologist',
-      'Treatment options include surgical excision or Mohs surgery',
-      'Use sun protection to prevent new BCCs'
+      'Monitor using the ABCDE rule',
+      'Perform regular self-examinations monthly',
+      'Seek evaluation if a mole bleeds, itches, or changes'
+    ]
+  },
+  'Squamous Cell Carcinoma': {
+    description: 'SCC is the second most common skin cancer. It arises from the squamous cells in the outer layer of the skin.',
+    characteristics: [
+      'Firm, red nodule',
+      'Flat sore with a scaly crust',
+      'A new sore or raised area on an old scar or ulcer'
+    ],
+    dangers: [
+      'More likely to spread than Basal Cell Carcinoma',
+      'Can become disfiguring if left untreated'
+    ],
+    recommendations: [
+      'Requires prompt surgical removal',
+      'Frequent follow-up skin exams are necessary',
+      'Protect skin from UV radiation'
+    ]
+  },
+  'Vascular Lesion': {
+    description: 'Non-cancerous growths made of blood vessels. Examples include cherry angiomas and "port-wine" stains.',
+    characteristics: [
+      'Bright red, blue, or purple in color',
+      'Blanches (turns white) briefly when pressed',
+      'Can be flat or slightly raised'
+    ],
+    dangers: [
+      'Typically harmless',
+      'Can bleed heavily if nicked or injured'
+    ],
+    recommendations: [
+      'No treatment required for health reasons',
+      'Can be removed by laser for cosmetic purposes',
+      'Monitor for sudden changes in size or bleeding'
     ]
   }
 };

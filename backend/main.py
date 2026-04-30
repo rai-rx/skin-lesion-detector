@@ -98,6 +98,21 @@ def get_risk_level(top_label: str, top_conf: float) -> str:
         return "medium"
     return "low"
 
+def center_crop_and_resize(img, size):
+    width, height = img.size
+    # Find the shortest side to make a perfect square
+    new_side = min(width, height)
+    left = (width - new_side) / 2
+    top = (height - new_side) / 2
+    right = (width + new_side) / 2
+    bottom = (height + new_side) / 2
+    
+    # 1. Crop to square
+    img = img.crop((left, top, right, bottom))
+    # 2. Resize with high-quality filter
+    return img.resize((size, size), Image.Resampling.LANCZOS)
+
+
 
 @app.post("/predict")
 async def predict_lesion(file: UploadFile = File(...)):
@@ -106,9 +121,17 @@ async def predict_lesion(file: UploadFile = File(...)):
     original_img = Image.open(io.BytesIO(contents)).convert("RGB")
     orig_w, orig_h = original_img.size
     
-    img = original_img.resize((IMG_SIZE, IMG_SIZE))
-    arr = np.asarray(img).astype(np.float32)
+    # NEW: Center crop first, then resize to 480
+    img_processed = center_crop_and_resize(original_img, IMG_SIZE)
+    
+    # Convert to NumPy array
+    arr = np.asarray(img_processed).astype(np.float32)
+    
+    # IMPORTANT: EfficientNetV2 usually handles scaling internally, 
+    # but let's use the official preprocess_input to be safe.
     arr_preprocessed = tf.keras.applications.efficientnet_v2.preprocess_input(arr)
+    
+    # Add batch dimension (None, 480, 480, 3)
     x = tf.convert_to_tensor(arr_preprocessed[None, ...], dtype=tf.float32)
 
     # 2. Inference
