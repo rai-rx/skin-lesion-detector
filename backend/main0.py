@@ -127,7 +127,7 @@ def validate_image_quality(img_pil) -> tuple[bool, str]:
     # 1. Blur Detection (Variance of Laplacian)
     # Lower values mean smoother edges, indicating a blurry image.
     laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
-    if laplacian_var < 80.0:  # Threshold adjusted for macro skin photography
+    if laplacian_var < 40.0:  # Threshold adjusted for macro skin photography
         return False, f"Image is too blurry (Sharpness Score: {round(laplacian_var, 2)}). Please stabilize your camera and retake."
         
     # 2. Exposure / Lighting Verification
@@ -234,13 +234,11 @@ async def predict_lesion(
     orig_w, orig_h = original_img.size
     
     # 2. RUN ON-THE-FLY QUALITY VALIDATION
-    # Intercepts poor clinical data payloads early to preserve compute resources
     is_valid, error_msg = validate_image_quality(original_img)
     if not is_valid:
         raise HTTPException(status_code=400, detail=error_msg)
     
     # 3. PROCESSING PIPELINE (Dynamic vs. Fallback Center Crop)
-    # Check if all four cropping coordinates were provided by the client application
     crop_params = [crop_x, crop_y, crop_width, crop_height]
     if all(param is not None for param in crop_params):
         img_processed = apply_custom_crop(
@@ -249,8 +247,15 @@ async def predict_lesion(
     else:
         # Default back to standard behavior if user skipped manual cropping
         img_processed = center_crop_and_resize(original_img, IMG_SIZE)
-        structural_metrics = compute_abcd_structural_metrics(img_processed)
     
+    # Safe Initialization & Extraction of Structural Metrics
+    # This guarantees the variable always exists, regardless of the cropping path chosen.
+    structural_metrics = {"asymmetry": 0.0, "borderIrregularity": 0.0}
+    try:
+        structural_metrics = compute_abcd_structural_metrics(img_processed)
+    except Exception as cv_err:
+        print(f"Non-breaking CV Warning: ABCD metrics extraction failed: {cv_err}")
+
     # Convert processed asset to standard NumPy array structures
     arr = np.asarray(img_processed).astype(np.float32)
     arr_preprocessed = tf.keras.applications.efficientnet_v2.preprocess_input(arr)
