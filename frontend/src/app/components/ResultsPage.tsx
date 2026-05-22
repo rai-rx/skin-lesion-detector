@@ -727,6 +727,12 @@ export function ResultsPage() {
                   )}
                 </AnimatePresence>
               </div>
+
+              {/* Dynamic Risk Action Panel */}
+              <DynamicRiskActionPanel 
+                riskLevel={analysisResult.riskLevel as 'low' | 'medium' | 'high'} 
+                classification={analysisResult.classification} 
+              />
             </motion.div>
 
             {/* Analysis Column: Confidence, Secondary Predictions & ABCD Sidebar */}
@@ -882,11 +888,7 @@ export function ResultsPage() {
               </div>
             </motion.div>
           </div>
-          {/* Dynamic Risk Action Panel */}
-          <DynamicRiskActionPanel 
-            riskLevel={analysisResult.riskLevel as 'low' | 'medium' | 'high'} 
-            classification={analysisResult.classification} 
-          />
+
           {/* Classification Info Section */}
           {currentInfo && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
