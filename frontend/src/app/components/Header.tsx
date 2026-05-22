@@ -26,7 +26,7 @@ export function Header() {
               <Activity className="w-6 h-6 text-white" />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-xl leading-tight">Basta pangalan</h1>
+              <h1 className="text-xl leading-tight">SkinEleven</h1>
             </div>
           </button>
         </div>
