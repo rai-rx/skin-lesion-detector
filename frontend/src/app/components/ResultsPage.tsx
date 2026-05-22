@@ -343,19 +343,28 @@ export function ResultsPage() {
       doc.text("Saliency data omitted from pipeline", 115, 145);
     }
 
-    // 4. OpenCV Quantitative Morphological Feature Analysis Table (ABCD Matrix)
+  // 4. OpenCV Quantitative Morphological Feature Analysis Table (ABCDE Matrix)
     doc.setTextColor(primary);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(13);
-    doc.text("3. Computer Vision Structural Metrics (ABCD Extraction)", 14, 186);
+    doc.text("3. Computer Vision Structural Metrics (ABCDE Extraction)", 14, 186);
     doc.line(14, 188, 196, 188);
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(11);
-    doc.text(`Asymmetry Metric Index: ${abcd.asymmetry} / 100`, 14, 196);
-    doc.text(`Border Irregularity (Compactness Metric): ${abcd.borderIrregularity} / 100`, 14, 203);
-    doc.text(`Color Divergence Vector: Consistent regional distribution`, 14, 210);
-    doc.text(`Evaluated Lesion Diameter Profile: Sized properly inside cropping constraints`, 14, 217);
+    doc.setFontSize(10); // Slightly smaller font to fit all 5 items comfortably
+    
+    // Fallback bindings to prevent crashes if the state is temporarily refreshing
+    const metricA = analysisResult.abcdMetrics?.asymmetry ?? 0;
+    const metricB = analysisResult.abcdMetrics?.borderIrregularity ?? 0;
+    const metricC = analysisResult.abcdMetrics?.colorDivergence ?? 0;
+    const metricD = analysisResult.abcdMetrics?.diameterProfile ?? 0;
+    const metricE = analysisResult.abcdMetrics?.evolvingTracking ?? 0;
+
+    doc.text(`[A] Asymmetry Metric Index: ${metricA} / 100`, 14, 195);
+    doc.text(`[B] Border Irregularity (Compactness Ratio): ${metricB} / 100`, 14, 201);
+    doc.text(`[C] Color Divergence (RGB Variance Vector): ${metricC} / 100`, 14, 207);
+    doc.text(`[D] Diameter Profile (Relative Frame Scale): ${metricD} / 100`, 14, 213);
+    doc.text(`[E] Evolving Risk Factor (Baseline Tracking Index): ${metricE} / 100`, 14, 219);
 
     // 5. Secure Healthcare Interoperability Guardrail Disclaimer Base Box
     doc.setFillColor(254, 242, 242); 

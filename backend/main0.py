@@ -149,6 +149,11 @@ def compute_abcd_structural_metrics(img_processed) -> dict:
     open_cv_rgb = np.array(img_processed).astype(np.uint8)
     gray = cv2.cvtColor(open_cv_rgb, cv2.COLOR_RGB2GRAY)
     
+    # NEW GUARDRAIL: Add neutral padding around the image frame boundary.
+    # This prevents cropped lesion boundaries from sticking to the canvas borders.
+    pad = 15
+    gray = cv2.copyMakeBorder(gray, pad, pad, pad, pad, cv2.BORDER_REPLICATE)
+    
     # 2. Smooth noise and segment via Otsu's thresholding
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     _, mask = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
@@ -189,8 +194,6 @@ def compute_abcd_structural_metrics(img_processed) -> dict:
     asymmetry_score = min(100.0, (asym_h_score + asym_v_score) / 2)
 
     # 4. BORDER IRREGULARITY: Mathematical Compactness Ratio
-    # Compactness equation:
-    # $$\text{Compactness} = \frac{P^2}{4\pi A}$$
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if contours:
         largest_contour = max(contours, key=cv2.contourArea)
@@ -199,8 +202,14 @@ def compute_abcd_structural_metrics(img_processed) -> dict:
         
         if contour_area > 0 and perimeter > 0:
             compactness = (perimeter ** 2) / (4 * np.pi * contour_area)
-            # Normalize to an accessible 0-100 baseline. Perfect smooth circles evaluate to 0.
-            border_score = min(100.0, max(0.0, (compactness - 1.0) * 30))
+            
+            # FIXED: Logarithmic scaling allows values to smoothly climb 
+            # instead of instantly hitting a ceiling at 100.
+            if compactness >= 1.0:
+                # Log base 1.5 gives an organic distribution curves up to an extreme ratio of ~12
+                border_score = min(100.0, (np.log(compactness) / np.log(1.5)) * 15)
+            else:
+                border_score = 0.0
         else:
             border_score = 0.0
     else:
@@ -298,7 +307,7 @@ async def predict_lesion(
     primary_conf = float(probs[top_idx]) * 100
 
     secondary = []
-    for i in sorted_indices[1:7]:
+    for i in sorted_indices[1:4]:
         sec_raw = LABEL_COLS[i]
         secondary.append({
             "name": LABEL_MAP.get(sec_raw, sec_raw),
