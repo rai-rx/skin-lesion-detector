@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
-import { 
-  ArrowLeft, AlertTriangle, Info, Home, Upload, CheckCircle, 
+import {
+  ArrowLeft, AlertTriangle, Info, Home, Upload, CheckCircle,
   Layers, Download, FileText, Activity,
   ShieldCheck, MapPin, Calendar, ExternalLink, BookOpen, Clock
 } from 'lucide-react';
@@ -231,7 +231,7 @@ export function DynamicRiskActionPanel({ riskLevel, classification }: RiskPanelP
   // Robust riskLevel mapping and normalization
   let parsedRisk: 'low' | 'medium' | 'high' = 'low';
   const cleanRisk = (riskLevel || '').toString().toLowerCase().trim();
-  
+
   if (cleanRisk === 'high' || cleanRisk === 'medium' || cleanRisk === 'low') {
     parsedRisk = cleanRisk as 'low' | 'medium' | 'high';
   } else {
@@ -248,10 +248,10 @@ export function DynamicRiskActionPanel({ riskLevel, classification }: RiskPanelP
   // Geolocation API Action Router with Popup Blocker Workaround
   const handleFindDermatologist = () => {
     setLoadingLocation(true);
-    
+
     // Open a blank tab/window immediately to bypass browser popup blockers
     const mapWindow = window.open('https://www.google.com/maps/search/dermatologist+near+me/', '_blank');
-    
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -275,146 +275,133 @@ export function DynamicRiskActionPanel({ riskLevel, classification }: RiskPanelP
   };
 
   return (
-    <div className="w-full mt-6 border rounded-2xl overflow-hidden bg-card text-card-foreground shadow-sm">
-      <AnimatePresence mode="wait">
-        
-        {/* ================= CONDITION 1: LOW RISK STATE ================= */}
-        {parsedRisk === 'low' && (
-          <motion.div
-            key="low-risk"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.4 }}
-            className="p-5 border-l-4 border-emerald-500 bg-emerald-50/30 dark:bg-emerald-950/10"
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg">
-                <ShieldCheck className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-base text-emerald-900 dark:text-emerald-300">
-                  Routine Monitoring Recommended
-                </h3>
-                <p className="text-xs text-emerald-700/80 dark:text-emerald-400/70">
-                  The system classified this asset as benign with no immediate structural red flags.
-                </p>
-              </div>
+    <AnimatePresence mode="wait">
+
+      {/* ================= CONDITION 1: LOW RISK STATE ================= */}
+      {parsedRisk === 'low' && (
+        <motion.div
+          key="low-risk"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.4 }}
+          className="bg-card rounded-3xl shadow-xl p-6 border-l-4 border-emerald-500 border-t border-r border-b border-border bg-gradient-to-br from-emerald-500/5 to-transparent dark:from-emerald-950/10 dark:to-transparent"
+        >
+          <div className="flex items-center gap-3 mb-3">
+            <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg">
+              <ShieldCheck className="w-6 h-6" />
             </div>
+            <div>
+              <h3 className="font-semibold text-base text-emerald-900 dark:text-emerald-300">
+                Routine Monitoring Recommended
+              </h3>
+              <p className="text-xs text-emerald-700/80 dark:text-emerald-400/70">
+                The system classified this asset as benign with no immediate structural red flags.
+              </p>
+            </div>
+          </div>
 
-            <hr className="border-emerald-100 dark:border-emerald-900/40 my-3" />
+          <hr className="border-emerald-100 dark:border-emerald-900/40 my-3" />
 
-            {/* Educational Module Expansion Grid */}
-            <div className="space-y-3">
-              <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-400 tracking-wide uppercase flex items-center gap-1.5">
-                <BookOpen className="w-3.5 h-3.5" /> Self-Examination Guidelines (What to watch for)
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-muted-foreground leading-relaxed">
-                <div className="bg-background/60 p-2.5 rounded-xl border border-emerald-100/40">
-                  <span className="font-medium text-foreground block mb-0.5">The Ugly Duckling Sign</span>
-                  Look for any spot that looks distinctly different from all surrounding moles in size, shape, or shade.
-                </div>
-                <div className="bg-background/60 p-2.5 rounded-xl border border-emerald-100/40">
-                  <span className="font-medium text-foreground block mb-0.5">Rapid Chronological Shift</span>
-                  Re-evaluate this region monthly. Note if it expands, shifts borders, changes thickness, or begins to bleed.
-                </div>
+          {/* Educational Module Expansion Grid */}
+          <div className="space-y-3">
+            <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-400 tracking-wide uppercase flex items-center gap-1.5">
+              <BookOpen className="w-3.5 h-3.5" /> Self-Examination Guidelines (What to watch for)
+            </span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-muted-foreground leading-relaxed">
+              <div className="bg-background/60 p-2.5 rounded-xl border border-emerald-100/40">
+                <span className="font-medium text-foreground block mb-0.5">The Ugly Duckling Sign</span>
+                Look for any spot that looks distinctly different from all surrounding moles in size, shape, or shade.
+              </div>
+              <div className="bg-background/60 p-2.5 rounded-xl border border-emerald-100/40">
+                <span className="font-medium text-foreground block mb-0.5">Rapid Chronological Shift</span>
+                Re-evaluate this region monthly. Note if it expands, shifts borders, changes thickness, or begins to bleed.
               </div>
             </div>
-          </motion.div>
-        )}
+          </div>
+        </motion.div>
+      )}
 
-        {/* ================= CONDITION 2: MEDIUM RISK STATE ================= */}
-        {parsedRisk === 'medium' && (
-          <motion.div
-            key="medium-risk"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.4 }}
-            className="p-5 border-l-4 border-amber-500 bg-amber-50/30 dark:bg-amber-950/10"
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg">
-                <AlertTriangle className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-base text-amber-900 dark:text-amber-300">
-                  Clinical Observation Advised
-                </h3>
-                <p className="text-xs text-amber-700/80 dark:text-amber-400/70">
-                  Atypical structures detected. Professional visual confirmation is recommended.
-                </p>
-              </div>
+      {/* ================= CONDITION 2: MEDIUM RISK STATE ================= */}
+      {parsedRisk === 'medium' && (
+        <motion.div
+          key="medium-risk"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.4 }}
+          className="bg-card rounded-3xl shadow-xl p-6 border-l-4 border-amber-500 border-t border-r border-b border-border bg-gradient-to-br from-amber-500/5 to-transparent dark:from-amber-950/10 dark:to-transparent"
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg text-amber-500">
+              <AlertTriangle className="w-6 h-6" />
             </div>
-
-            <div className="flex flex-col sm:flex-row gap-2 mt-2">
-              <button 
-                onClick={handleFindDermatologist}
-                disabled={loadingLocation}
-                className="flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium py-2.5 px-4 rounded-xl transition shadow-sm disabled:opacity-50"
-              >
-                <MapPin className="w-4 h-4" /> Locate Nearby Dermatologist
-              </button>
+            <div>
+              <h3 className="font-semibold text-base text-amber-900 dark:text-amber-300">
+                Clinical Observation Advised
+              </h3>
+              <p className="text-xs text-amber-700/80 dark:text-amber-400/70">
+                Atypical structures detected. Professional visual confirmation is recommended.
+              </p>
             </div>
-          </motion.div>
-        )}
+          </div>
 
-        {/* ================= CONDITION 3: HIGH RISK STATE ================= */}
-        {parsedRisk === 'high' && (
-          <motion.div
-            key="high-risk"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.4 }}
-            className="p-5 border-l-4 border-destructive bg-destructive/5 dark:bg-destructive/10"
-          >
-            <div className="flex items-start gap-3 mb-4">
-              <div className="p-2 bg-destructive/10 text-destructive rounded-lg shrink-0 mt-0.5">
-                <AlertTriangle className="w-6 h-6 animate-pulse" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-base text-destructive dark:text-red-400">
-                  High Priority Review Flagged
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5 leading-normal">
-                  The screening profile correlates with metrics characteristic of <span className="font-semibold text-foreground">{classification}</span>. This requires definitive in-person mapping or immediate biopsy assessment.
-                </p>
-              </div>
+          <div className="flex flex-col gap-2 mt-2">
+            <button
+              onClick={handleFindDermatologist}
+              disabled={loadingLocation}
+              className="w-full flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold py-3 px-4 rounded-xl transition shadow-sm disabled:opacity-50"
+            >
+              <MapPin className="w-4 h-4" /> Locate Nearby Dermatologist
+            </button>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ================= CONDITION 3: HIGH RISK STATE ================= */}
+      {parsedRisk === 'high' && (
+        <motion.div
+          key="high-risk"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.4 }}
+          className="bg-card rounded-3xl shadow-xl p-6 border-l-4 border-destructive border-t border-r border-b border-border bg-gradient-to-br from-destructive/5 to-transparent dark:from-destructive/10 dark:to-transparent"
+        >
+          <div className="flex items-start gap-3 mb-4">
+            <div className="p-2 bg-destructive/10 text-destructive rounded-lg shrink-0 mt-0.5">
+              <AlertTriangle className="w-6 h-6 animate-pulse" />
             </div>
-
-            {/* High-Urgency CTA Button Array */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-2">
-              <button
-                onClick={handleFindDermatologist}
-                disabled={loadingLocation}
-                className="flex-1 flex items-center justify-center gap-2 bg-destructive hover:bg-destructive/90 text-white text-xs font-semibold py-3 px-4 rounded-xl transition shadow-sm disabled:opacity-50"
-              >
-                <MapPin className="w-4 h-4" />
-                {loadingLocation ? "Accessing GPS..." : "Find Nearest Dermatologist"}
-              </button>
-
-              <a
-                href="https://www.teledermatology.example.com/book" // Replace with your actual scheduling endpoint
-                target="_blank"
-                rel="noreferrer"
-                className="flex-1 flex items-center justify-center gap-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground border border-border text-xs font-semibold py-3 px-4 rounded-xl transition"
-              >
-                <Calendar className="w-4 h-4 text-primary" />
-                Book Virtual Consultation
-                <ExternalLink className="w-3 h-3 text-muted-foreground" />
-              </a>
+            <div>
+              <h3 className="font-semibold text-base text-destructive dark:text-red-400">
+                High Priority Review Flagged
+              </h3>
+              <p className="text-xs text-muted-foreground mt-0.5 leading-normal">
+                The screening profile correlates with metrics characteristic of <span className="font-semibold text-foreground">{classification}</span>. This requires definitive in-person mapping or immediate biopsy assessment.
+              </p>
             </div>
+          </div>
 
-            <div className="flex items-center gap-1.5 mt-3 text-[10px] text-muted-foreground justify-center sm:justify-start">
-              <Clock className="w-3 h-3" />
-              <span>Early detection significantly improves treatment outcomes. Secure an appointment within 14 days.</span>
-            </div>
-          </motion.div>
-        )}
+          {/* High-Urgency CTA Button Array */}
+          <div className="flex flex-col gap-2 mt-2">
+            <button
+              onClick={handleFindDermatologist}
+              disabled={loadingLocation}
+              className="w-full flex items-center justify-center gap-2 bg-destructive hover:bg-destructive/90 text-white text-xs font-semibold py-3 px-4 rounded-xl transition shadow-sm disabled:opacity-50"
+            >
+              <MapPin className="w-4 h-4" />
+              {loadingLocation ? "Accessing GPS..." : "Find Nearest Dermatologist"}
+            </button>
+          </div>
 
-      </AnimatePresence>
-    </div>
+          <div className="flex items-center gap-1.5 mt-3 text-[10px] text-muted-foreground justify-center sm:justify-start">
+            <Clock className="w-3 h-3" />
+            <span>Early detection significantly improves treatment outcomes. Secure an appointment within 14 days.</span>
+          </div>
+        </motion.div>
+      )}
+
+    </AnimatePresence>
   );
 }
 
@@ -440,8 +427,8 @@ export function ResultsPage() {
   };
 
   const currentInfo = classificationInfo[analysisResult.classification];
-  const abcd = analysisResult.abcdMetrics || { 
-    asymmetry: 24.5, 
+  const abcd = analysisResult.abcdMetrics || {
+    asymmetry: 24.5,
     borderIrregularity: 18.2,
     colorDivergence: 15.4,
     diameterProfile: 30.1,
@@ -473,7 +460,7 @@ export function ResultsPage() {
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
       // Brand Palette Layout Styling
-      const primary = "#0F172A"; 
+      const primary = "#0F172A";
       const secondary = "#475569";
 
       // 1. Top Decorative Corporate Layout Header Banner
@@ -484,7 +471,7 @@ export function ResultsPage() {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(22);
       doc.text("CLINICAL SKINSHEET SCREENING REPORT", 14, 18);
-      
+
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
       doc.setTextColor(148, 163, 184);
@@ -558,10 +545,10 @@ export function ResultsPage() {
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
-      
+
       // SAFE BOUNDING: Uses the exact same fallback strategy as your on-screen UI charts
-      const localAbcd = analysisResult.abcdMetrics || { 
-        asymmetry: 0, borderIrregularity: 0, colorDivergence: 0, diameterProfile: 0, evolvingTracking: 0 
+      const localAbcd = analysisResult.abcdMetrics || {
+        asymmetry: 0, borderIrregularity: 0, colorDivergence: 0, diameterProfile: 0, evolvingTracking: 0
       };
 
       doc.text(`[A] Asymmetry Metric Index: ${localAbcd.asymmetry} / 100`, 14, 195);
@@ -571,7 +558,7 @@ export function ResultsPage() {
       doc.text(`[E] Evolving Risk Factor (Baseline Tracking Index): ${localAbcd.evolvingTracking} / 100`, 14, 219);
 
       // 5. Secure Healthcare Interoperability Guardrail Disclaimer Base Box
-      doc.setFillColor(254, 242, 242); 
+      doc.setFillColor(254, 242, 242);
       doc.rect(14, 238, 182, 34, 'F');
       doc.setDrawColor(239, 68, 68);
       doc.rect(14, 238, 182, 34, 'D');
@@ -580,7 +567,7 @@ export function ResultsPage() {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9.5);
       doc.text("COMPLIANT MEDICAL WARNING & DISCLAIMER NOTE:", 18, 244);
-      
+
       doc.setFont("helvetica", "italic");
       doc.setFontSize(8);
       const textContextStr = "This telemetry report sheet contains automated processing variables compiled via automated digital image calculations and mathematical modeling layers. This automated audit statement does not constitute a formal biopsy confirmation or immediate therapy plan. Provide this documentation directly to a certified professional dermatologist during your incoming scheduled appointment or virtual teledermatology evaluation window.";
@@ -594,11 +581,11 @@ export function ResultsPage() {
       alert("Failed to export PDF. Check your browser developer console for exact code errors.");
     }
   };
-  
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      
+
       <div className="relative overflow-hidden">
         {/* Header Title Section */}
         <div className="relative z-10 max-w-6xl mx-auto px-6 pt-8">
@@ -625,7 +612,7 @@ export function ResultsPage() {
         {/* Main Content Grid */}
         <div className="relative z-10 max-w-6xl mx-auto px-6 pb-20">
           <div className="grid lg:grid-cols-2 gap-8 mb-8">
-            
+
             {/* Visual Column: Image & Heatmap */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
@@ -635,13 +622,12 @@ export function ResultsPage() {
               <div className="bg-card rounded-3xl shadow-xl p-6 border border-border overflow-hidden">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-xl font-medium">Interactive Analysis</h3>
-                  <button 
+                  <button
                     onClick={() => setShowOverlay(!showOverlay)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${
-                      showOverlay 
-                        ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20' 
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${showOverlay
+                        ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
                         : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                    }`}
+                      }`}
                   >
                     <Layers className="w-4 h-4" />
                     <span className="text-sm font-bold">{showOverlay ? 'Hide Heatmap' : 'Overlay Heatmap'}</span>
@@ -650,19 +636,19 @@ export function ResultsPage() {
 
                 <div className="relative aspect-square rounded-2xl overflow-hidden bg-muted group">
                   {/* Base Image Layer */}
-                  <img 
-                    src={state.image} 
-                    alt="Original Lesion" 
-                    className="absolute inset-0 w-full h-full object-cover" 
+                  <img
+                    src={state.image}
+                    alt="Original Lesion"
+                    className="absolute inset-0 w-full h-full object-cover"
                   />
 
                   {/* HiResCAM Heatmap Layer */}
                   {analysisResult.heatmap && (
-                    <img 
-                      src={analysisResult.heatmap} 
-                      alt="AI Attention Map" 
+                    <img
+                      src={analysisResult.heatmap}
+                      alt="AI Attention Map"
                       className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out pointer-events-none"
-                      style={{ 
+                      style={{
                         opacity: showOverlay ? opacity : 0,
                         mixBlendMode: 'screen',
                         filter: 'contrast(1.1) saturate(1.3)'
@@ -674,7 +660,7 @@ export function ResultsPage() {
                   <div className="absolute bottom-4 left-4 right-4 pointer-events-none">
                     <div className="bg-black/40 backdrop-blur-md p-3 rounded-xl border border-white/10">
                       <p className="text-[10px] text-white/90 leading-tight">
-                        {showOverlay 
+                        {showOverlay
                           ? "Showing areas of high diagnostic influence (Red) overlaid on lesion."
                           : "Showing original captured image. Toggle 'Overlay' to see AI logic."}
                       </p>
@@ -685,7 +671,7 @@ export function ResultsPage() {
                 {/* Controls Section */}
                 <AnimatePresence>
                   {showOverlay && (
-                    <motion.div 
+                    <motion.div
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
@@ -700,17 +686,17 @@ export function ResultsPage() {
                             {Math.round(opacity * 100)}%
                           </span>
                         </div>
-                        <input 
-                          type="range" 
-                          min="0.1" 
-                          max="1" 
-                          step="0.01" 
-                          value={opacity} 
+                        <input
+                          type="range"
+                          min="0.1"
+                          max="1"
+                          step="0.01"
+                          value={opacity}
                           onChange={(e) => setOpacity(parseFloat(e.target.value))}
                           className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
                         />
                       </div>
-                      
+
                       <div className="flex gap-4 items-center p-3 bg-accent/5 rounded-xl border border-accent/10 text-[11px] text-muted-foreground">
                         <div className="flex gap-1 items-center font-medium">
                           <div className="w-2 h-2 rounded-full bg-red-500" /> High
@@ -729,9 +715,9 @@ export function ResultsPage() {
               </div>
 
               {/* Dynamic Risk Action Panel */}
-              <DynamicRiskActionPanel 
-                riskLevel={analysisResult.riskLevel as 'low' | 'medium' | 'high'} 
-                classification={analysisResult.classification} 
+              <DynamicRiskActionPanel
+                riskLevel={analysisResult.riskLevel as 'low' | 'medium' | 'high'}
+                classification={analysisResult.classification}
               />
             </motion.div>
 
@@ -786,9 +772,9 @@ export function ResultsPage() {
                       <span className="font-mono text-xs text-muted-foreground">{abcd.asymmetry} / 100</span>
                     </div>
                     <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }} 
-                        animate={{ width: `${abcd.asymmetry}%` }} 
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${abcd.asymmetry}%` }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
                         className={`h-full rounded-full ${abcd.asymmetry > 45 ? 'bg-amber-500' : 'bg-emerald-500'}`}
                       />
@@ -802,15 +788,15 @@ export function ResultsPage() {
                       <span className="font-mono text-xs text-muted-foreground">{abcd.borderIrregularity} / 100</span>
                     </div>
                     <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }} 
-                        animate={{ width: `${abcd.borderIrregularity}%` }} 
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${abcd.borderIrregularity}%` }}
                         transition={{ duration: 0.8, ease: "easeOut", delay: 0.15 }}
                         className={`h-full rounded-full ${abcd.borderIrregularity > 45 ? 'bg-amber-500' : 'bg-emerald-500'}`}
                       />
                     </div>
                   </div>
-                  
+
                   {/* COLOR DIVERGENCE METRIC */}
                   <div>
                     <div className="flex justify-between items-center mb-1.5 text-sm">
@@ -818,9 +804,9 @@ export function ResultsPage() {
                       <span className="font-mono text-xs text-muted-foreground">{abcd.colorDivergence} / 100</span>
                     </div>
                     <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }} 
-                        animate={{ width: `${abcd.colorDivergence}%` }} 
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${abcd.colorDivergence}%` }}
                         transition={{ duration: 0.8, ease: "easeOut", delay: 0.20 }}
                         className={`h-full rounded-full ${abcd.colorDivergence > 45 ? 'bg-amber-500' : 'bg-emerald-500'}`}
                       />
@@ -834,9 +820,9 @@ export function ResultsPage() {
                       <span className="font-mono text-xs text-muted-foreground">{abcd.diameterProfile} / 100</span>
                     </div>
                     <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }} 
-                        animate={{ width: `${abcd.diameterProfile}%` }} 
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${abcd.diameterProfile}%` }}
                         transition={{ duration: 0.8, ease: "easeOut", delay: 0.25 }}
                         className={`h-full rounded-full ${abcd.diameterProfile > 45 ? 'bg-amber-500' : 'bg-emerald-500'}`}
                       />
@@ -850,9 +836,9 @@ export function ResultsPage() {
                       <span className="font-mono text-xs text-muted-foreground">{abcd.evolvingTracking} / 100</span>
                     </div>
                     <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
-                      <motion.div 
-                        initial={{ width: 0 }} 
-                        animate={{ width: `${abcd.evolvingTracking}%` }} 
+                      <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${abcd.evolvingTracking}%` }}
                         transition={{ duration: 0.8, ease: "easeOut", delay: 0.30 }}
                         className={`h-full rounded-full ${abcd.evolvingTracking > 45 ? 'bg-amber-500' : 'bg-emerald-500'}`}
                       />
@@ -897,19 +883,19 @@ export function ResultsPage() {
                 <p className="text-muted-foreground text-lg mb-8">{currentInfo.description}</p>
                 <div className="grid md:grid-cols-3 gap-6">
                   <div className="bg-blue-50 dark:bg-blue-950/20 rounded-2xl p-6">
-                    <h3 className="text-xl text-blue-900 dark:text-blue-400 mb-4 flex items-center gap-2"><Info className="w-5 h-5"/> Characteristics</h3>
+                    <h3 className="text-xl text-blue-900 dark:text-blue-400 mb-4 flex items-center gap-2"><Info className="w-5 h-5" /> Characteristics</h3>
                     <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-2">
                       {currentInfo.characteristics.map((c, i) => <li key={i}>• {c}</li>)}
                     </ul>
                   </div>
                   <div className="bg-amber-50 dark:bg-amber-950/20 rounded-2xl p-6">
-                    <h3 className="text-xl text-amber-900 dark:text-amber-400 mb-4 flex items-center gap-2"><AlertTriangle className="w-5 h-5"/> Risks</h3>
+                    <h3 className="text-xl text-amber-900 dark:text-amber-400 mb-4 flex items-center gap-2"><AlertTriangle className="w-5 h-5" /> Risks</h3>
                     <ul className="text-sm text-amber-800 dark:text-amber-300 space-y-2">
                       {currentInfo.dangers.map((d, i) => <li key={i}>• {d}</li>)}
                     </ul>
                   </div>
                   <div className="bg-green-50 dark:bg-green-950/20 rounded-2xl p-6">
-                    <h3 className="text-xl text-green-900 dark:text-green-400 mb-4 flex items-center gap-2"><CheckCircle className="w-5 h-5"/> Actions</h3>
+                    <h3 className="text-xl text-green-900 dark:text-green-400 mb-4 flex items-center gap-2"><CheckCircle className="w-5 h-5" /> Actions</h3>
                     <ul className="text-sm text-green-800 dark:text-green-300 space-y-2">
                       {currentInfo.recommendations.map((r, i) => <li key={i}>• {r}</li>)}
                     </ul>
@@ -928,20 +914,20 @@ export function ResultsPage() {
 
           {/* System Control Interaction Row Block */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button 
-              onClick={handleExportPDF} 
+            <button
+              onClick={handleExportPDF}
               className="px-8 py-4 bg-emerald-600 text-white font-medium rounded-xl shadow-lg hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-emerald-600/10"
             >
               <FileText className="w-5 h-5" /> Export Clinical PDF Report
             </button>
-            <button 
-              onClick={() => navigate('/scan')} 
+            <button
+              onClick={() => navigate('/scan')}
               className="px-8 py-4 bg-primary text-white font-medium rounded-xl shadow-lg flex items-center justify-center gap-3"
             >
               <Upload className="w-5 h-5" /> Analyze Another Image
             </button>
-            <button 
-              onClick={() => navigate('/')} 
+            <button
+              onClick={() => navigate('/')}
               className="px-8 py-4 bg-background border border-border text-foreground font-medium rounded-xl shadow-md flex items-center justify-center gap-3 hover:bg-muted/50 transition-colors"
             >
               <Home className="w-5 h-5" /> Return to Home
