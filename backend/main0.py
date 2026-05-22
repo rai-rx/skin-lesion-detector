@@ -140,6 +140,76 @@ def validate_image_quality(img_pil) -> tuple[bool, str]:
         
     return True, "Success"
 
+def compute_abcd_structural_metrics(img_processed) -> dict:
+    """
+    Applies classic digital image processing via OpenCV to isolate the lesion
+    and calculate quantitative Asymmetry and Border Irregularity scores.
+    """
+    # 1. Convert processed PIL image directly to an OpenCV grayscale uint8 frame
+    open_cv_rgb = np.array(img_processed).astype(np.uint8)
+    gray = cv2.cvtColor(open_cv_rgb, cv2.COLOR_RGB2GRAY)
+    
+    # 2. Smooth noise and segment via Otsu's thresholding
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    _, mask = cv2.threshold(blurred, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    
+    # Invariant check: Ensure the lesion is targeted (white object on dark canvas background)
+    if np.sum(mask == 255) > np.sum(mask == 0):
+        mask = cv2.bitwise_not(mask)
+        
+    lesion_area = np.sum(mask == 255)
+    if lesion_area == 0:
+        return {"asymmetry": 0.0, "borderIrregularity": 0.0}
+
+    # 3. ASYMMETRY: Compute geometric center of mass (Spatial Moments)
+    M = cv2.moments(mask)
+    if M["m00"] == 0:
+        return {"asymmetry": 0.0, "borderIrregularity": 0.0}
+    cX = int(M["m10"] / M["m00"])
+    cY = int(M["m01"] / M["m00"])
+    
+    # Map the mask onto an extended canvas to prevent edge clipping during rotational flips
+    h, w = mask.shape
+    max_dim = max(h, w) * 2
+    canvas = np.zeros((max_dim, max_dim), dtype=np.uint8)
+    offsetX = max_dim // 2 - cX
+    offsetY = max_dim // 2 - cY
+    canvas[offsetY:offsetY+h, offsetX:offsetX+w] = mask
+    
+    # Mirror the lesion canvas along horizontal and vertical axes
+    flipped_h = cv2.flip(canvas, 1)
+    flipped_v = cv2.flip(canvas, 0)
+    
+    # Quantify non-overlapping spatial regions using a bitwise XOR execution loop
+    xor_h = cv2.bitwise_xor(canvas, flipped_h)
+    xor_v = cv2.bitwise_xor(canvas, flipped_v)
+    
+    asym_h_score = (np.sum(xor_h == 255) / (2 * lesion_area)) * 100
+    asym_v_score = (np.sum(xor_v == 255) / (2 * lesion_area)) * 100
+    asymmetry_score = min(100.0, (asym_h_score + asym_v_score) / 2)
+
+    # 4. BORDER IRREGULARITY: Mathematical Compactness Ratio
+    # Compactness equation:
+    # $$\text{Compactness} = \frac{P^2}{4\pi A}$$
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if contours:
+        largest_contour = max(contours, key=cv2.contourArea)
+        perimeter = cv2.arcLength(largest_contour, True)
+        contour_area = cv2.contourArea(largest_contour)
+        
+        if contour_area > 0 and perimeter > 0:
+            compactness = (perimeter ** 2) / (4 * np.pi * contour_area)
+            # Normalize to an accessible 0-100 baseline. Perfect smooth circles evaluate to 0.
+            border_score = min(100.0, max(0.0, (compactness - 1.0) * 30))
+        else:
+            border_score = 0.0
+    else:
+        border_score = 0.0
+
+    return {
+        "asymmetry": round(asymmetry_score, 1),
+        "borderIrregularity": round(border_score, 1)
+    }
 
 def apply_custom_crop(img_pil, x: float, y: float, w: float, h: float, target_size: int):
     """
@@ -179,6 +249,7 @@ async def predict_lesion(
     else:
         # Default back to standard behavior if user skipped manual cropping
         img_processed = center_crop_and_resize(original_img, IMG_SIZE)
+        structural_metrics = compute_abcd_structural_metrics(img_processed)
     
     # Convert processed asset to standard NumPy array structures
     arr = np.asarray(img_processed).astype(np.float32)
@@ -234,6 +305,7 @@ async def predict_lesion(
         "confidence": round(primary_conf, 2),
         "riskLevel": get_risk_level(raw_label, float(probs[top_idx])),
         "secondaryPredictions": secondary,
+        "abcdMetrics": structural_metrics,
         "notes": f"Verified image clarity. Processed at {IMG_SIZE}px using HiResCAM spatial mappings.",
         "heatmap": heatmap_data_uri 
     }
