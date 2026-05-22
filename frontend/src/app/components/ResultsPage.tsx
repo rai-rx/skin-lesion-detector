@@ -228,25 +228,48 @@ interface RiskPanelProps {
 export function DynamicRiskActionPanel({ riskLevel, classification }: RiskPanelProps) {
   const [loadingLocation, setLoadingLocation] = useState(false);
 
-  // Geolocation API Action Router
+  // Robust riskLevel mapping and normalization
+  let parsedRisk: 'low' | 'medium' | 'high' = 'low';
+  const cleanRisk = (riskLevel || '').toString().toLowerCase().trim();
+  
+  if (cleanRisk === 'high' || cleanRisk === 'medium' || cleanRisk === 'low') {
+    parsedRisk = cleanRisk as 'low' | 'medium' | 'high';
+  } else {
+    // Fallback: Check if the classification itself indicates a high-risk lesion
+    const cleanClass = (classification || '').toString().toLowerCase().trim();
+    const highRiskClasses = ['melanoma', 'basal cell carcinoma', 'squamous cell carcinoma', 'other malignant lesion', 'actinic keratosis'];
+    if (highRiskClasses.includes(cleanClass)) {
+      parsedRisk = 'high';
+    } else {
+      parsedRisk = 'low';
+    }
+  }
+
+  // Geolocation API Action Router with Popup Blocker Workaround
   const handleFindDermatologist = () => {
     setLoadingLocation(true);
+    
+    // Open a blank tab/window immediately to bypass browser popup blockers
+    const mapWindow = window.open('https://www.google.com/maps/search/dermatologist+near+me/', '_blank');
+    
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          // Route user directly to local clinical providers on maps engine
-          window.open(`https://www.google.com/maps/search/dermatologist+near+me/@${latitude},${longitude},13z`, '_blank');
+          if (mapWindow) {
+            // Update the already opened window with coordinates
+            mapWindow.location.href = `https://www.google.com/maps/search/dermatologist+near+me/@${latitude},${longitude},13z`;
+          }
           setLoadingLocation(false);
         },
         (error) => {
-          console.warn("Location access denied, falling back to general search.", error);
-          window.open('https://www.google.com/maps/search/dermatologist+near+me/', '_blank');
+          console.warn("Location access denied or timed out, keeping default search.", error);
+          // If geolocation fails or is denied, the tab remains on the fallback search URL
           setLoadingLocation(false);
-        }
+        },
+        { timeout: 5000 } // Safety timeout
       );
     } else {
-      window.open('https://www.google.com/maps/search/dermatologist+near+me/', '_blank');
       setLoadingLocation(false);
     }
   };
@@ -256,7 +279,7 @@ export function DynamicRiskActionPanel({ riskLevel, classification }: RiskPanelP
       <AnimatePresence mode="wait">
         
         {/* ================= CONDITION 1: LOW RISK STATE ================= */}
-        {riskLevel === 'low' && (
+        {parsedRisk === 'low' && (
           <motion.div
             key="low-risk"
             initial={{ opacity: 0, y: 10 }}
@@ -301,7 +324,7 @@ export function DynamicRiskActionPanel({ riskLevel, classification }: RiskPanelP
         )}
 
         {/* ================= CONDITION 2: MEDIUM RISK STATE ================= */}
-        {riskLevel === 'medium' && (
+        {parsedRisk === 'medium' && (
           <motion.div
             key="medium-risk"
             initial={{ opacity: 0, y: 10 }}
@@ -327,7 +350,8 @@ export function DynamicRiskActionPanel({ riskLevel, classification }: RiskPanelP
             <div className="flex flex-col sm:flex-row gap-2 mt-2">
               <button 
                 onClick={handleFindDermatologist}
-                className="flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium py-2.5 px-4 rounded-xl transition shadow-sm"
+                disabled={loadingLocation}
+                className="flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium py-2.5 px-4 rounded-xl transition shadow-sm disabled:opacity-50"
               >
                 <MapPin className="w-4 h-4" /> Locate Nearby Dermatologist
               </button>
@@ -336,7 +360,7 @@ export function DynamicRiskActionPanel({ riskLevel, classification }: RiskPanelP
         )}
 
         {/* ================= CONDITION 3: HIGH RISK STATE ================= */}
-        {riskLevel === 'high' && (
+        {parsedRisk === 'high' && (
           <motion.div
             key="high-risk"
             initial={{ opacity: 0, y: 10 }}
@@ -350,7 +374,7 @@ export function DynamicRiskActionPanel({ riskLevel, classification }: RiskPanelP
                 <AlertTriangle className="w-6 h-6 animate-pulse" />
               </div>
               <div>
-                <h3 className="font-semibold text-base text-destructive-foreground dark:text-red-400">
+                <h3 className="font-semibold text-base text-destructive dark:text-red-400">
                   High Priority Review Flagged
                 </h3>
                 <p className="text-xs text-muted-foreground mt-0.5 leading-normal">
