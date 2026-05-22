@@ -596,6 +596,60 @@ export function ResultsPage() {
                       />
                     </div>
                   </div>
+                  
+                  {/* COLOR DIVERGENCE METRIC */}
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5 text-sm">
+                      <span className="font-medium text-card-foreground">Color Divergence (RGB Variance)</span>
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {analysisResult.abcdMetrics?.colorDivergence ?? 0} / 100
+                      </span>
+                    </div>
+                    <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }} 
+                        animate={{ width: `${analysisResult.abcdMetrics?.colorDivergence ?? 0}%` }} 
+                        transition={{ duration: 0.8, ease: "easeOut", delay: 0.20 }}
+                        className={`h-full rounded-full ${(analysisResult.abcdMetrics?.colorDivergence ?? 0) > 45 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* DIAMETER PROFILE METRIC */}
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5 text-sm">
+                      <span className="font-medium text-card-foreground">Diameter Profile (Relative Scale)</span>
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {analysisResult.abcdMetrics?.diameterProfile ?? 0} / 100
+                      </span>
+                    </div>
+                    <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }} 
+                        animate={{ width: `${analysisResult.abcdMetrics?.diameterProfile ?? 0}%` }} 
+                        transition={{ duration: 0.8, ease: "easeOut", delay: 0.25 }}
+                        className={`h-full rounded-full ${(analysisResult.abcdMetrics?.diameterProfile ?? 0) > 45 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                      />
+                    </div>
+                  </div>
+
+                  {/* EVOLVING TRACKING METRIC */}
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5 text-sm">
+                      <span className="font-medium text-card-foreground">Evolving Risk (Tracking Index)</span>
+                      <span className="font-mono text-xs text-muted-foreground">
+                        {analysisResult.abcdMetrics?.evolvingTracking ?? 0} / 100
+                      </span>
+                    </div>
+                    <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
+                      <motion.div 
+                        initial={{ width: 0 }} 
+                        animate={{ width: `${analysisResult.abcdMetrics?.evolvingTracking ?? 0}%` }} 
+                        transition={{ duration: 0.8, ease: "easeOut", delay: 0.30 }}
+                        className={`h-full rounded-full ${(analysisResult.abcdMetrics?.evolvingTracking ?? 0) > 45 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+                      />
+                    </div>
+                  </div>
 
                   {/* Informational Context Tag */}
                   <div className="flex items-start gap-2 bg-muted/40 p-3 rounded-xl border border-border/60 text-[11px] text-muted-foreground leading-normal">
