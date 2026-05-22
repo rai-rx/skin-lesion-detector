@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import { Header } from './Header';
 import type { ModelResult } from '@/services/modelService';
+import { jsPDF } from 'jspdf';
+
 
 interface LocationState {
   image: string;
@@ -456,7 +458,6 @@ export function ResultsPage() {
   // CLIENT SIDE PRINT-READY PDF COMPILE SYSTEM (WITH TOP 3 DIAGNOSES)
   const handleExportPDF = async () => {
     try {
-      const { jsPDF } = await import('jspdf');
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
       // Brand Palette Layout Styling
