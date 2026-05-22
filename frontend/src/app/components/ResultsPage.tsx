@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { Header } from './Header';
 import type { ModelResult } from '@/services/modelService';
-import { jsPDF } from 'jspdf';
+import jsPDF from 'jspdf/dist/jspdf.es.min.js';
 
 
 interface LocationState {
