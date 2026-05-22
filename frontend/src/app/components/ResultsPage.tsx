@@ -3,7 +3,8 @@ import { useLocation, useNavigate } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import { 
   ArrowLeft, AlertTriangle, Info, Home, Upload, CheckCircle, 
-  Layers, Download, FileText, Activity 
+  Layers, Download, FileText, Activity,
+  ShieldCheck, MapPin, Calendar, ExternalLink, BookOpen, Clock
 } from 'lucide-react';
 import { Header } from './Header';
 import type { ModelResult } from '@/services/modelService';
@@ -218,6 +219,180 @@ const classificationInfo: Record<string, {
     ]
   }
 };
+
+interface RiskPanelProps {
+  riskLevel: 'low' | 'medium' | 'high';
+  classification: string;
+}
+
+export function DynamicRiskActionPanel({ riskLevel, classification }: RiskPanelProps) {
+  const [loadingLocation, setLoadingLocation] = useState(false);
+
+  // Geolocation API Action Router
+  const handleFindDermatologist = () => {
+    setLoadingLocation(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          // Route user directly to local clinical providers on maps engine
+          window.open(`https://www.google.com/maps/search/dermatologist+near+me/@${latitude},${longitude},13z`, '_blank');
+          setLoadingLocation(false);
+        },
+        (error) => {
+          console.warn("Location access denied, falling back to general search.", error);
+          window.open('https://www.google.com/maps/search/dermatologist+near+me/', '_blank');
+          setLoadingLocation(false);
+        }
+      );
+    } else {
+      window.open('https://www.google.com/maps/search/dermatologist+near+me/', '_blank');
+      setLoadingLocation(false);
+    }
+  };
+
+  return (
+    <div className="w-full mt-6 border rounded-2xl overflow-hidden bg-card text-card-foreground shadow-sm">
+      <AnimatePresence mode="wait">
+        
+        {/* ================= CONDITION 1: LOW RISK STATE ================= */}
+        {riskLevel === 'low' && (
+          <motion.div
+            key="low-risk"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.4 }}
+            className="p-5 border-l-4 border-emerald-500 bg-emerald-50/30 dark:bg-emerald-950/10"
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-base text-emerald-900 dark:text-emerald-300">
+                  Routine Monitoring Recommended
+                </h3>
+                <p className="text-xs text-emerald-700/80 dark:text-emerald-400/70">
+                  The system classified this asset as benign with no immediate structural red flags.
+                </p>
+              </div>
+            </div>
+
+            <hr className="border-emerald-100 dark:border-emerald-900/40 my-3" />
+
+            {/* Educational Module Expansion Grid */}
+            <div className="space-y-3">
+              <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-400 tracking-wide uppercase flex items-center gap-1.5">
+                <BookOpen className="w-3.5 h-3.5" /> Self-Examination Guidelines (What to watch for)
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-muted-foreground leading-relaxed">
+                <div className="bg-background/60 p-2.5 rounded-xl border border-emerald-100/40">
+                  <span className="font-medium text-foreground block mb-0.5">The Ugly Duckling Sign</span>
+                  Look for any spot that looks distinctly different from all surrounding moles in size, shape, or shade.
+                </div>
+                <div className="bg-background/60 p-2.5 rounded-xl border border-emerald-100/40">
+                  <span className="font-medium text-foreground block mb-0.5">Rapid Chronological Shift</span>
+                  Re-evaluate this region monthly. Note if it expands, shifts borders, changes thickness, or begins to bleed.
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ================= CONDITION 2: MEDIUM RISK STATE ================= */}
+        {riskLevel === 'medium' && (
+          <motion.div
+            key="medium-risk"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.4 }}
+            className="p-5 border-l-4 border-amber-500 bg-amber-50/30 dark:bg-amber-950/10"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-base text-amber-900 dark:text-amber-300">
+                  Clinical Observation Advised
+                </h3>
+                <p className="text-xs text-amber-700/80 dark:text-amber-400/70">
+                  Atypical structures detected. Professional visual confirmation is recommended.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2 mt-2">
+              <button 
+                onClick={handleFindDermatologist}
+                className="flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-medium py-2.5 px-4 rounded-xl transition shadow-sm"
+              >
+                <MapPin className="w-4 h-4" /> Locate Nearby Dermatologist
+              </button>
+            </div>
+          </motion.div>
+        )}
+
+        {/* ================= CONDITION 3: HIGH RISK STATE ================= */}
+        {riskLevel === 'high' && (
+          <motion.div
+            key="high-risk"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.4 }}
+            className="p-5 border-l-4 border-destructive bg-destructive/5 dark:bg-destructive/10"
+          >
+            <div className="flex items-start gap-3 mb-4">
+              <div className="p-2 bg-destructive/10 text-destructive rounded-lg shrink-0 mt-0.5">
+                <AlertTriangle className="w-6 h-6 animate-pulse" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-base text-destructive-foreground dark:text-red-400">
+                  High Priority Review Flagged
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5 leading-normal">
+                  The screening profile correlates with metrics characteristic of <span className="font-semibold text-foreground">{classification}</span>. This requires definitive in-person mapping or immediate biopsy assessment.
+                </p>
+              </div>
+            </div>
+
+            {/* High-Urgency CTA Button Array */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-2">
+              <button
+                onClick={handleFindDermatologist}
+                disabled={loadingLocation}
+                className="flex-1 flex items-center justify-center gap-2 bg-destructive hover:bg-destructive/90 text-white text-xs font-semibold py-3 px-4 rounded-xl transition shadow-sm disabled:opacity-50"
+              >
+                <MapPin className="w-4 h-4" />
+                {loadingLocation ? "Accessing GPS..." : "Find Nearest Dermatologist"}
+              </button>
+
+              <a
+                href="https://www.teledermatology.example.com/book" // Replace with your actual scheduling endpoint
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground border border-border text-xs font-semibold py-3 px-4 rounded-xl transition"
+              >
+                <Calendar className="w-4 h-4 text-primary" />
+                Book Virtual Consultation
+                <ExternalLink className="w-3 h-3 text-muted-foreground" />
+              </a>
+            </div>
+
+            <div className="flex items-center gap-1.5 mt-3 text-[10px] text-muted-foreground justify-center sm:justify-start">
+              <Clock className="w-3 h-3" />
+              <span>Early detection significantly improves treatment outcomes. Secure an appointment within 14 days.</span>
+            </div>
+          </motion.div>
+        )}
+
+      </AnimatePresence>
+    </div>
+  );
+}
 
 export function ResultsPage() {
   const location = useLocation();
@@ -567,7 +742,7 @@ export function ResultsPage() {
               <div className="bg-card rounded-3xl shadow-xl p-8 border border-border">
                 <div className="flex items-center gap-2 mb-2">
                   <Activity className="w-5 h-5 text-primary" />
-                  <h3 className="text-xl font-medium">Morphological ABCD Criteria Matrix</h3>
+                  <h3 className="text-xl font-medium">Morphological ABCDE Criteria Matrix</h3>
                 </div>
                 <p className="text-xs text-muted-foreground mb-6">
                   Structural measurements extracted deterministically via OpenCV digital processing.
@@ -683,7 +858,11 @@ export function ResultsPage() {
               </div>
             </motion.div>
           </div>
-
+          {/* Dynamic Risk Action Panel */}
+          <DynamicRiskActionPanel 
+            riskLevel={analysisResult.riskLevel as 'low' | 'medium' | 'high'} 
+            classification={analysisResult.classification} 
+          />
           {/* Classification Info Section */}
           {currentInfo && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
