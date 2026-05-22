@@ -269,128 +269,131 @@ export function ResultsPage() {
   // CLIENT SIDE PRINT-READY PDF COMPILE SYSTEM
   // CLIENT SIDE PRINT-READY PDF COMPILE SYSTEM (WITH TOP 3 DIAGNOSES)
   const handleExportPDF = async () => {
-    const { jsPDF } = await import('jspdf');
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    try {
+      const { jsPDF } = await import('jspdf');
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-    // Brand Palette Layout Styling
-    const primary = "#0F172A"; 
-    const secondary = "#475569";
+      // Brand Palette Layout Styling
+      const primary = "#0F172A"; 
+      const secondary = "#475569";
 
-    // 1. Top Decorative Corporate Layout Header Banner
-    doc.setFillColor(15, 23, 42);
-    doc.rect(0, 0, 210, 40, 'F');
+      // 1. Top Decorative Corporate Layout Header Banner
+      doc.setFillColor(15, 23, 42);
+      doc.rect(0, 0, 210, 40, 'F');
 
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
-    doc.text("CLINICAL SKINSHEET SCREENING REPORT", 14, 18);
-    
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(148, 163, 184);
-    doc.text(`Generated Session: ${new Date().toLocaleString()} | Reference Pipeline: ML-EFFICIENTNET-V4`, 14, 26);
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.text("CLINICAL SKINSHEET SCREENING REPORT", 14, 18);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(148, 163, 184);
+      doc.text(`Generated Session: ${new Date().toLocaleString()} | Reference Pipeline: ML-EFFICIENTNET-V4`, 14, 26);
 
-    // 2. Primary & Secondary Differential Diagnoses Block (Top 3)
-    doc.setTextColor(primary);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
-    doc.text("1. Neural Network Differential Diagnoses (Top 3 Predictions)", 14, 52);
-    doc.setDrawColor(226, 232, 240);
-    doc.line(14, 54, 196, 54);
+      // 2. Primary & Secondary Differential Diagnoses Block (Top 3)
+      doc.setTextColor(primary);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.text("1. Neural Network Differential Diagnoses (Top 3 Predictions)", 14, 52);
+      doc.setDrawColor(226, 232, 240);
+      doc.line(14, 54, 196, 54);
 
-    // Rank 1: Primary Prediction
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
-    doc.setTextColor(15, 23, 42);
-    doc.text(`1. Primary Finding: ${analysisResult.classification}`, 16, 62);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(secondary);
-    doc.text(`Confidence: ${analysisResult.confidence}%  [Risk Level: ${analysisResult.riskLevel.toUpperCase()}]`, 22, 67);
+      // Rank 1: Primary Prediction
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(15, 23, 42);
+      doc.text(`1. Primary Finding: ${analysisResult.classification}`, 16, 62);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(secondary);
+      doc.text(`Confidence: ${analysisResult.confidence}%  [Risk Level: ${analysisResult.riskLevel.toUpperCase()}]`, 22, 67);
 
-    // Extracting Rank 2 and Rank 3 safely from secondary predictions
-    const sec1 = analysisResult.secondaryPredictions?.[0] ? `${analysisResult.secondaryPredictions[0].name} (${analysisResult.secondaryPredictions[0].confidence}%)` : "N/A";
-    const sec2 = analysisResult.secondaryPredictions?.[1] ? `${analysisResult.secondaryPredictions[1].name} (${analysisResult.secondaryPredictions[1].confidence}%)` : "N/A";
+      // Extracting Rank 2 and Rank 3 safely from secondary predictions
+      const sec1 = analysisResult.secondaryPredictions?.[0] ? `${analysisResult.secondaryPredictions[0].name} (${analysisResult.secondaryPredictions[0].confidence}%)` : "N/A";
+      const sec2 = analysisResult.secondaryPredictions?.[1] ? `${analysisResult.secondaryPredictions[1].name} (${analysisResult.secondaryPredictions[1].confidence}%)` : "N/A";
 
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(15, 23, 42);
-    doc.text(`2. Secondary Consideration: ${sec1.split(' (')[0]}`, 16, 75);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(secondary);
-    doc.text(`Confidence: ${sec1.includes('(') ? sec1.split(' (')[1].replace(')', '') : 'N/A'}`, 22, 80);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(15, 23, 42);
+      doc.text(`2. Secondary Consideration: ${sec1.split(' (')[0]}`, 16, 75);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(secondary);
+      doc.text(`Confidence: ${sec1.includes('(') ? sec1.split(' (')[1].replace(')', '') : 'N/A'}`, 22, 80);
 
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(15, 23, 42);
-    doc.text(`3. Tertiary Consideration: ${sec2.split(' (')[0]}`, 16, 88);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(secondary);
-    doc.text(`Confidence: ${sec2.includes('(') ? sec2.split(' (')[1].replace(')', '') : 'N/A'}`, 22, 93);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(15, 23, 42);
+      doc.text(`3. Tertiary Consideration: ${sec2.split(' (')[0]}`, 16, 88);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(secondary);
+      doc.text(`Confidence: ${sec2.includes('(') ? sec2.split(' (')[1].replace(')', '') : 'N/A'}`, 22, 93);
 
-    // 3. Embedded Computer Vision Imaging Matrices (Pushed down slightly to make space)
-    doc.setTextColor(primary);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
-    doc.text("2. Processed Optical Analytics Fields", 14, 106);
-    doc.line(14, 108, 196, 108);
+      // 3. Embedded Computer Vision Imaging Matrices
+      doc.setTextColor(primary);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.text("2. Processed Optical Analytics Fields", 14, 106);
+      doc.line(14, 108, 196, 108);
 
-    // Render Source Image
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(secondary);
-    doc.text("Original Region-of-Interest", 14, 114);
-    doc.addImage(state.image, 'JPEG', 14, 116, 58, 58);
+      // Render Source Image
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(secondary);
+      doc.text("Original Region-of-Interest", 14, 114);
+      doc.addImage(state.image, 'JPEG', 14, 116, 58, 58);
 
-    // Render Saliency Overlay Target Heatmap Vector
-    if (analysisResult.heatmap) {
-      doc.text("HiResCAM Saliency Map Overlay", 110, 114);
-      doc.addImage(analysisResult.heatmap, 'PNG', 110, 116, 58, 58);
-    } else {
-      doc.text("HiResCAM Saliency Map Overlay", 110, 114);
-      doc.rect(110, 116, 58, 58, 'S');
-      doc.text("Saliency data omitted from pipeline", 115, 145);
+      // Render Saliency Overlay Target Heatmap Vector
+      if (analysisResult.heatmap) {
+        doc.text("HiResCAM Saliency Map Overlay", 110, 114);
+        doc.addImage(analysisResult.heatmap, 'PNG', 110, 116, 58, 58);
+      } else {
+        doc.text("HiResCAM Saliency Map Overlay", 110, 114);
+        doc.rect(110, 116, 58, 58, 'S');
+        doc.text("Saliency data omitted from pipeline", 115, 145);
+      }
+
+      // 4. OpenCV Quantitative Morphological Feature Analysis Table (ABCDE Matrix)
+      doc.setTextColor(primary);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.text("3. Computer Vision Structural Metrics (ABCDE Extraction)", 14, 186);
+      doc.line(14, 188, 196, 188);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      
+      // SAFE BOUNDING: Uses the exact same fallback strategy as your on-screen UI charts
+      const localAbcd = analysisResult.abcdMetrics || { 
+        asymmetry: 0, borderIrregularity: 0, colorDivergence: 0, diameterProfile: 0, evolvingTracking: 0 
+      };
+
+      doc.text(`[A] Asymmetry Metric Index: ${localAbcd.asymmetry} / 100`, 14, 195);
+      doc.text(`[B] Border Irregularity (Compactness Ratio): ${localAbcd.borderIrregularity} / 100`, 14, 201);
+      doc.text(`[C] Color Divergence (RGB Variance Vector): ${localAbcd.colorDivergence} / 100`, 14, 207);
+      doc.text(`[D] Diameter Profile (Relative Frame Scale): ${localAbcd.diameterProfile} / 100`, 14, 213);
+      doc.text(`[E] Evolving Risk Factor (Baseline Tracking Index): ${localAbcd.evolvingTracking} / 100`, 14, 219);
+
+      // 5. Secure Healthcare Interoperability Guardrail Disclaimer Base Box
+      doc.setFillColor(254, 242, 242); 
+      doc.rect(14, 238, 182, 34, 'F');
+      doc.setDrawColor(239, 68, 68);
+      doc.rect(14, 238, 182, 34, 'D');
+
+      doc.setTextColor(153, 27, 27);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      doc.text("COMPLIANT MEDICAL WARNING & DISCLAIMER NOTE:", 18, 244);
+      
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(8);
+      const textContextStr = "This telemetry report sheet contains automated processing variables compiled via automated digital image calculations and mathematical modeling layers. This automated audit statement does not constitute a formal biopsy confirmation or immediate therapy plan. Provide this documentation directly to a certified professional dermatologist during your incoming scheduled appointment or virtual teledermatology evaluation window.";
+      const cleanSplits = doc.splitTextToSize(textContextStr, 174);
+      doc.text(cleanSplits, 18, 249);
+
+      // Save PDF layout
+      doc.save(`ClinicalReport-${analysisResult.classification.replace(/\s+/g, '-')}.pdf`);
+    } catch (error) {
+      console.error("PDF generation engine threw an error:", error);
+      alert("Failed to export PDF. Check your browser developer console for exact code errors.");
     }
-
-  // 4. OpenCV Quantitative Morphological Feature Analysis Table (ABCDE Matrix)
-    doc.setTextColor(primary);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
-    doc.text("3. Computer Vision Structural Metrics (ABCDE Extraction)", 14, 186);
-    doc.line(14, 188, 196, 188);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10); // Slightly smaller font to fit all 5 items comfortably
-    
-    // Fallback bindings to prevent crashes if the state is temporarily refreshing
-    const metricA = analysisResult.abcdMetrics?.asymmetry ?? 0;
-    const metricB = analysisResult.abcdMetrics?.borderIrregularity ?? 0;
-    const metricC = analysisResult.abcdMetrics?.colorDivergence ?? 0;
-    const metricD = analysisResult.abcdMetrics?.diameterProfile ?? 0;
-    const metricE = analysisResult.abcdMetrics?.evolvingTracking ?? 0;
-
-    doc.text(`[A] Asymmetry Metric Index: ${metricA} / 100`, 14, 195);
-    doc.text(`[B] Border Irregularity (Compactness Ratio): ${metricB} / 100`, 14, 201);
-    doc.text(`[C] Color Divergence (RGB Variance Vector): ${metricC} / 100`, 14, 207);
-    doc.text(`[D] Diameter Profile (Relative Frame Scale): ${metricD} / 100`, 14, 213);
-    doc.text(`[E] Evolving Risk Factor (Baseline Tracking Index): ${metricE} / 100`, 14, 219);
-
-    // 5. Secure Healthcare Interoperability Guardrail Disclaimer Base Box
-    doc.setFillColor(254, 242, 242); 
-    doc.rect(14, 238, 182, 34, 'F');
-    doc.setDrawColor(239, 68, 68);
-    doc.rect(14, 238, 182, 34, 'D');
-
-    doc.setTextColor(153, 27, 27);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9.5);
-    doc.text("COMPLIANT MEDICAL WARNING & DISCLAIMER NOTE:", 18, 244);
-    
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(8);
-    const textContextStr = "This telemetry report sheet contains automated processing variables compiled via automated digital image calculations and mathematical modeling layers. This automated audit statement does not constitute a formal biopsy confirmation or immediate therapy plan. Provide this documentation directly to a certified professional dermatologist during your incoming scheduled appointment or virtual teledermatology evaluation window.";
-    const cleanSplits = doc.splitTextToSize(textContextStr, 174);
-    doc.text(cleanSplits, 18, 249);
-
-    // Save PDF layout
-    doc.save(`ClinicalReport-${analysisResult.classification.replace(/\s+/g, '-')}.pdf`);
   };
   
   return (
