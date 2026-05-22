@@ -753,7 +753,23 @@ export function ResultsPage() {
                   </div>
                 </div>
               </div>
-
+              {/* Other Predictions Card */}
+              <div className="bg-card rounded-3xl shadow-xl p-8 border border-border">
+                <h3 className="text-xl mb-6">Other Possible Findings</h3>
+                <div className="space-y-5">
+                  {analysisResult.secondaryPredictions.map((prediction) => (
+                    <div key={prediction.name} className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">{prediction.name}</span>
+                        <span className="font-medium">{prediction.confidence}%</span>
+                      </div>
+                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-primary/40 rounded-full" style={{ width: `${prediction.confidence}%` }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
               {/* NEW INTERACTIVE SIDEBAR COMPONENT: OpenCV ABCD Metric Tracking Engine */}
               <div className="bg-card rounded-3xl shadow-xl p-8 border border-border">
                 <div className="flex items-center gap-2 mb-2">
@@ -852,24 +868,6 @@ export function ResultsPage() {
                       Higher structural scores correlate with non-uniform geometric asymmetry matrices and high-perimeter irregularity fractions.
                     </span>
                   </div>
-                </div>
-              </div>
-
-              {/* Other Predictions Card */}
-              <div className="bg-card rounded-3xl shadow-xl p-8 border border-border">
-                <h3 className="text-xl mb-6">Other Possible Findings</h3>
-                <div className="space-y-5">
-                  {analysisResult.secondaryPredictions.map((prediction) => (
-                    <div key={prediction.name} className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">{prediction.name}</span>
-                        <span className="font-medium">{prediction.confidence}%</span>
-                      </div>
-                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-primary/40 rounded-full" style={{ width: `${prediction.confidence}%` }} />
-                      </div>
-                    </div>
-                  ))}
                 </div>
               </div>
             </motion.div>
