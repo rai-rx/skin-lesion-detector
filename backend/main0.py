@@ -94,6 +94,27 @@ def get_risk_level(top_label: str, top_conf: float) -> str:
         return "medium"
     return "low"
 
+def verify_is_skin_tissue(img_pil) -> bool:
+    """
+    Evaluates if the dominant pixel composition falls within valid human skin color spaces.
+    """
+    # Convert PIL image to OpenCV BGR, then to HSV
+    open_cv_image = np.array(img_pil.convert("RGB"))[:, :, ::-1].copy()
+    hsv = cv2.cvtColor(open_cv_image, cv2.COLOR_BGR2HSV)
+    
+    # Standard medical photography thresholds for human skin tones in HSV
+    lower_skin = np.array([0, 20, 70], dtype=np.uint8)
+    upper_skin = np.array([25, 180, 255], dtype=np.uint8)
+    
+    # Create a mask of pixels matching skin tone
+    skin_mask = cv2.inRange(hsv, lower_skin, upper_skin)
+    
+    # Calculate what percentage of the image is actual skin
+    skin_percentage = (np.sum(skin_mask == 255) / skin_mask.size) * 100
+    
+    # If less than 45% of the frame contains skin tones, reject it as an invalid object
+    return skin_percentage >= 45.0
+
 def center_crop_and_resize(img, size):
     width, height = img.size
     new_side = min(width, height)
@@ -232,6 +253,12 @@ async def predict_lesion(
     contents = await file.read()
     original_img = Image.open(io.BytesIO(contents)).convert("RGB")
     orig_w, orig_h = original_img.size
+
+    if not verify_is_skin_tissue(original_img):
+        raise HTTPException(
+            status_code=400, 
+            detail="Invalid Asset Detected: The uploaded image does not appear to contain human skin tissue architecture. Please ensure the skin lesion is centered and try again."
+        )
     
     # 2. RUN ON-THE-FLY QUALITY VALIDATION
     is_valid, error_msg = validate_image_quality(original_img)
@@ -268,7 +295,6 @@ async def predict_lesion(
 
     # 4. INFERENCE ENGINE RUNTIME
     probs = model.predict(x, verbose=0)[0]
-    
     # 5. GRAD-CAM (HiResCAM) VISUALIZATION TIMELINE
     try:
         heatmap_raw = make_gradcam_heatmap(
