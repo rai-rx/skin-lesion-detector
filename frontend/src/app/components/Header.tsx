@@ -25,7 +25,7 @@ export function Header() {
             <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
               <Activity className="w-6 h-6 text-white" />
             </div>
-            <div className="hidden sm:block">
+            <div className="block">
               <h1 className="text-xl leading-tight">SkinEleven</h1>
             </div>
           </button>

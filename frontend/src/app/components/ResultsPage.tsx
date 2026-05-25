@@ -407,6 +407,303 @@ export function DynamicRiskActionPanel({ riskLevel, classification }: RiskPanelP
   );
 }
 
+interface PrimaryClassificationCardProps {
+  classification: string;
+  riskLevel: string;
+  confidence: number;
+  getRiskColor: (level: string) => string;
+}
+
+function PrimaryClassificationCard({
+  classification,
+  riskLevel,
+  confidence,
+  getRiskColor
+}: PrimaryClassificationCardProps) {
+  return (
+    <div className="bg-card rounded-3xl shadow-xl p-8 border border-border">
+      <div className="flex items-start justify-between mb-6">
+        <div>
+          <p className="text-sm text-muted-foreground mb-2">Primary Classification</p>
+          <h2 className="text-3xl font-bold">{classification}</h2>
+        </div>
+        <div className={`px-4 py-2 rounded-full text-xs font-bold ${getRiskColor(riskLevel)}`}>
+          {riskLevel.toUpperCase()} RISK
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm text-muted-foreground">Confidence Score</span>
+          <span className="text-2xl font-mono">{confidence}%</span>
+        </div>
+        <div className="h-3 bg-muted rounded-full overflow-hidden">
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${confidence}%` }}
+            className="h-full bg-gradient-to-r from-primary to-accent rounded-full"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface InteractiveAnalysisCardProps {
+  image: string;
+  heatmap?: string;
+  showOverlay: boolean;
+  setShowOverlay: (show: boolean) => void;
+  opacity: number;
+  setOpacity: (opacity: number) => void;
+}
+
+function InteractiveAnalysisCard({
+  image,
+  heatmap,
+  showOverlay,
+  setShowOverlay,
+  opacity,
+  setOpacity
+}: InteractiveAnalysisCardProps) {
+  return (
+    <div className="bg-card rounded-3xl shadow-xl p-6 border border-border overflow-hidden">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-xl font-medium">Interactive Analysis</h3>
+        <button
+          onClick={() => setShowOverlay(!showOverlay)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${
+            showOverlay
+              ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
+              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+          }`}
+        >
+          <Layers className="w-4 h-4" />
+          <span className="text-sm font-bold">{showOverlay ? 'Hide Heatmap' : 'Overlay Heatmap'}</span>
+        </button>
+      </div>
+
+      <div className="relative aspect-square rounded-2xl overflow-hidden bg-muted group">
+        {/* Base Image Layer */}
+        <img
+          src={image}
+          alt="Original Lesion"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+
+        {/* HiResCAM Heatmap Layer */}
+        {heatmap && (
+          <img
+            src={heatmap}
+            alt="AI Attention Map"
+            className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out pointer-events-none"
+            style={{
+              opacity: showOverlay ? opacity : 0,
+              mixBlendMode: 'screen',
+              filter: 'contrast(1.1) saturate(1.3)'
+            }}
+          />
+        )}
+
+        {/* Small Info Badge */}
+        <div className="absolute bottom-4 left-4 right-4 pointer-events-none">
+          <div className="bg-black/40 backdrop-blur-md p-3 rounded-xl border border-white/10">
+            <p className="text-[10px] text-white/90 leading-tight">
+              {showOverlay
+                ? "Showing areas of high diagnostic influence (Red) overlaid on lesion."
+                : "Showing original captured image. Toggle 'Overlay' to see AI logic."}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Controls Section */}
+      <AnimatePresence>
+        {showOverlay && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="mt-6 pt-4 border-t border-border space-y-4"
+          >
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                  Heatmap Intensity
+                </label>
+                <span className="text-xs font-mono bg-muted px-2 py-0.5 rounded text-primary">
+                  {Math.round(opacity * 100)}%
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0.1"
+                max="1"
+                step="0.01"
+                value={opacity}
+                onChange={(e) => setOpacity(parseFloat(e.target.value))}
+                className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
+              />
+            </div>
+
+            <div className="flex gap-4 items-center p-3 bg-accent/5 rounded-xl border border-accent/10 text-[11px] text-muted-foreground">
+              <div className="flex gap-1 items-center font-medium">
+                <div className="w-2 h-2 rounded-full bg-red-500" /> High
+              </div>
+              <div className="flex gap-1 items-center font-medium">
+                <div className="w-2 h-2 rounded-full bg-yellow-400" /> Medium
+              </div>
+              <div className="flex gap-1 items-center font-medium">
+                <div className="w-2 h-2 rounded-full bg-blue-500" /> Low
+              </div>
+              <div className="ml-auto text-primary/70 italic">HiResCAM Localization</div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+interface OtherPossibleFindingsCardProps {
+  secondaryPredictions: Array<{ name: string; confidence: number }>;
+}
+
+function OtherPossibleFindingsCard({ secondaryPredictions }: OtherPossibleFindingsCardProps) {
+  return (
+    <div className="bg-card rounded-3xl shadow-xl p-8 border border-border">
+      <h3 className="text-xl mb-6">Other Possible Findings</h3>
+      <div className="space-y-5">
+        {secondaryPredictions.map((prediction) => (
+          <div key={prediction.name} className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">{prediction.name}</span>
+              <span className="font-medium">{prediction.confidence}%</span>
+            </div>
+            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+              <div className="h-full bg-primary/40 rounded-full" style={{ width: `${prediction.confidence}%` }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+interface AbcdeMatrixCardProps {
+  abcd: {
+    asymmetry: number;
+    borderIrregularity: number;
+    colorDivergence: number;
+    diameterProfile: number;
+    evolvingTracking: number;
+  };
+}
+
+function AbcdeMatrixCard({ abcd }: AbcdeMatrixCardProps) {
+  return (
+    <div className="bg-card rounded-3xl shadow-xl p-8 border border-border">
+      <div className="flex items-center gap-2 mb-2">
+        <Activity className="w-5 h-5 text-primary" />
+        <h3 className="text-xl font-medium">Morphological ABCDE Criteria Matrix</h3>
+      </div>
+      <p className="text-xs text-muted-foreground mb-6">
+        Structural measurements extracted deterministically via OpenCV digital processing.
+      </p>
+
+      <div className="space-y-5">
+        {/* Asymmetry Metric Chart Block */}
+        <div>
+          <div className="flex justify-between items-center mb-1.5 text-sm">
+            <span className="font-medium text-card-foreground">Asymmetry Deficit Index</span>
+            <span className="font-mono text-xs text-muted-foreground">{abcd.asymmetry} / 100</span>
+          </div>
+          <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${abcd.asymmetry}%` }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className={`h-full rounded-full ${abcd.asymmetry > 45 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+            />
+          </div>
+        </div>
+
+        {/* Border Irregularity Chart Block */}
+        <div>
+          <div className="flex justify-between items-center mb-1.5 text-sm">
+            <span className="font-medium text-card-foreground">Border Irregularity (Compactness)</span>
+            <span className="font-mono text-xs text-muted-foreground">{abcd.borderIrregularity} / 100</span>
+          </div>
+          <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${abcd.borderIrregularity}%` }}
+              transition={{ duration: 0.8, ease: "easeOut", delay: 0.15 }}
+              className={`h-full rounded-full ${abcd.borderIrregularity > 45 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+            />
+          </div>
+        </div>
+
+        {/* COLOR DIVERGENCE METRIC */}
+        <div>
+          <div className="flex justify-between items-center mb-1.5 text-sm">
+            <span className="font-medium text-card-foreground">Color Divergence (RGB Variance)</span>
+            <span className="font-mono text-xs text-muted-foreground">{abcd.colorDivergence} / 100</span>
+          </div>
+          <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${abcd.colorDivergence}%` }}
+              transition={{ duration: 0.8, ease: "easeOut", delay: 0.20 }}
+              className={`h-full rounded-full ${abcd.colorDivergence > 45 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+            />
+          </div>
+        </div>
+
+        {/* DIAMETER PROFILE METRIC */}
+        <div>
+          <div className="flex justify-between items-center mb-1.5 text-sm">
+            <span className="font-medium text-card-foreground">Diameter Profile (Relative Scale)</span>
+            <span className="font-mono text-xs text-muted-foreground">{abcd.diameterProfile} / 100</span>
+          </div>
+          <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${abcd.diameterProfile}%` }}
+              transition={{ duration: 0.8, ease: "easeOut", delay: 0.25 }}
+              className={`h-full rounded-full ${abcd.diameterProfile > 45 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+            />
+          </div>
+        </div>
+
+        {/* EVOLVING TRACKING METRIC */}
+        <div>
+          <div className="flex justify-between items-center mb-1.5 text-sm">
+            <span className="font-medium text-card-foreground">Evolving Risk (Tracking Index)</span>
+            <span className="font-mono text-xs text-muted-foreground">{abcd.evolvingTracking} / 100</span>
+          </div>
+          <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${abcd.evolvingTracking}%` }}
+              transition={{ duration: 0.8, ease: "easeOut", delay: 0.30 }}
+              className={`h-full rounded-full ${abcd.evolvingTracking > 45 ? 'bg-amber-500' : 'bg-emerald-500'}`}
+            />
+          </div>
+        </div>
+
+        {/* Informational Context Tag */}
+        <div className="flex items-start gap-2 bg-muted/40 p-3 rounded-xl border border-border/60 text-[11px] text-muted-foreground leading-normal">
+          <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+          <span>
+            Higher structural scores correlate with non-uniform geometric asymmetry matrices and high-perimeter irregularity fractions.
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ResultsPage() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -610,112 +907,85 @@ export function ResultsPage() {
           </motion.div>
         </div>
 
-        {/* Main Content Grid */}
+        {/* Main Content Grid & Stack */}
         <div className="relative z-10 max-w-6xl mx-auto px-6 pb-20">
-          <div className="grid lg:grid-cols-2 gap-8 mb-8">
 
-            {/* Visual Column: Image & Heatmap */}
+          {/* MOBILE VIEW LAYOUT (lg:hidden) */}
+          <div className="flex flex-col gap-6 lg:hidden mb-8">
+            {/* 1. Primary Classification */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+            >
+              <PrimaryClassificationCard
+                classification={analysisResult.classification}
+                riskLevel={analysisResult.riskLevel}
+                confidence={analysisResult.confidence}
+                getRiskColor={getRiskColor}
+              />
+            </motion.div>
+
+            {/* 2. Interactive Analysis */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.1 }}
+            >
+              <InteractiveAnalysisCard
+                image={state.image}
+                heatmap={analysisResult.heatmap}
+                showOverlay={showOverlay}
+                setShowOverlay={setShowOverlay}
+                opacity={opacity}
+                setOpacity={setOpacity}
+              />
+            </motion.div>
+
+            {/* 3. Review Flag */}
+            <DynamicRiskActionPanel
+              riskLevel={analysisResult.riskLevel as 'low' | 'medium' | 'high'}
+              classification={analysisResult.classification}
+            />
+
+            {/* 4. Other Possible Findings */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.2 }}
+            >
+              <OtherPossibleFindingsCard
+                secondaryPredictions={analysisResult.secondaryPredictions}
+              />
+            </motion.div>
+
+            {/* 5. Morphological ABCDE Criteria Matrix */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+            >
+              <AbcdeMatrixCard abcd={abcd} />
+            </motion.div>
+          </div>
+
+          {/* DESKTOP VIEW LAYOUT (hidden lg:grid) */}
+          <div className="hidden lg:grid grid-cols-2 gap-8 mb-8">
+            {/* Visual Column: Image, Heatmap & Risk Panel */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               className="space-y-6"
             >
-              <div className="bg-card rounded-3xl shadow-xl p-6 border border-border overflow-hidden">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-medium">Interactive Analysis</h3>
-                  <button
-                    onClick={() => setShowOverlay(!showOverlay)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${showOverlay
-                        ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
-                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                      }`}
-                  >
-                    <Layers className="w-4 h-4" />
-                    <span className="text-sm font-bold">{showOverlay ? 'Hide Heatmap' : 'Overlay Heatmap'}</span>
-                  </button>
-                </div>
+              <InteractiveAnalysisCard
+                image={state.image}
+                heatmap={analysisResult.heatmap}
+                showOverlay={showOverlay}
+                setShowOverlay={setShowOverlay}
+                opacity={opacity}
+                setOpacity={setOpacity}
+              />
 
-                <div className="relative aspect-square rounded-2xl overflow-hidden bg-muted group">
-                  {/* Base Image Layer */}
-                  <img
-                    src={state.image}
-                    alt="Original Lesion"
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
-
-                  {/* HiResCAM Heatmap Layer */}
-                  {analysisResult.heatmap && (
-                    <img
-                      src={analysisResult.heatmap}
-                      alt="AI Attention Map"
-                      className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ease-in-out pointer-events-none"
-                      style={{
-                        opacity: showOverlay ? opacity : 0,
-                        mixBlendMode: 'screen',
-                        filter: 'contrast(1.1) saturate(1.3)'
-                      }}
-                    />
-                  )}
-
-                  {/* Small Info Badge */}
-                  <div className="absolute bottom-4 left-4 right-4 pointer-events-none">
-                    <div className="bg-black/40 backdrop-blur-md p-3 rounded-xl border border-white/10">
-                      <p className="text-[10px] text-white/90 leading-tight">
-                        {showOverlay
-                          ? "Showing areas of high diagnostic influence (Red) overlaid on lesion."
-                          : "Showing original captured image. Toggle 'Overlay' to see AI logic."}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Controls Section */}
-                <AnimatePresence>
-                  {showOverlay && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="mt-6 pt-4 border-t border-border space-y-4"
-                    >
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            Heatmap Intensity
-                          </label>
-                          <span className="text-xs font-mono bg-muted px-2 py-0.5 rounded text-primary">
-                            {Math.round(opacity * 100)}%
-                          </span>
-                        </div>
-                        <input
-                          type="range"
-                          min="0.1"
-                          max="1"
-                          step="0.01"
-                          value={opacity}
-                          onChange={(e) => setOpacity(parseFloat(e.target.value))}
-                          className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-primary"
-                        />
-                      </div>
-
-                      <div className="flex gap-4 items-center p-3 bg-accent/5 rounded-xl border border-accent/10 text-[11px] text-muted-foreground">
-                        <div className="flex gap-1 items-center font-medium">
-                          <div className="w-2 h-2 rounded-full bg-red-500" /> High
-                        </div>
-                        <div className="flex gap-1 items-center font-medium">
-                          <div className="w-2 h-2 rounded-full bg-yellow-400" /> Medium
-                        </div>
-                        <div className="flex gap-1 items-center font-medium">
-                          <div className="w-2 h-2 rounded-full bg-blue-500" /> Low
-                        </div>
-                        <div className="ml-auto text-primary/70 italic">HiResCAM Localization</div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-
-              {/* Dynamic Risk Action Panel */}
               <DynamicRiskActionPanel
                 riskLevel={analysisResult.riskLevel as 'low' | 'medium' | 'high'}
                 classification={analysisResult.classification}
@@ -728,151 +998,21 @@ export function ResultsPage() {
               animate={{ opacity: 1, x: 0 }}
               className="space-y-6"
             >
-              {/* Primary Class Card */}
-              <div className="bg-card rounded-3xl shadow-xl p-8 border border-border">
-                <div className="flex items-start justify-between mb-6">
-                  <div>
-                    <p className="text-sm text-muted-foreground mb-2">Primary Classification</p>
-                    <h2 className="text-3xl font-bold">{analysisResult.classification}</h2>
-                  </div>
-                  <div className={`px-4 py-2 rounded-full text-xs font-bold ${getRiskColor(analysisResult.riskLevel)}`}>
-                    {analysisResult.riskLevel.toUpperCase()} RISK
-                  </div>
-                </div>
+              <PrimaryClassificationCard
+                classification={analysisResult.classification}
+                riskLevel={analysisResult.riskLevel}
+                confidence={analysisResult.confidence}
+                getRiskColor={getRiskColor}
+              />
 
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-muted-foreground">Confidence Score</span>
-                    <span className="text-2xl font-mono">{analysisResult.confidence}%</span>
-                  </div>
-                  <div className="h-3 bg-muted rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${analysisResult.confidence}%` }}
-                      className="h-full bg-gradient-to-r from-primary to-accent rounded-full"
-                    />
-                  </div>
-                </div>
-              </div>
-              {/* Other Predictions Card */}
-              <div className="bg-card rounded-3xl shadow-xl p-8 border border-border">
-                <h3 className="text-xl mb-6">Other Possible Findings</h3>
-                <div className="space-y-5">
-                  {analysisResult.secondaryPredictions.map((prediction) => (
-                    <div key={prediction.name} className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-muted-foreground">{prediction.name}</span>
-                        <span className="font-medium">{prediction.confidence}%</span>
-                      </div>
-                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-primary/40 rounded-full" style={{ width: `${prediction.confidence}%` }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              {/* NEW INTERACTIVE SIDEBAR COMPONENT: OpenCV ABCD Metric Tracking Engine */}
-              <div className="bg-card rounded-3xl shadow-xl p-8 border border-border">
-                <div className="flex items-center gap-2 mb-2">
-                  <Activity className="w-5 h-5 text-primary" />
-                  <h3 className="text-xl font-medium">Morphological ABCDE Criteria Matrix</h3>
-                </div>
-                <p className="text-xs text-muted-foreground mb-6">
-                  Structural measurements extracted deterministically via OpenCV digital processing.
-                </p>
+              <OtherPossibleFindingsCard
+                secondaryPredictions={analysisResult.secondaryPredictions}
+              />
 
-                <div className="space-y-5">
-                  {/* Asymmetry Metric Chart Block */}
-                  <div>
-                    <div className="flex justify-between items-center mb-1.5 text-sm">
-                      <span className="font-medium text-card-foreground">Asymmetry Deficit Index</span>
-                      <span className="font-mono text-xs text-muted-foreground">{abcd.asymmetry} / 100</span>
-                    </div>
-                    <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${abcd.asymmetry}%` }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
-                        className={`h-full rounded-full ${abcd.asymmetry > 45 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Border Irregularity Chart Block */}
-                  <div>
-                    <div className="flex justify-between items-center mb-1.5 text-sm">
-                      <span className="font-medium text-card-foreground">Border Irregularity (Compactness)</span>
-                      <span className="font-mono text-xs text-muted-foreground">{abcd.borderIrregularity} / 100</span>
-                    </div>
-                    <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${abcd.borderIrregularity}%` }}
-                        transition={{ duration: 0.8, ease: "easeOut", delay: 0.15 }}
-                        className={`h-full rounded-full ${abcd.borderIrregularity > 45 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                      />
-                    </div>
-                  </div>
-
-                  {/* COLOR DIVERGENCE METRIC */}
-                  <div>
-                    <div className="flex justify-between items-center mb-1.5 text-sm">
-                      <span className="font-medium text-card-foreground">Color Divergence (RGB Variance)</span>
-                      <span className="font-mono text-xs text-muted-foreground">{abcd.colorDivergence} / 100</span>
-                    </div>
-                    <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${abcd.colorDivergence}%` }}
-                        transition={{ duration: 0.8, ease: "easeOut", delay: 0.20 }}
-                        className={`h-full rounded-full ${abcd.colorDivergence > 45 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                      />
-                    </div>
-                  </div>
-
-                  {/* DIAMETER PROFILE METRIC */}
-                  <div>
-                    <div className="flex justify-between items-center mb-1.5 text-sm">
-                      <span className="font-medium text-card-foreground">Diameter Profile (Relative Scale)</span>
-                      <span className="font-mono text-xs text-muted-foreground">{abcd.diameterProfile} / 100</span>
-                    </div>
-                    <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${abcd.diameterProfile}%` }}
-                        transition={{ duration: 0.8, ease: "easeOut", delay: 0.25 }}
-                        className={`h-full rounded-full ${abcd.diameterProfile > 45 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                      />
-                    </div>
-                  </div>
-
-                  {/* EVOLVING TRACKING METRIC */}
-                  <div>
-                    <div className="flex justify-between items-center mb-1.5 text-sm">
-                      <span className="font-medium text-card-foreground">Evolving Risk (Tracking Index)</span>
-                      <span className="font-mono text-xs text-muted-foreground">{abcd.evolvingTracking} / 100</span>
-                    </div>
-                    <div className="w-full bg-muted h-2.5 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${abcd.evolvingTracking}%` }}
-                        transition={{ duration: 0.8, ease: "easeOut", delay: 0.30 }}
-                        className={`h-full rounded-full ${abcd.evolvingTracking > 45 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Informational Context Tag */}
-                  <div className="flex items-start gap-2 bg-muted/40 p-3 rounded-xl border border-border/60 text-[11px] text-muted-foreground leading-normal">
-                    <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                    <span>
-                      Higher structural scores correlate with non-uniform geometric asymmetry matrices and high-perimeter irregularity fractions.
-                    </span>
-                  </div>
-                </div>
-              </div>
+              <AbcdeMatrixCard abcd={abcd} />
             </motion.div>
           </div>
+
 
           {/* Classification Info Section */}
           {currentInfo && (
