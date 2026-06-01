@@ -4,6 +4,10 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Upload, Camera, ArrowLeft, X, Loader2, Image as ImageIcon, AlertTriangle } from 'lucide-react';
 import Cropper from 'react-easy-crop';
 import { Header } from './Header';
+import { useLocation } from 'react-router';
+import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../services/supabaseClient';
+import { useEffect } from 'react';
 
 // Interface matching the pixel data payload needed by the backend
 interface CroppedPixels {
@@ -20,6 +24,19 @@ export function ScanPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  // Auth & Lesion Selection
+  const location = useLocation();
+  const { user, session } = useAuth();
+  const [lesions, setLesions] = useState<any[]>([]);
+  const [selectedLesionId, setSelectedLesionId] = useState<string>(location.state?.lesion_id || '');
+
+  useEffect(() => {
+    if (user) {
+      supabase.from('lesions').select('id, nickname').eq('user_id', user.id)
+        .then(({ data }) => setLesions(data || []));
+    }
+  }, [user]);
 
   // Cropper specific states
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -85,10 +102,22 @@ export function ScanPage() {
     formData.append('crop_width', croppedAreaPixels.width.toString());
     formData.append('crop_height', croppedAreaPixels.height.toString());
 
+    if (selectedLesionId) {
+      formData.append('lesion_id', selectedLesionId);
+    }
+
     try {
+      const headers: Record<string, string> = {
+        'ngrok-skip-browser-warning': 'true'
+      };
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`;
+      }
+
       // Direct API call configuration to handle explicit HTTP status errors cleanly
       const response = await fetch(`${import.meta.env.VITE_API_URL}/predict`, {
         method: 'POST',
+        headers,
         body: formData,
       });
 
@@ -169,6 +198,29 @@ export function ScanPage() {
             className="text-center mb-12"
           >
             <h1 className="text-5xl md:text-6xl font-semibold tracking-tight">Analyze Skin Lesion</h1>
+            
+            {user && lesions.length > 0 && (
+              <div className="mt-8 max-w-sm mx-auto">
+                <label className="block text-sm font-medium text-muted-foreground mb-2 text-left">
+                  Save scan to profile (Optional)
+                </label>
+                <select
+                  value={selectedLesionId}
+                  onChange={(e) => setSelectedLesionId(e.target.value)}
+                  className="w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground focus:ring-2 focus:ring-primary outline-none"
+                >
+                  <option value="">Do not save / Anonymous</option>
+                  {lesions.map(l => (
+                    <option key={l.id} value={l.id}>{l.nickname}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {!user && (
+              <div className="mt-6 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/10 text-accent text-sm font-medium border border-accent/20">
+                <AlertTriangle className="w-4 h-4" /> Sign in to save scans to your timeline
+              </div>
+            )}
           </motion.div>
         </div>
 

@@ -9,6 +9,7 @@ import {
 import { Header } from './Header';
 import type { ModelResult } from '@/services/modelService';
 import jsPDF from 'jspdf/dist/jspdf.es.min.js';
+import { useAuth } from '../../contexts/AuthContext';
 
 
 interface LocationState {
@@ -707,6 +708,7 @@ function AbcdeMatrixCard({ abcd }: AbcdeMatrixCardProps) {
 export function ResultsPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const state = location.state as LocationState;
 
   const [showOverlay, setShowOverlay] = useState(false);
@@ -908,7 +910,28 @@ export function ResultsPage() {
         </div>
 
         {/* Main Content Grid & Stack */}
-        <div className="relative z-10 max-w-6xl mx-auto px-6 pb-20">
+        <div className="relative z-10 max-w-5xl mx-auto px-6 pb-24 space-y-12">
+          {!user && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-accent/10 border border-accent/20 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4"
+            >
+              <div className="flex items-center gap-3 text-accent">
+                <AlertTriangle className="w-5 h-5 shrink-0" />
+                <p className="text-sm font-medium">This is an anonymous scan. It has not been saved.</p>
+              </div>
+              <button
+                onClick={() => {
+                  sessionStorage.setItem('pending_scan', JSON.stringify({ image: state.image, result: state.result }));
+                  navigate('/register');
+                }}
+                className="px-4 py-2 bg-accent text-accent-foreground text-sm font-semibold rounded-xl hover:opacity-90 whitespace-nowrap"
+              >
+                Sign up to save scan
+              </button>
+            </motion.div>
+          )}
 
           {/* MOBILE VIEW LAYOUT (lg:hidden) */}
           <div className="flex flex-col gap-6 lg:hidden mb-8">
