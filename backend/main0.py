@@ -37,8 +37,28 @@ LABEL_MAP = {
 IMG_SIZE = 480
 
 # Load Model and Thresholds
-model = tf.keras.models.load_model("efficientnetv2l_multilabel_fold4.keras")
-thresholds = np.load("efficientnetv2l_multilabel_final_thresholds.npy").astype(np.float32)
+model_paths = [
+    "efficientnetv2m_multilabel_fold0.keras",
+    "efficientnetv2m_multilabel_fold1.keras",
+    "efficientnetv2m_multilabel_fold2.keras",
+    "efficientnetv2m_multilabel_fold3.keras",
+    "efficientnetv2m_multilabel_fold4.keras",
+]
+
+threshold_paths = [
+    "efficientnetv2m_multilabel_fold0_thresholds.npy",
+    "efficientnetv2m_multilabel_fold1_thresholds.npy",
+    "efficientnetv2m_multilabel_fold2_thresholds.npy",
+    "efficientnetv2m_multilabel_fold3_thresholds.npy",
+    "efficientnetv2m_multilabel_fold4_thresholds.npy",
+]
+
+# Load 5-fold ensemble models
+models = []
+thresholds_list = []
+for model_path, threshold_path in zip(model_paths, threshold_paths):
+    models.append(tf.keras.models.load_model(model_path))
+    thresholds_list.append(np.load(threshold_path).astype(np.float32))
 
 def make_gradcam_heatmap(img_array, model, nested_model_name, last_conv_layer_name, pred_index=None):
     # 1. Access the nested architecture
@@ -293,14 +313,21 @@ async def predict_lesion(
     arr_preprocessed = tf.keras.applications.efficientnet_v2.preprocess_input(arr)
     x = tf.convert_to_tensor(arr_preprocessed[None, ...], dtype=tf.float32)
 
-    # 4. INFERENCE ENGINE RUNTIME
-    probs = model.predict(x, verbose=0)[0]
-    # 5. GRAD-CAM (HiResCAM) VISUALIZATION TIMELINE
+    # 4. INFERENCE ENGINE RUNTIME - 5-Fold Ensemble
+    ensemble_probs = []
+    for model in models:
+        fold_probs = model.predict(x, verbose=0)[0]
+        ensemble_probs.append(fold_probs)
+    
+    # Average predictions across all folds
+    probs = np.mean(ensemble_probs, axis=0)
+    
+    # 5. GRAD-CAM (HiResCAM) VISUALIZATION TIMELINE - Using first model for visualization
     try:
         heatmap_raw = make_gradcam_heatmap(
             x, 
-            model, 
-            "efficientnetv2-l", 
+            models[0], 
+            "efficientnetv2-m", 
             "top_activation"
         )
         
