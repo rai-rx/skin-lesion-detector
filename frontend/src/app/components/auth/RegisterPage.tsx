@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
-import { supabase } from '../../services/supabaseClient';
+import { supabase } from '../../../services/supabaseClient';
 import { Header } from '../Header';
 import { motion } from 'motion/react';
 import { Activity, Mail, Lock, User, Loader2, ArrowRight } from 'lucide-react';

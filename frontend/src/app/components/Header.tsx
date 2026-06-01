@@ -1,14 +1,14 @@
 import { motion } from 'motion/react';
 import { useNavigate, useLocation, Link } from 'react-router';
 import { Activity, User, LogOut, LayoutDashboard, Shield } from 'lucide-react';
-import { useAuth } from '../../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+} from "./ui/dropdown-menu";
 
 export function Header() {
   const navigate = useNavigate();
