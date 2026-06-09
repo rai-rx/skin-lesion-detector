@@ -33,7 +33,7 @@ export function DashboardLayout() {
           <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
             <Activity className="w-5 h-5 text-white" />
           </div>
-          <span className="font-display font-bold text-xl text-foreground">DermLens</span>
+          <span className="font-display font-bold text-xl text-foreground">SkinEleven</span>
         </div>
 
         <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
@@ -84,7 +84,7 @@ export function DashboardLayout() {
         <header className="md:hidden bg-card border-b border-border p-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
              <Activity className="w-6 h-6 text-primary" />
-             <span className="font-display font-bold text-lg">DermLens</span>
+             <span className="font-display font-bold text-lg">SkinEleven</span>
           </div>
           {/* Add a simple hamburger menu here if needed, omitted for brevity */}
         </header>

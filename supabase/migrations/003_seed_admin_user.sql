@@ -1,0 +1,24 @@
+-- Seed migration for admin user
+-- This migration creates an admin user account using Supabase's admin API from the backend
+-- Or can be used as reference for manual admin creation via Supabase dashboard
+
+-- NOTE: Direct insertion into auth.users is not possible through SQL migrations in Supabase.
+-- Use the Python seed script (backend/seed.py) instead:
+--
+--   python backend/seed.py
+--
+-- This will:
+-- 1. Create the admin user in auth.users via Supabase admin API
+-- 2. The trigger on auth.users will automatically create a public.users record with admin role
+-- 3. Email: admin.skineleven@gmail.com
+-- 4. Password: Set via ADMIN_PASSWORD environment variable (defaults to "TempPassword123!")
+--
+-- Alternatively, you can manually:
+-- 1. Go to Supabase Dashboard > Authentication > Users
+-- 2. Click "Add user"
+-- 3. Enter email: admin.skineleven@gmail.com
+-- 4. Set a password
+-- 5. Click "Send invite" or "Create user"
+-- 6. The user will automatically be created as admin (since it's the first user)
+-- 7. If not the first user, you'll need to manually update the role:
+--    UPDATE public.users SET role = 'admin'::user_role WHERE email = 'admin.skineleven@gmail.com';
