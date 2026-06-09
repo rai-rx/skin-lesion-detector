@@ -24,10 +24,10 @@ python seed.py
 
 This will:
 1. Create an admin user with email: `admin.skineleven@gmail.com`
-2. Set or reset the password from `ADMIN_PASSWORD` environment variable
+2. Set the password from `ADMIN_PASSWORD` environment variable
 3. Automatically assign the `admin` role via the database trigger
 
-**Note:** If the admin user already exists, rerunning `python seed.py` will reset its password to the current `ADMIN_PASSWORD` value.
+**Note:** The first user created in the system automatically gets the `admin` role.
 
 ## Next steps
 
