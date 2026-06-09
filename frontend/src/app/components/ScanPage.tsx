@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
 import { Upload, Camera, ArrowLeft, X, Loader2, Image as ImageIcon, AlertTriangle } from 'lucide-react';
@@ -7,7 +7,6 @@ import { Header } from './Header';
 import { useLocation } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../services/supabaseClient';
-import { useEffect } from 'react';
 
 // Interface matching the pixel data payload needed by the backend
 interface CroppedPixels {
@@ -30,6 +29,9 @@ export function ScanPage() {
   const { user, session } = useAuth();
   const [lesions, setLesions] = useState<any[]>([]);
   const [selectedLesionId, setSelectedLesionId] = useState<string>(location.state?.lesion_id || '');
+  const [scanTitle, setScanTitle] = useState('');
+  const [newLesionNickname, setNewLesionNickname] = useState('');
+  const [newLesionLocation, setNewLesionLocation] = useState('');
 
   useEffect(() => {
     if (user) {
@@ -104,6 +106,15 @@ export function ScanPage() {
 
     if (selectedLesionId) {
       formData.append('lesion_id', selectedLesionId);
+    } else if (user) {
+      // Always save logged-in scans by creating a quick profile when needed.
+      const quickName = newLesionNickname || `Quick Scan ${new Date().toLocaleDateString()}`;
+      formData.append('new_lesion_nickname', quickName);
+      formData.append('new_lesion_location', newLesionLocation || 'Unspecified body location');
+    }
+
+    if (scanTitle) {
+      formData.append('scan_note', scanTitle);
     }
 
     try {
@@ -199,21 +210,53 @@ export function ScanPage() {
           >
             <h1 className="text-5xl md:text-6xl font-semibold tracking-tight">Analyze Skin Lesion</h1>
             
-            {user && lesions.length > 0 && (
-              <div className="mt-8 max-w-sm mx-auto">
-                <label className="block text-sm font-medium text-muted-foreground mb-2 text-left">
-                  Save scan to profile (Optional)
-                </label>
-                <select
-                  value={selectedLesionId}
-                  onChange={(e) => setSelectedLesionId(e.target.value)}
-                  className="w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground focus:ring-2 focus:ring-primary outline-none"
-                >
-                  <option value="">Do not save / Anonymous</option>
-                  {lesions.map(l => (
-                    <option key={l.id} value={l.id}>{l.nickname}</option>
-                  ))}
-                </select>
+            {user && (
+              <div className="mt-8 max-w-sm mx-auto space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-muted-foreground mb-2 text-left">
+                    Save scan to profile
+                  </label>
+                  <select
+                    value={selectedLesionId}
+                    onChange={(e) => setSelectedLesionId(e.target.value)}
+                    className="w-full bg-card border border-border rounded-xl px-4 py-3 text-foreground focus:ring-2 focus:ring-primary outline-none"
+                  >
+                    <option value="">Create a new profile automatically</option>
+                    {lesions.map(l => (
+                      <option key={l.id} value={l.id}>{l.nickname}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="space-y-3">
+                  <label className="block text-sm font-medium text-muted-foreground">
+                    Scan title / note
+                  </label>
+                  <input
+                    value={scanTitle}
+                    onChange={(e) => setScanTitle(e.target.value)}
+                    placeholder="Optional scan title or note"
+                    className="w-full rounded-xl border border-border bg-card px-4 py-3 text-foreground focus:ring-2 focus:ring-primary outline-none"
+                  />
+                </div>
+
+                {!selectedLesionId && (
+                  <div className="space-y-3">
+                    <p className="text-sm text-muted-foreground">Create a lesion profile from this scan:</p>
+                    <input
+                      value={newLesionNickname}
+                      onChange={(e) => setNewLesionNickname(e.target.value)}
+                      placeholder="Lesion nickname (e.g. Left Shoulder Spot)"
+                      className="w-full rounded-xl border border-border bg-card px-4 py-3 text-foreground focus:ring-2 focus:ring-primary outline-none"
+                    />
+                    <input
+                      value={newLesionLocation}
+                      onChange={(e) => setNewLesionLocation(e.target.value)}
+                      placeholder="Body location (optional)"
+                      className="w-full rounded-xl border border-border bg-card px-4 py-3 text-foreground focus:ring-2 focus:ring-primary outline-none"
+                    />
+                  </div>
+                )}
               </div>
             )}
             {!user && (

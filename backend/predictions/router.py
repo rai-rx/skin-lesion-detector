@@ -1,8 +1,8 @@
 from fastapi import APIRouter, File, UploadFile, Form, Depends, HTTPException
 from typing import Optional, Dict, Any
-from auth.dependencies import get_optional_user
+from auth.dependencies import get_current_user, get_optional_user
 from database import supabase
-from storage import upload_scan_image, upload_heatmap_image
+from storage import upload_scan_image, upload_heatmap_image, upload_pdf_report
 import io
 import base64
 import numpy as np
@@ -35,6 +35,9 @@ async def predict_lesion(
     crop_width: Optional[float] = Form(None),
     crop_height: Optional[float] = Form(None),
     lesion_id: Optional[str] = Form(None),
+    new_lesion_nickname: Optional[str] = Form(None),
+    new_lesion_location: Optional[str] = Form(None),
+    scan_note: Optional[str] = Form(None),
     user: Optional[Dict[str, Any]] = Depends(get_optional_user)
 ):
     contents = await file.read()
@@ -119,34 +122,52 @@ async def predict_lesion(
         
     risk = get_risk_level(raw_label, float(probs[top_idx]))
 
-    # 5. Persistence (if authenticated and lesion_id provided)
+    # 5. Persistence (if authenticated)
     scan_id = None
     image_url = None
-    if user and lesion_id:
+    if user:
         user_id = user.get("sub")
-        try:
-            # Upload image
-            image_url = upload_scan_image(user_id, contents)
-            hm_url = upload_heatmap_image(user_id, heatmap_bytes) if heatmap_bytes else None
-
-            # Insert to DB
-            scan_data = {
-                "lesion_id": lesion_id,
-                "image_url": image_url,
-                "primary_diagnosis": primary_label,
-                "primary_diagnosis_code": raw_label,
-                "confidence_rate": round(primary_conf, 2),
-                "risk_level": risk,
-                "secondary_findings": secondary,
-                "abcde_metrics": structural_metrics,
-                "heatmap_url": hm_url,
-                "is_valid_upload": True
+        if not lesion_id:
+            lesion_name = new_lesion_nickname or f"Quick Scan {new_lesion_location or 'Unspecified'}"
+            lesion_payload = {
+                "user_id": user_id,
+                "nickname": lesion_name,
+                "location": new_lesion_location or "Unspecified body location",
             }
-            res = supabase.table("scans").insert(scan_data).execute()
-            if res.data:
-                scan_id = res.data[0]["id"]
-        except Exception as e:
-            print(f"Failed to persist scan: {e}")
+            if scan_note:
+                lesion_payload["notes"] = scan_note
+
+            try:
+                lesion_res = supabase.table("lesions").insert(lesion_payload).select("id").single().execute()
+                lesion_id = lesion_res.data["id"] if lesion_res.data else None
+            except Exception as e:
+                print(f"Failed to create lesion profile: {e}")
+
+        if lesion_id:
+            try:
+                # Upload image
+                image_url = upload_scan_image(user_id, contents)
+                hm_url = upload_heatmap_image(user_id, heatmap_bytes) if heatmap_bytes else None
+
+                # Insert to DB
+                scan_data = {
+                    "lesion_id": lesion_id,
+                    "image_url": image_url,
+                    "primary_diagnosis": primary_label,
+                    "primary_diagnosis_code": raw_label,
+                    "confidence_rate": round(primary_conf, 2),
+                    "risk_level": risk,
+                    "secondary_findings": secondary,
+                    "abcde_metrics": structural_metrics,
+                    "heatmap_url": hm_url,
+                    "is_valid_upload": True,
+                    "user_notes": scan_note
+                }
+                res = supabase.table("scans").insert(scan_data).execute()
+                if res.data:
+                    scan_id = res.data[0]["id"]
+            except Exception as e:
+                print(f"Failed to persist scan: {e}")
 
     return {
         "id": scan_id,
@@ -159,3 +180,29 @@ async def predict_lesion(
         "heatmap": heatmap_data_uri,
         "imageUrl": image_url
     }
+
+@router.post("/reports")
+async def save_pdf_report(
+    scan_id: str = Form(...),
+    file: UploadFile = File(...),
+    user: Dict[str, Any] = Depends(get_current_user)
+):
+    user_id = user.get("sub")
+
+    scan_res = supabase.table("scans").select("id, lesion_id, pdf_report_url").eq("id", scan_id).single().execute()
+    if not scan_res.data:
+        raise HTTPException(status_code=404, detail="Scan not found")
+
+    lesion_id = scan_res.data.get("lesion_id")
+    lesion_res = supabase.table("lesions").select("user_id").eq("id", lesion_id).single().execute()
+    if not lesion_res.data or lesion_res.data.get("user_id") != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to update this scan")
+
+    pdf_bytes = await file.read()
+    pdf_url = upload_pdf_report(user_id, pdf_bytes)
+
+    update_res = supabase.table("scans").update({"pdf_report_url": pdf_url}).eq("id", scan_id).execute()
+    if update_res.error:
+        raise HTTPException(status_code=500, detail="Unable to update PDF report URL")
+
+    return {"pdf_report_url": pdf_url}
