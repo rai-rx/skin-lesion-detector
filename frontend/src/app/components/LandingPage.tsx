@@ -1,10 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
 import { Upload, Camera, AlertCircle, CheckCircle, Info, AlertTriangle } from 'lucide-react';
 import { ImageGalleryModal } from './ImageGalleryModal';
 import { Header } from './Header';
-import { useAuth } from '../../contexts/AuthContext';
 
 const benignImages = [
   'https://images.unsplash.com/photo-1541752857837-f8a0154fd092?w=1080&q=80',
@@ -22,14 +21,7 @@ const malignantImages = [
 
 export function LandingPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [modalOpen, setModalOpen] = useState<'benign' | 'malignant' | null>(null);
-
-  useEffect(() => {
-    if (user) {
-      navigate('/dashboard');
-    }
-  }, [user, navigate]);
 
   const containerVariants = {
     hidden: { opacity: 0 },

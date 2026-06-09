@@ -127,6 +127,8 @@ async def predict_lesion(
     image_url = None
     if user:
         user_id = user.get("sub")
+
+        # Create lesion profile automatically if none provided
         if not lesion_id:
             lesion_name = new_lesion_nickname or f"Quick Scan {new_lesion_location or 'Unspecified'}"
             lesion_payload = {
@@ -138,8 +140,13 @@ async def predict_lesion(
                 lesion_payload["notes"] = scan_note
 
             try:
-                lesion_res = supabase.table("lesions").insert(lesion_payload).select("id").single().execute()
-                lesion_id = lesion_res.data["id"] if lesion_res.data else None
+                lesion_res = supabase.table("lesions").insert(lesion_payload).execute()
+                if lesion_res.data:
+                    # supabase-py may return a list
+                    if isinstance(lesion_res.data, list):
+                        lesion_id = lesion_res.data[0].get("id")
+                    else:
+                        lesion_id = lesion_res.data.get("id")
             except Exception as e:
                 print(f"Failed to create lesion profile: {e}")
 
@@ -180,6 +187,7 @@ async def predict_lesion(
         "heatmap": heatmap_data_uri,
         "imageUrl": image_url
     }
+
 
 @router.post("/reports")
 async def save_pdf_report(

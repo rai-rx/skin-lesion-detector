@@ -713,9 +713,28 @@ export function ResultsPage() {
 
   const [showOverlay, setShowOverlay] = useState(false);
   const [opacity, setOpacity] = useState(0.6);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-  const [isSavingPdf, setIsSavingPdf] = useState(false);
-  const [saveError, setSaveError] = useState<string | null>(null);
+
+  const uploadPdfReport = async (scanId: string, blob: Blob) => {
+    try {
+      const form = new FormData();
+      form.append('scan_id', scanId);
+      form.append('file', new File([blob], `report-${scanId}.pdf`, { type: 'application/pdf' }));
+
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/predictions/reports`, {
+        method: 'POST',
+        body: form,
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`
+        }
+      });
+
+      if (!res.ok) throw new Error('Failed to upload PDF');
+      return (await res.json()).pdf_report_url;
+    } catch (err) {
+      console.error('PDF upload failed', err);
+      return null;
+    }
+  };
 
   const analysisResult = state?.result ?? {
     classification: 'Benign Nevus (Mole)',
@@ -741,9 +760,9 @@ export function ResultsPage() {
 
   useEffect(() => {
     if (!state?.image) {
-      navigate(user ? '/dashboard' : '/');
+      navigate('/');
     }
-  }, [state?.image, navigate, user]);
+  }, [state?.image, navigate]);
 
   if (!state?.image) return null;
 
@@ -756,169 +775,143 @@ export function ResultsPage() {
     }
   };
 
-  const buildPdfDocument = () => {
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const primary = '#0F172A';
-    const secondary = '#475569';
-
-    doc.setFillColor(15, 23, 42);
-    doc.rect(0, 0, 210, 40, 'F');
-
-    doc.setTextColor(255, 255, 255);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(22);
-    doc.text('CLINICAL SKINSHEET SCREENING REPORT', 14, 18);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(148, 163, 184);
-    doc.text(`Generated Session: ${new Date().toLocaleString()} | Reference Pipeline: ML-EFFICIENTNET-V4`, 14, 26);
-
-    doc.setTextColor(primary);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(13);
-    doc.text('1. Neural Network Differential Diagnoses (Top 3 Predictions)', 14, 52);
-    doc.setDrawColor(226, 232, 240);
-    doc.line(14, 54, 196, 54);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.setTextColor(15, 23, 42);
-    doc.text(`1. Primary Finding: ${analysisResult.classification}`, 16, 62);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(secondary);
-    doc.text(`Confidence: ${analysisResult.confidence}%  [Risk Level: ${analysisResult.riskLevel.toUpperCase()}]`, 22, 67);
-
-    const sec1 = analysisResult.secondaryPredictions?.[0] ? `${analysisResult.secondaryPredictions[0].name} (${analysisResult.secondaryPredictions[0].confidence}%)` : 'N/A';
-    const sec2 = analysisResult.secondaryPredictions?.[1] ? `${analysisResult.secondaryPredictions[1].name} (${analysisResult.secondaryPredictions[1].confidence}%)` : 'N/A';
-
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(15, 23, 42);
-    doc.text(`2. Secondary Consideration: ${sec1.split(' (')[0]}`, 16, 75);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(secondary);
-    doc.text(`Confidence: ${sec1.includes('(') ? sec1.split(' (')[1].replace(')', '') : 'N/A'}`, 22, 80);
-
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(15, 23, 42);
-    doc.text(`3. Tertiary Consideration: ${sec2.split(' (')[0]}`, 16, 88);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(secondary);
-    doc.text(`Confidence: ${sec2.includes('(') ? sec2.split(' (')[1].replace(')', '') : 'N/A'}`, 22, 93);
-
-    doc.setTextColor(primary);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(13);
-    doc.text('2. Processed Optical Analytics Fields', 14, 106);
-    doc.line(14, 108, 196, 108);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    doc.setTextColor(secondary);
-    doc.text('Original Region-of-Interest', 14, 114);
-    doc.addImage(state.image, 'JPEG', 14, 116, 58, 58);
-
-    if (analysisResult.heatmap) {
-      doc.text('HiResCAM Saliency Map Overlay', 110, 114);
-      doc.addImage(analysisResult.heatmap, 'PNG', 110, 116, 58, 58);
-    } else {
-      doc.text('HiResCAM Saliency Map Overlay', 110, 114);
-      doc.rect(110, 116, 58, 58, 'S');
-      doc.text('Saliency data omitted from pipeline', 115, 145);
-    }
-
-    doc.setTextColor(primary);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(13);
-    doc.text('3. Computer Vision Structural Metrics (ABCDE Extraction)', 14, 186);
-    doc.line(14, 188, 196, 188);
-
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-
-    const localAbcd = analysisResult.abcdMetrics || {
-      asymmetry: 0, borderIrregularity: 0, colorDivergence: 0, diameterProfile: 0, evolvingTracking: 0
-    };
-
-    doc.text(`[A] Asymmetry Metric Index: ${localAbcd.asymmetry} / 100`, 14, 195);
-    doc.text(`[B] Border Irregularity (Compactness Ratio): ${localAbcd.borderIrregularity} / 100`, 14, 201);
-    doc.text(`[C] Color Divergence (RGB Variance Vector): ${localAbcd.colorDivergence} / 100`, 14, 207);
-    doc.text(`[D] Diameter Profile (Relative Frame Scale): ${localAbcd.diameterProfile} / 100`, 14, 213);
-    doc.text(`[E] Evolving Risk Factor (Baseline Tracking Index): ${localAbcd.evolvingTracking} / 100`, 14, 219);
-
-    doc.setFillColor(254, 242, 242);
-    doc.rect(14, 238, 182, 34, 'F');
-    doc.setDrawColor(239, 68, 68);
-    doc.rect(14, 238, 182, 34, 'D');
-
-    doc.setTextColor(153, 27, 27);
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9.5);
-    doc.text('COMPLIANT MEDICAL WARNING & DISCLAIMER NOTE:', 18, 244);
-
-    doc.setFont('helvetica', 'italic');
-    doc.setFontSize(8);
-    const textContextStr = 'This telemetry report sheet contains automated processing variables compiled via automated digital image calculations and mathematical modeling layers. This automated audit statement does not constitute a formal biopsy confirmation or immediate therapy plan. Provide this documentation directly to a certified professional dermatologist during your incoming scheduled appointment or virtual teledermatology evaluation window.';
-    const cleanSplits = doc.splitTextToSize(textContextStr, 174);
-    doc.text(cleanSplits, 18, 249);
-
-    return doc;
-  };
-
-  const uploadPdfReport = async (scanId: string, doc: jsPDF) => {
-    if (!session?.access_token) {
-      throw new Error('Missing authorization token');
-    }
-
-    const blob = doc.output('blob');
-    const formData = new FormData();
-    formData.append('scan_id', scanId);
-    formData.append('file', blob, `SkinEleven-Report-${scanId}.pdf`);
-
-    const response = await fetch(`${import.meta.env.VITE_API_URL}/reports`, {
-      method: 'POST',
-      body: formData,
-      headers: {
-        Authorization: `Bearer ${session.access_token}`
-      }
-    });
-
-    if (!response.ok) {
-      const message = await response.text();
-      throw new Error(message || 'Failed to upload PDF report');
-    }
-
-    return response.json();
-  };
-
-  useEffect(() => {
-    if (user && state?.result?.id && !pdfUrl && !isSavingPdf && !saveError) {
-      const syncReport = async () => {
-        setIsSavingPdf(true);
-        setSaveError(null);
-        try {
-          const doc = buildPdfDocument();
-          const result = await uploadPdfReport(state.result.id, doc);
-          setPdfUrl(result.pdf_report_url || null);
-        } catch (error) {
-          console.error('Failed to save PDF report:', error);
-          setSaveError('Unable to save report automatically. You can still download it locally.');
-        } finally {
-          setIsSavingPdf(false);
-        }
-      };
-
-      syncReport();
-    }
-  }, [user, session, state?.result?.id, pdfUrl, isSavingPdf, saveError]);
-
+  // CLIENT SIDE PRINT-READY PDF COMPILE SYSTEM
+  // CLIENT SIDE PRINT-READY PDF COMPILE SYSTEM (WITH TOP 3 DIAGNOSES)
   const handleExportPDF = async () => {
     try {
-      const doc = buildPdfDocument();
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+      // Brand Palette Layout Styling
+      const primary = "#0F172A";
+      const secondary = "#475569";
+
+      // 1. Top Decorative Corporate Layout Header Banner
+      doc.setFillColor(15, 23, 42);
+      doc.rect(0, 0, 210, 40, 'F');
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.text("CLINICAL SKINSHEET SCREENING REPORT", 14, 18);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(148, 163, 184);
+      doc.text(`Generated Session: ${new Date().toLocaleString()} | Reference Pipeline: ML-EFFICIENTNET-V4`, 14, 26);
+
+      // 2. Primary & Secondary Differential Diagnoses Block (Top 3)
+      doc.setTextColor(primary);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.text("1. Neural Network Differential Diagnoses (Top 3 Predictions)", 14, 52);
+      doc.setDrawColor(226, 232, 240);
+      doc.line(14, 54, 196, 54);
+
+      // Rank 1: Primary Prediction
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(15, 23, 42);
+      doc.text(`1. Primary Finding: ${analysisResult.classification}`, 16, 62);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(secondary);
+      doc.text(`Confidence: ${analysisResult.confidence}%  [Risk Level: ${analysisResult.riskLevel.toUpperCase()}]`, 22, 67);
+
+      // Extracting Rank 2 and Rank 3 safely from secondary predictions
+      const sec1 = analysisResult.secondaryPredictions?.[0] ? `${analysisResult.secondaryPredictions[0].name} (${analysisResult.secondaryPredictions[0].confidence}%)` : "N/A";
+      const sec2 = analysisResult.secondaryPredictions?.[1] ? `${analysisResult.secondaryPredictions[1].name} (${analysisResult.secondaryPredictions[1].confidence}%)` : "N/A";
+
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(15, 23, 42);
+      doc.text(`2. Secondary Consideration: ${sec1.split(' (')[0]}`, 16, 75);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(secondary);
+      doc.text(`Confidence: ${sec1.includes('(') ? sec1.split(' (')[1].replace(')', '') : 'N/A'}`, 22, 80);
+
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(15, 23, 42);
+      doc.text(`3. Tertiary Consideration: ${sec2.split(' (')[0]}`, 16, 88);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(secondary);
+      doc.text(`Confidence: ${sec2.includes('(') ? sec2.split(' (')[1].replace(')', '') : 'N/A'}`, 22, 93);
+
+      // 3. Embedded Computer Vision Imaging Matrices
+      doc.setTextColor(primary);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.text("2. Processed Optical Analytics Fields", 14, 106);
+      doc.line(14, 108, 196, 108);
+
+      // Render Source Image
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(secondary);
+      doc.text("Original Region-of-Interest", 14, 114);
+      doc.addImage(state.image, 'JPEG', 14, 116, 58, 58);
+
+      // Render Saliency Overlay Target Heatmap Vector
+      if (analysisResult.heatmap) {
+        doc.text("HiResCAM Saliency Map Overlay", 110, 114);
+        doc.addImage(analysisResult.heatmap, 'PNG', 110, 116, 58, 58);
+      } else {
+        doc.text("HiResCAM Saliency Map Overlay", 110, 114);
+        doc.rect(110, 116, 58, 58, 'S');
+        doc.text("Saliency data omitted from pipeline", 115, 145);
+      }
+
+      // 4. OpenCV Quantitative Morphological Feature Analysis Table (ABCDE Matrix)
+      doc.setTextColor(primary);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.text("3. Computer Vision Structural Metrics (ABCDE Extraction)", 14, 186);
+      doc.line(14, 188, 196, 188);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+
+      // SAFE BOUNDING: Uses the exact same fallback strategy as your on-screen UI charts
+      const localAbcd = analysisResult.abcdMetrics || {
+        asymmetry: 0, borderIrregularity: 0, colorDivergence: 0, diameterProfile: 0, evolvingTracking: 0
+      };
+
+      doc.text(`[A] Asymmetry Metric Index: ${localAbcd.asymmetry} / 100`, 14, 195);
+      doc.text(`[B] Border Irregularity (Compactness Ratio): ${localAbcd.borderIrregularity} / 100`, 14, 201);
+      doc.text(`[C] Color Divergence (RGB Variance Vector): ${localAbcd.colorDivergence} / 100`, 14, 207);
+      doc.text(`[D] Diameter Profile (Relative Frame Scale): ${localAbcd.diameterProfile} / 100`, 14, 213);
+      doc.text(`[E] Evolving Risk Factor (Baseline Tracking Index): ${localAbcd.evolvingTracking} / 100`, 14, 219);
+
+      // 5. Secure Healthcare Interoperability Guardrail Disclaimer Base Box
+      doc.setFillColor(254, 242, 242);
+      doc.rect(14, 238, 182, 34, 'F');
+      doc.setDrawColor(239, 68, 68);
+      doc.rect(14, 238, 182, 34, 'D');
+
+      doc.setTextColor(153, 27, 27);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      doc.text("COMPLIANT MEDICAL WARNING & DISCLAIMER NOTE:", 18, 244);
+
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(8);
+      const textContextStr = "This telemetry report sheet contains automated processing variables compiled via automated digital image calculations and mathematical modeling layers. This automated audit statement does not constitute a formal biopsy confirmation or immediate therapy plan. Provide this documentation directly to a certified professional dermatologist during your incoming scheduled appointment or virtual teledermatology evaluation window.";
+      const cleanSplits = doc.splitTextToSize(textContextStr, 174);
+      doc.text(cleanSplits, 18, 249);
+
+      // Prepare PDF blob for optional upload and local save
+      const blob = doc.output('blob');
+
+      // If user is authenticated and scan was persisted, upload report to server
+      if (user && state?.result?.id && session?.access_token) {
+        const uploadedUrl = await uploadPdfReport(state.result.id, blob);
+        if (uploadedUrl) {
+          console.log('Uploaded PDF report to:', uploadedUrl);
+        }
+      }
+
+      // Trigger local download for user
       doc.save(`ClinicalReport-${analysisResult.classification.replace(/\s+/g, '-')}.pdf`);
     } catch (error) {
-      console.error('PDF generation engine threw an error:', error);
-      alert('Failed to export PDF. Check your browser developer console for exact code errors.');
+      console.error("PDF generation engine threw an error:", error);
+      alert("Failed to export PDF. Check your browser developer console for exact code errors.");
     }
   };
 
@@ -932,11 +925,11 @@ export function ResultsPage() {
           <motion.button
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            onClick={() => navigate(user ? '/dashboard' : '/')}
+            onClick={() => navigate('/')}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
           >
             <ArrowLeft className="w-5 h-5" />
-            <span>{user ? 'Back to Dashboard' : 'Back to Home'}</span>
+            <span>Back to Home</span>
           </motion.button>
 
           <motion.div
@@ -970,38 +963,6 @@ export function ResultsPage() {
               >
                 Sign up to save scan
               </button>
-            </motion.div>
-          )}
-
-          {user && pdfUrl && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4"
-            >
-              <div className="flex items-center gap-3 text-emerald-700">
-                <CheckCircle className="w-5 h-5 shrink-0" />
-                <p className="text-sm font-medium">Scan saved to your Dashboard and PDF Vault.</p>
-              </div>
-              <a
-                href={pdfUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-xl hover:bg-emerald-700 whitespace-nowrap"
-              >
-                View report
-              </a>
-            </motion.div>
-          )}
-
-          {user && saveError && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex items-center gap-3 text-amber-700"
-            >
-              <AlertTriangle className="w-5 h-5 shrink-0" />
-              <p className="text-sm">{saveError}</p>
             </motion.div>
           )}
 

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
 import { Upload, Camera, ArrowLeft, X, Loader2, Image as ImageIcon, AlertTriangle } from 'lucide-react';
@@ -7,6 +7,7 @@ import { Header } from './Header';
 import { useLocation } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../services/supabaseClient';
+import { useEffect } from 'react';
 
 // Interface matching the pixel data payload needed by the backend
 interface CroppedPixels {
@@ -107,7 +108,6 @@ export function ScanPage() {
     if (selectedLesionId) {
       formData.append('lesion_id', selectedLesionId);
     } else if (user) {
-      // Always save logged-in scans by creating a quick profile when needed.
       const quickName = newLesionNickname || `Quick Scan ${new Date().toLocaleDateString()}`;
       formData.append('new_lesion_nickname', quickName);
       formData.append('new_lesion_location', newLesionLocation || 'Unspecified body location');

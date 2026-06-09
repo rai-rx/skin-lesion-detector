@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router';
 import { supabase } from '../../../services/supabaseClient';
 import { Header } from '../Header';
@@ -6,22 +6,14 @@ import { motion } from 'motion/react';
 import { Activity, Mail, Lock, User, Loader2, ArrowRight } from 'lucide-react';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { useAuth } from '../../../contexts/AuthContext';
 
 export function RegisterPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (user) {
-      navigate('/dashboard');
-    }
-  }, [user, navigate]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
