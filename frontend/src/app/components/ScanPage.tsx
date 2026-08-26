@@ -149,12 +149,7 @@ export function ScanPage() {
       navigate('/results', { state: { image: selectedImage, result: data } });
     } catch (error: any) {
       console.error('[ScanPage] Analysis pipeline failure:', error);
-      navigate('/results', {
-        state: {
-          image: selectedImage,
-          error: error.message || 'Unable to connect to the analysis service.',
-        },
-      });
+      setValidationError(error.message || 'Unable to connect to the analysis service. Please verify that the backend server is running and accessible.');
     } finally {
       setIsProcessing(false);
     }

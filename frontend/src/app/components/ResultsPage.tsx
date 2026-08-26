@@ -736,29 +736,6 @@ export function ResultsPage() {
       return null;
     }
   };
-
-  const analysisResult = state?.result ?? {
-    classification: 'Benign Nevus (Mole)',
-    confidence: 87.3,
-    secondaryPredictions: [
-      { name: 'Seborrheic Keratosis', confidence: 8.2 },
-      { name: 'Melanoma', confidence: 3.1 },
-      { name: 'Basal Cell Carcinoma', confidence: 1.4 }
-    ],
-    riskLevel: 'low',
-    notes: state?.error ?? 'Model backend was not reached, showing sample results.',
-    abcdMetrics: { asymmetry: 24.5, borderIrregularity: 18.2 } // Baseline fallbacks
-  };
-
-  const currentInfo = classificationInfo[analysisResult.classification];
-  const abcd = analysisResult.abcdMetrics || {
-    asymmetry: 24.5,
-    borderIrregularity: 18.2,
-    colorDivergence: 15.4,
-    diameterProfile: 30.1,
-    evolvingTracking: 21.0
-  };
-
   useEffect(() => {
     if (!state?.image) {
       navigate('/');
@@ -766,6 +743,64 @@ export function ResultsPage() {
   }, [state?.image, navigate]);
 
   if (!state?.image) return null;
+
+  if (state?.error || !state?.result) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <div className="relative overflow-hidden max-w-3xl mx-auto px-6 pt-8 pb-24">
+          <motion.button
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            onClick={() => navigate('/scan')}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span>Back to Scanner</span>
+          </motion.button>
+
+          <div className="bg-card rounded-3xl shadow-xl p-8 border border-destructive/30 text-center space-y-6">
+            <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mx-auto text-destructive">
+              <AlertTriangle className="w-8 h-8" />
+            </div>
+            <h2 className="text-2xl font-bold text-foreground">Analysis Could Not Complete</h2>
+            <p className="text-muted-foreground text-sm max-w-md mx-auto leading-relaxed">
+              {state?.error || 'Unable to connect to the backend analysis service. Please ensure the backend server and its public API endpoint are running and accessible.'}
+            </p>
+            {state.image && (
+              <div className="w-32 h-32 mx-auto rounded-xl overflow-hidden border border-border shadow-inner">
+                <img src={state.image} alt="Uploaded lesion" className="w-full h-full object-cover" />
+              </div>
+            )}
+            <div className="flex flex-col sm:flex-row justify-center gap-3 pt-2">
+              <button
+                onClick={() => navigate('/scan')}
+                className="px-6 py-3 bg-primary text-primary-foreground rounded-xl font-medium shadow hover:opacity-90 transition"
+              >
+                Retry Analysis
+              </button>
+              <button
+                onClick={() => navigate('/')}
+                className="px-6 py-3 bg-muted text-muted-foreground rounded-xl font-medium hover:bg-muted/80 transition"
+              >
+                Return to Home
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const analysisResult = state.result;
+  const currentInfo = classificationInfo[analysisResult.classification];
+  const abcd = analysisResult.abcdMetrics || {
+    asymmetry: 0,
+    borderIrregularity: 0,
+    colorDivergence: 0,
+    diameterProfile: 0,
+    evolvingTracking: 0
+  };
 
   const getRiskColor = (level: string) => {
     switch (level) {
