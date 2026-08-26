@@ -19,16 +19,23 @@ export function LoginPage() {
     setIsLoading(true);
     setError(null);
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      });
 
-    if (error) {
-      setError(error.message);
+      if (error) {
+        setError(error.message);
+      } else if (data.session) {
+        navigate('/dashboard');
+      } else {
+        setError('Sign-in did not create a session. Please try again.');
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Unable to reach the authentication service. Check your connection and try again.');
+    } finally {
       setIsLoading(false);
-    } else if (data.user) {
-      navigate('/dashboard');
     }
   };
 

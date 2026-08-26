@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
+import { getApiUrl } from '../../../services/apiUrl';
 
 export function UserDirectory() {
   const { session } = useAuth();
@@ -14,7 +15,7 @@ export function UserDirectory() {
 
   const loadUsers = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/users`, {
+      const res = await fetch(`${getApiUrl()}/admin/users`, {
         headers: {
           'Authorization': `Bearer ${session?.access_token}`,
           'ngrok-skip-browser-warning': 'true'

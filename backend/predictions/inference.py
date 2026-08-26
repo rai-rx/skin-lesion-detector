@@ -1,5 +1,6 @@
 import io
 import base64
+from pathlib import Path
 import numpy as np
 import tensorflow as tf
 from PIL import Image
@@ -21,14 +22,12 @@ LABEL_MAP = {
     "VASC": "Vascular Lesion"
 }
 
-IMG_SIZE = 480
+IMG_SIZE = 384
+MODEL_DIR = Path(__file__).resolve().parent.parent
 
 MODEL_PATHS = [
-    "efficientnetv2l_multilabel_fold1.keras",
-    "efficientnetv2l_multilabel_fold2.keras",
-    "efficientnetv2l_multilabel_fold3.keras",
-    "efficientnetv2l_multilabel_fold4.keras",
-    "efficientnetv2l_multilabel_fold5.keras"
+    MODEL_DIR / f"efficientnetv2m_multilabel_fold{fold}.keras"
+    for fold in range(5)
 ]
 
 print("Loading ensemble models...")
@@ -37,12 +36,12 @@ try:
 except Exception as e:
     print(f"Warning: Could not load ensemble models: {e}. Falling back to fold4 (from main0.py)")
     try:
-        ensemble_models = [tf.keras.models.load_model("efficientnetv2l_multilabel_fold4.keras")]
+        ensemble_models = [tf.keras.models.load_model(MODEL_DIR / "efficientnetv2m_multilabel_fold0.keras")]
     except:
         ensemble_models = []
 
 try:
-    thresholds = np.load("efficientnetv2l_multilabel_final_thresholds.npy").astype(np.float32)
+    thresholds = np.load(MODEL_DIR / "efficientnetv2m_multilabel_fold0_thresholds.npy").astype(np.float32)
 except:
     thresholds = None
 

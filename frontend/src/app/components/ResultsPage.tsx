@@ -10,6 +10,7 @@ import { Header } from './Header';
 import type { ModelResult } from '@/services/modelService';
 import jsPDF from 'jspdf/dist/jspdf.es.min.js';
 import { useAuth } from '../../contexts/AuthContext';
+import { getApiUrl } from '../../services/apiUrl';
 
 
 interface LocationState {
@@ -720,7 +721,7 @@ export function ResultsPage() {
       form.append('scan_id', scanId);
       form.append('file', new File([blob], `report-${scanId}.pdf`, { type: 'application/pdf' }));
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/predictions/reports`, {
+      const res = await fetch(`${getApiUrl()}/reports`, {
         method: 'POST',
         body: form,
         headers: {

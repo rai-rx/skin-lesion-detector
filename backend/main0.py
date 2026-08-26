@@ -13,7 +13,7 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # For development, you can allow everything
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -34,7 +34,7 @@ LABEL_MAP = {
     "VASC": "Vascular Lesion"
 }
 
-IMG_SIZE = 480
+IMG_SIZE = 384
 
 # Load Model and Thresholds
 model_paths = [
@@ -327,7 +327,7 @@ async def predict_lesion(
         heatmap_raw = make_gradcam_heatmap(
             x, 
             models[0], 
-            "efficientnetv2-m", 
+            "efficientnetv2m_multilabel",
             "top_activation"
         )
         

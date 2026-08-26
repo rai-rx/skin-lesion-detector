@@ -14,30 +14,36 @@ export function RegisterPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmationSent, setConfirmationSent] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    setConfirmationSent(false);
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: fullName,
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim().toLowerCase(),
+        password,
+        options: {
+          data: {
+            full_name: fullName.trim(),
+          },
         },
-      },
-    });
+      });
 
-    if (error) {
-      setError(error.message);
+      if (error) {
+        setError(error.message);
+      } else if (data.session) {
+        navigate('/dashboard');
+      } else {
+        setConfirmationSent(true);
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'Unable to reach the authentication service. Check your connection and try again.');
+    } finally {
       setIsLoading(false);
-    } else {
-      // Supabase will automatically log them in if email confirmations are off,
-      // but if confirmations are on, it might tell them to check email.
-      // Assuming auto-login for this demo:
-      navigate('/dashboard');
     }
   };
 
@@ -110,6 +116,12 @@ export function RegisterPage() {
             {error && (
               <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center">
                 {error}
+              </div>
+            )}
+
+            {confirmationSent && (
+              <div className="p-3 rounded-lg bg-primary/10 border border-primary/20 text-primary text-sm text-center">
+                Account created. Check your email to confirm your account, then sign in.
               </div>
             )}
 

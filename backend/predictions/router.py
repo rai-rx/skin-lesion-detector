@@ -94,7 +94,7 @@ async def predict_lesion(
     heatmap_bytes = None
     if ensemble_models:
         try:
-            heatmap_raw = make_gradcam_heatmap(x, ensemble_models[0], "efficientnetv2-l", "top_activation")
+            heatmap_raw = make_gradcam_heatmap(x, ensemble_models[0], "efficientnetv2m_multilabel", "top_activation")
             if heatmap_raw is not None:
                 heatmap_resized = cv2.resize(heatmap_raw, (orig_w, orig_h))
                 heatmap_uint8 = np.uint8(255 * heatmap_resized)
@@ -134,7 +134,7 @@ async def predict_lesion(
             lesion_payload = {
                 "user_id": user_id,
                 "nickname": lesion_name,
-                "location": new_lesion_location or "Unspecified body location",
+                "body_location": new_lesion_location or "Unspecified body location",
             }
             if scan_note:
                 lesion_payload["notes"] = scan_note

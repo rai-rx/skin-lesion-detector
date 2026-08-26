@@ -35,7 +35,4 @@ def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Depen
 def get_optional_user(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> Optional[Dict[str, Any]]:
     if not credentials:
         return None
-    try:
-        return verify_supabase_token(credentials.credentials)
-    except HTTPException:
-        return None
+    return verify_supabase_token(credentials.credentials)

@@ -6,6 +6,7 @@ import Cropper from 'react-easy-crop';
 import { Header } from './Header';
 import { useLocation } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
+import { getApiUrl } from '../../services/apiUrl';
 import { supabase } from '../../services/supabaseClient';
 import { useEffect } from 'react';
 
@@ -126,7 +127,7 @@ export function ScanPage() {
       }
 
       // Direct API call configuration to handle explicit HTTP status errors cleanly
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/predict`, {
+      const response = await fetch(`${getApiUrl()}/predict`, {
         method: 'POST',
         headers,
         body: formData,

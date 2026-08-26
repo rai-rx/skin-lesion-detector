@@ -1,3 +1,5 @@
+import { getApiUrl } from './apiUrl';
+
 export type ModelPrediction = {
   name: string;
   confidence: number;
@@ -36,7 +38,7 @@ export async function analyzeSkinLesion(base64Image: string): Promise<ModelResul
 
   try {
     // This looks at the "VITE_API_URL" you set in the Vercel Dashboard
-    const baseUrl = import.meta.env.VITE_API_URL; 
+    const baseUrl = getApiUrl();
 
     const apiResponse = await fetch(`${baseUrl}/predict`, {
         method: 'POST',
@@ -50,11 +52,6 @@ export async function analyzeSkinLesion(base64Image: string): Promise<ModelResul
 
     if (!apiResponse.ok) {
         throw new Error('Prediction failed');
-    }
-
-    if (!apiResponse.ok) {
-      const errorData = await apiResponse.json();
-      throw new Error(errorData.detail || 'Prediction failed');
     }
 
     // The backend now returns { prediction: ModelResult, heatmap: string }

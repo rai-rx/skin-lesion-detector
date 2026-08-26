@@ -20,18 +20,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      checkAdminStatus(session?.user?.id);
-      setIsLoading(false);
-    });
+    supabase.auth.getSession()
+      .then(({ data: { session }, error }) => {
+        if (error) throw error;
+        setSession(session);
+        setUser(session?.user ?? null);
+        void checkAdminStatus(session?.user?.id);
+      })
+      .catch((error) => {
+        console.error('Unable to restore authentication session:', error);
+        setSession(null);
+        setUser(null);
+        setIsAdmin(false);
+      })
+      .finally(() => setIsLoading(false));
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      checkAdminStatus(session?.user?.id);
+      void checkAdminStatus(session?.user?.id);
     });
 
     return () => subscription.unsubscribe();
@@ -52,6 +60,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
       if (!error && data) {
         setIsAdmin(data.role === 'admin');
+      } else {
+        setIsAdmin(false);
       }
     } catch (e) {
       console.error("Error checking admin status:", e);

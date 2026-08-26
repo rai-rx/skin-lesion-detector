@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { Users, Activity, AlertTriangle, Loader2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { getApiUrl } from '../../../services/apiUrl';
 
 export function AdminDashboard() {
   const { session } = useAuth();
@@ -14,7 +15,7 @@ export function AdminDashboard() {
 
   const loadAnalytics = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/analytics`, {
+      const res = await fetch(`${getApiUrl()}/admin/analytics`, {
         headers: {
           'Authorization': `Bearer ${session?.access_token}`,
           'ngrok-skip-browser-warning': 'true'
