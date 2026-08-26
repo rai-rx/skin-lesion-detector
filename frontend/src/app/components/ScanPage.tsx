@@ -93,7 +93,7 @@ export function ScanPage() {
   };
 
   const handleAnalyze = async () => {
-    if (!rawFile || !croppedAreaPixels) return;
+    if (!rawFile) return;
 
     setIsProcessing(true);
     setValidationError(null);
@@ -101,10 +101,12 @@ export function ScanPage() {
     // Build standard Form Data matching the backend signature
     const formData = new FormData();
     formData.append('file', rawFile);
-    formData.append('crop_x', croppedAreaPixels.x.toString());
-    formData.append('crop_y', croppedAreaPixels.y.toString());
-    formData.append('crop_width', croppedAreaPixels.width.toString());
-    formData.append('crop_height', croppedAreaPixels.height.toString());
+    if (croppedAreaPixels) {
+      formData.append('crop_x', croppedAreaPixels.x.toString());
+      formData.append('crop_y', croppedAreaPixels.y.toString());
+      formData.append('crop_width', croppedAreaPixels.width.toString());
+      formData.append('crop_height', croppedAreaPixels.height.toString());
+    }
 
     if (selectedLesionId) {
       formData.append('lesion_id', selectedLesionId);
@@ -120,14 +122,16 @@ export function ScanPage() {
 
     try {
       const headers: Record<string, string> = {
-        'ngrok-skip-browser-warning': 'true'
+        'ngrok-skip-browser-warning': 'true',
+        'Bypass-Tunnel-Reminder': 'true'
       };
       if (session?.access_token) {
         headers['Authorization'] = `Bearer ${session.access_token}`;
       }
 
       // Direct API call configuration to handle explicit HTTP status errors cleanly
-      const response = await fetch(`${getApiUrl()}/predict`, {
+      const apiUrl = `${getApiUrl()}/predict?ngrok-skip-browser-warning=true`;
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers,
         body: formData,

@@ -40,21 +40,18 @@ LABEL_MAP = {
 
 IMG_SIZE = 384
 
+from pathlib import Path
+BASE_DIR = Path(__file__).resolve().parent
+
 # Load Model and Thresholds
 model_paths = [
-    "efficientnetv2m_multilabel_fold0.keras",
-    "efficientnetv2m_multilabel_fold1.keras",
-    "efficientnetv2m_multilabel_fold2.keras",
-    "efficientnetv2m_multilabel_fold3.keras",
-    "efficientnetv2m_multilabel_fold4.keras",
+    str(BASE_DIR / f"efficientnetv2m_multilabel_fold{i}.keras")
+    for i in range(5)
 ]
 
 threshold_paths = [
-    "efficientnetv2m_multilabel_fold0_thresholds.npy",
-    "efficientnetv2m_multilabel_fold1_thresholds.npy",
-    "efficientnetv2m_multilabel_fold2_thresholds.npy",
-    "efficientnetv2m_multilabel_fold3_thresholds.npy",
-    "efficientnetv2m_multilabel_fold4_thresholds.npy",
+    str(BASE_DIR / f"efficientnetv2m_multilabel_fold{i}_thresholds.npy")
+    for i in range(5)
 ]
 
 # Load 5-fold ensemble models
@@ -121,23 +118,19 @@ def get_risk_level(top_label: str, top_conf: float) -> str:
 def verify_is_skin_tissue(img_pil) -> bool:
     """
     Evaluates if the dominant pixel composition falls within valid human skin color spaces.
+    Supports a wide variety of human skin tones and diverse camera lighting.
     """
-    # Convert PIL image to OpenCV BGR, then to HSV
     open_cv_image = np.array(img_pil.convert("RGB"))[:, :, ::-1].copy()
     hsv = cv2.cvtColor(open_cv_image, cv2.COLOR_BGR2HSV)
     
-    # Standard medical photography thresholds for human skin tones in HSV
-    lower_skin = np.array([0, 20, 70], dtype=np.uint8)
-    upper_skin = np.array([25, 180, 255], dtype=np.uint8)
+    # Robust medical photography thresholds for human skin tones in HSV
+    lower_skin = np.array([0, 15, 40], dtype=np.uint8)
+    upper_skin = np.array([35, 230, 255], dtype=np.uint8)
     
-    # Create a mask of pixels matching skin tone
     skin_mask = cv2.inRange(hsv, lower_skin, upper_skin)
-    
-    # Calculate what percentage of the image is actual skin
     skin_percentage = (np.sum(skin_mask == 255) / skin_mask.size) * 100
     
-    # If less than 45% of the frame contains skin tones, reject it as an invalid object
-    return skin_percentage >= 45.0
+    return skin_percentage >= 20.0
 
 def center_crop_and_resize(img, size):
     width, height = img.size
@@ -156,13 +149,13 @@ def validate_image_quality(img_pil) -> tuple[bool, str]:
     gray = cv2.cvtColor(open_cv_image, cv2.COLOR_BGR2GRAY)
     
     laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
-    if laplacian_var < 40.0: 
+    if laplacian_var < 20.0:
         return False, f"Image is too blurry (Sharpness Score: {round(laplacian_var, 2)}). Please stabilize your camera and retake."
         
     mean_brightness = gray.mean()
-    if mean_brightness < 45.0:
+    if mean_brightness < 35.0:
         return False, f"Image is too dark (Brightness: {round(mean_brightness, 2)}). Please activate your camera flash or use external light."
-    if mean_brightness > 230.0:
+    if mean_brightness > 245.0:
         return False, f"Image is overexposed (Brightness: {round(mean_brightness, 2)}). Avoid direct glare or harsh lighting on the skin lesion."
         
     return True, "Success"
@@ -278,25 +271,28 @@ async def predict_lesion(
     original_img = Image.open(io.BytesIO(contents)).convert("RGB")
     orig_w, orig_h = original_img.size
 
-    if not verify_is_skin_tissue(original_img):
-        raise HTTPException(
-            status_code=400, 
-            detail="Invalid Asset Detected: The uploaded image does not appear to contain human skin tissue architecture. Please ensure the skin lesion is centered and try again."
-        )
-    
-    # 2. RUN ON-THE-FLY QUALITY VALIDATION
-    is_valid, error_msg = validate_image_quality(original_img)
-    if not is_valid:
-        raise HTTPException(status_code=400, detail=error_msg)
-    
-    # 3. PROCESSING PIPELINE (Dynamic vs. Fallback Center Crop)
+    # 1. Processing Pipeline (Custom Crop vs Center Crop)
     crop_params = [crop_x, crop_y, crop_width, crop_height]
     if all(param is not None for param in crop_params):
-        img_processed = apply_custom_crop(
-            original_img, crop_x, crop_y, crop_width, crop_height, IMG_SIZE
-        )
+        try:
+            img_processed = apply_custom_crop(
+                original_img, float(crop_x), float(crop_y), float(crop_width), float(crop_height), IMG_SIZE
+            )
+        except Exception:
+            img_processed = center_crop_and_resize(original_img, IMG_SIZE)
     else:
         img_processed = center_crop_and_resize(original_img, IMG_SIZE)
+
+    # 2. Quality and Skin Architecture Validation on Selected Region
+    if not verify_is_skin_tissue(img_processed) and not verify_is_skin_tissue(original_img):
+        raise HTTPException(
+            status_code=400, 
+            detail="Invalid Asset Detected: The selected region does not appear to contain human skin tissue. Please adjust the crop box over the lesion and try again."
+        )
+    
+    is_valid, error_msg = validate_image_quality(img_processed)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
     
     # FIXED: Comprehensive default structure to hold all 5 telemetry metrics safely
     structural_metrics = {

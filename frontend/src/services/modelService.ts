@@ -14,19 +14,6 @@ export type ModelResult = {
   heatmap?: string; // <--- ADD THIS: This will hold the Base64 string from FastAPI
 };
 
-const fallbackAnalysis: ModelResult = {
-  classification: 'Benign Nevus (Mole)',
-  confidence: 87.3,
-  riskLevel: 'low',
-  secondaryPredictions: [
-    { name: 'Seborrheic Keratosis', confidence: 8.2 },
-    { name: 'Melanoma', confidence: 3.1 },
-    { name: 'Basal Cell Carcinoma', confidence: 1.4 },
-  ],
-  notes: 'Fallback model output used because the backend service was unavailable.',
-  heatmap: '', // Optional: Add a placeholder or leave empty
-};
-
 export async function analyzeSkinLesion(base64Image: string): Promise<ModelResult> {
   // 1. Convert Base64 to a Blob (File)
   const response = await fetch(base64Image);

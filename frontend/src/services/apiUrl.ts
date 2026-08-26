@@ -1,4 +1,8 @@
 export function getApiUrl(): string {
+  if (import.meta.env.DEV) {
+    return 'http://localhost:8000';
+  }
+
   const apiUrl = import.meta.env.VITE_API_URL?.trim();
 
   if (!apiUrl) {
