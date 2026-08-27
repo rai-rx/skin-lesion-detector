@@ -4,7 +4,7 @@ from config import settings
 from predictions.router import router as predictions_router
 from admin.router import router as admin_router
 
-app = FastAPI(title="DermLens Backend API")
+app = FastAPI(title="SkinEleven Backend API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -19,7 +19,7 @@ app.include_router(admin_router, prefix="/admin", tags=["admin"])
 
 @app.get("/")
 def read_root():
-    return {"status": "online", "message": "DermLens Backend API"}
+    return {"status": "online", "message": "SkinEleven Backend API"}
 
 if __name__ == "__main__":
     import uvicorn
