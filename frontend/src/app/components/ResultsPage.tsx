@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import {
@@ -714,6 +714,7 @@ export function ResultsPage() {
 
   const [showOverlay, setShowOverlay] = useState(false);
   const [opacity, setOpacity] = useState(0.6);
+  const autoSaveStarted = useRef(false);
 
   const uploadPdfReport = async (scanId: string, blob: Blob) => {
     try {
@@ -813,7 +814,7 @@ export function ResultsPage() {
 
   // CLIENT SIDE PRINT-READY PDF COMPILE SYSTEM
   // CLIENT SIDE PRINT-READY PDF COMPILE SYSTEM (WITH TOP 3 DIAGNOSES)
-  const handleExportPDF = async () => {
+  async function handleExportPDF(autoDownload = true) {
     try {
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
@@ -932,7 +933,7 @@ export function ResultsPage() {
       const cleanSplits = doc.splitTextToSize(textContextStr, 174);
       doc.text(cleanSplits, 18, 249);
 
-      // Prepare PDF blob for optional upload and local save
+      // Prepare PDF blob for upload and optional local save
       const blob = doc.output('blob');
 
       // If user is authenticated and scan was persisted, upload report to server
@@ -943,13 +944,26 @@ export function ResultsPage() {
         }
       }
 
-      // Trigger local download for user
-      doc.save(`ClinicalReport-${analysisResult.classification.replace(/\s+/g, '-')}.pdf`);
+      if (autoDownload) {
+        doc.save(`ClinicalReport-${analysisResult.classification.replace(/\s+/g, '-')}.pdf`);
+      }
     } catch (error) {
       console.error("PDF generation engine threw an error:", error);
       alert("Failed to export PDF. Check your browser developer console for exact code errors.");
     }
   };
+
+  useEffect(() => {
+    if (
+      !autoSaveStarted.current &&
+      user &&
+      session?.access_token &&
+      state?.result?.id
+    ) {
+      autoSaveStarted.current = true;
+      void handleExportPDF(false);
+    }
+  }, [user, session?.access_token, state?.result?.id]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -1146,7 +1160,7 @@ export function ResultsPage() {
           {/* System Control Interaction Row Block */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={handleExportPDF}
+              onClick={() => void handleExportPDF()}
               className="px-8 py-4 bg-emerald-600 text-white font-medium rounded-xl shadow-lg hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-emerald-600/10"
             >
               <FileText className="w-5 h-5" /> Export Clinical PDF Report
