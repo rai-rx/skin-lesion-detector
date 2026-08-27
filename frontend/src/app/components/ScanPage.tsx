@@ -121,12 +121,16 @@ export function ScanPage() {
     }
 
     try {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (user && !currentSession?.access_token) {
+        throw new Error('Your login session has expired. Please sign in again before scanning.');
+      }
       const headers: Record<string, string> = {
         'ngrok-skip-browser-warning': 'true',
         'Bypass-Tunnel-Reminder': 'true'
       };
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`;
+      if (currentSession?.access_token) {
+        headers['Authorization'] = `Bearer ${currentSession.access_token}`;
       }
 
       // Direct API call configuration to handle explicit HTTP status errors cleanly
@@ -137,7 +141,13 @@ export function ScanPage() {
         body: formData,
       });
 
-      const data = await response.json();
+      const responseText = await response.text();
+      let data: any;
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch {
+        throw new Error(`Analysis service returned an invalid response (${response.status}).`);
+      }
 
       if (!response.ok) {
         // Intercept validation failures (e.g., Image Too Blurry, Too Dark)
