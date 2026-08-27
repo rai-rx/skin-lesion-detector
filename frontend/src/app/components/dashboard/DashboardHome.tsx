@@ -65,7 +65,7 @@ export function DashboardHome() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <button 
-          onClick={() => navigate('/scan')}
+          onClick={() => navigate('/dashboard/scan')}
           className="flex items-center gap-4 p-6 bg-primary text-primary-foreground rounded-2xl shadow-md hover:shadow-lg transition-all group text-left"
         >
           <div className="p-3 bg-white/20 rounded-xl">

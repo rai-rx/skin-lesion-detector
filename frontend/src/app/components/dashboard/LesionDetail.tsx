@@ -72,7 +72,7 @@ export function LesionDetail() {
           </div>
         </div>
         
-        <Button onClick={() => navigate('/scan', { state: { lesion_id: profile.id } })} className="gap-2">
+        <Button onClick={() => navigate('/dashboard/scan', { state: { lesion_id: profile.id } })} className="gap-2">
           <Camera className="w-4 h-4" /> New Scan for this Profile
         </Button>
       </div>

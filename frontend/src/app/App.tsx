@@ -26,6 +26,7 @@ const router = createBrowserRouter([
     element: <ProtectedRoute><DashboardLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <DashboardHome /> },
+      { path: "scan", element: <ScanPage /> },
       { path: "lesions", element: <LesionProfiles /> },
       { path: "lesions/:id", element: <LesionDetail /> },
       { path: "pdfs", element: <PdfVault /> },
