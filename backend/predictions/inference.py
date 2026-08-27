@@ -49,18 +49,43 @@ def make_gradcam_heatmap(img_array, model, nested_model_name, last_conv_layer_na
     try:
         inner_model = model.get_layer(nested_model_name)
     except:
-        return None # Model structure might be different
+        inner_model = next(
+            (
+                layer for layer in model.layers
+                if isinstance(layer, tf.keras.Model) and any(
+                    len(getattr(candidate, "output_shape", ())) == 4
+                    for candidate in layer.layers
+                )
+            ),
+            None,
+        )
+        if inner_model is None:
+            return None
+
+    try:
+        conv_layer = inner_model.get_layer(last_conv_layer_name)
+    except:
+        # Model exports can rename the final activation layer. Use the last
+        # spatial feature layer so heatmaps keep working across fold files.
+        conv_layer = next(
+            (
+                layer for layer in reversed(inner_model.layers)
+                if len(layer.output_shape) == 4
+            ),
+            None,
+        )
+        if conv_layer is None:
+            return None
         
-    inner_model_index = 0
-    for i, layer in enumerate(model.layers):
-        if layer.name == nested_model_name:
-            inner_model_index = i
-            break
+    inner_model_index = next(
+        (i for i, layer in enumerate(model.layers) if layer is inner_model),
+        0,
+    )
     classifier_layers = model.layers[inner_model_index + 1:]
 
     grad_model_inner = tf.keras.models.Model(
         [inner_model.inputs], 
-        [inner_model.get_layer(last_conv_layer_name).output, inner_model.output]
+        [conv_layer.output, inner_model.output]
     )
 
     with tf.GradientTape() as tape:
