@@ -357,6 +357,7 @@ async def predict_lesion(
     probs = np.mean(ensemble_probs, axis=0)
     
     # 5. GRAD-CAM (HiResCAM) VISUALIZATION TIMELINE - Using first model for visualization
+    heatmap_bytes = None
     try:
         heatmap_raw = make_gradcam_heatmap(
             x, 
@@ -371,6 +372,7 @@ async def predict_lesion(
             heatmap_color = cv2.applyColorMap(heatmap_uint8, cv2.COLORMAP_JET)
             
             _, buffer = cv2.imencode('.png', heatmap_color)
+            heatmap_bytes = buffer.tobytes()
             heatmap_base64 = base64.b64encode(buffer).decode('utf-8')
             heatmap_data_uri = f"data:image/png;base64,{heatmap_base64}"
         else:
@@ -399,34 +401,40 @@ async def predict_lesion(
     scan_id = None
     image_url = None
     if user:
-        user_id = user.get("sub")
-        if not lesion_id:
-            lesion_res = supabase.table("lesions").insert({
-                "user_id": user_id,
-                "nickname": new_lesion_nickname or f"Quick Scan {new_lesion_location or 'Unspecified'}",
-                "body_location": new_lesion_location or "Unspecified body location",
-            }).execute()
-            if lesion_res.data:
-                lesion_id = lesion_res.data[0]["id"]
+        try:
+            user_id = user.get("sub")
+            if not user_id:
+                raise ValueError("Authenticated token does not contain a user id")
 
-        if lesion_id:
-            image_url = upload_scan_image(user_id, contents)
-            heatmap_url = upload_heatmap_image(user_id, buffer.tobytes()) if heatmap_data_uri else None
-            scan_res = supabase.table("scans").insert({
-                "lesion_id": lesion_id,
-                "image_url": image_url,
-                "primary_diagnosis": primary_label,
-                "primary_diagnosis_code": raw_label,
-                "confidence_rate": round(primary_conf, 2),
-                "risk_level": get_risk_level(raw_label, float(probs[top_idx])),
-                "secondary_findings": secondary,
-                "abcde_metrics": structural_metrics,
-                "heatmap_url": heatmap_url,
-                "user_notes": scan_note,
-                "is_valid_upload": True,
-            }).execute()
-            if scan_res.data:
-                scan_id = scan_res.data[0]["id"]
+            if not lesion_id:
+                lesion_res = supabase.table("lesions").insert({
+                    "user_id": user_id,
+                    "nickname": new_lesion_nickname or f"Quick Scan {new_lesion_location or 'Unspecified'}",
+                    "body_location": new_lesion_location or "Unspecified body location",
+                }).execute()
+                if lesion_res.data:
+                    lesion_id = lesion_res.data[0]["id"]
+
+            if lesion_id:
+                image_url = upload_scan_image(user_id, contents)
+                heatmap_url = upload_heatmap_image(user_id, heatmap_bytes) if heatmap_bytes else None
+                scan_res = supabase.table("scans").insert({
+                    "lesion_id": lesion_id,
+                    "image_url": image_url,
+                    "primary_diagnosis": primary_label,
+                    "primary_diagnosis_code": raw_label,
+                    "confidence_rate": round(primary_conf, 2),
+                    "risk_level": get_risk_level(raw_label, float(probs[top_idx])),
+                    "secondary_findings": secondary,
+                    "abcde_metrics": structural_metrics,
+                    "heatmap_url": heatmap_url,
+                    "user_notes": scan_note,
+                    "is_valid_upload": True,
+                }).execute()
+                if scan_res.data:
+                    scan_id = scan_res.data[0]["id"]
+        except Exception as persistence_error:
+            print(f"Authenticated scan persistence failed: {persistence_error}")
 
     return {
         "id": scan_id,

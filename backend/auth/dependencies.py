@@ -34,7 +34,7 @@ def verify_supabase_token(token: str) -> Dict[str, Any]:
             )
             if key_data is None:
                 raise JWTError("No matching Supabase signing key found")
-            key = jwk.construct(key_data, algorithm=algorithm).key
+            key = jwk.construct(key_data, algorithm=algorithm)
         else:
             raise JWTError(f"Unsupported token algorithm: {algorithm}")
 
@@ -45,7 +45,7 @@ def verify_supabase_token(token: str) -> Dict[str, Any]:
             options={"verify_aud": False},
         )
         return payload
-    except JWTError as e:
+    except (JWTError, requests.RequestException, ValueError) as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Could not validate credentials: {str(e)}",
