@@ -3,10 +3,13 @@ import base64
 import numpy as np
 import tensorflow as tf
 from PIL import Image
-from fastapi import FastAPI, File, UploadFile, HTTPException, Form
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Depends
 from typing import List, Optional
 from fastapi.middleware.cors import CORSMiddleware
 import cv2
+from auth.dependencies import get_optional_user, get_current_user
+from database import supabase
+from storage import upload_scan_image, upload_heatmap_image, upload_pdf_report
 
 app = FastAPI()
 
@@ -63,20 +66,46 @@ for model_path, threshold_path in zip(model_paths, threshold_paths):
 
 def make_gradcam_heatmap(img_array, model, nested_model_name, last_conv_layer_name, pred_index=None):
     # 1. Access the nested architecture
-    inner_model = model.get_layer(nested_model_name)
+    try:
+        inner_model = model.get_layer(nested_model_name)
+    except:
+        inner_model = next(
+            (
+                layer for layer in model.layers
+                if isinstance(layer, tf.keras.Model) and any(
+                    len(getattr(candidate, "output_shape", ())) == 4
+                    for candidate in layer.layers
+                )
+            ),
+            None,
+        )
+        if inner_model is None:
+            return None
+
+    try:
+        conv_layer = inner_model.get_layer(last_conv_layer_name)
+    except:
+        conv_layer = next(
+            (
+                layer for layer in reversed(inner_model.layers)
+                if len(getattr(layer, "output_shape", ())) == 4
+            ),
+            None,
+        )
+        if conv_layer is None:
+            return None
     
     # 2. Reconstruct the classifier path (to bridge the gradient gap)
-    inner_model_index = 0
-    for i, layer in enumerate(model.layers):
-        if layer.name == nested_model_name:
-            inner_model_index = i
-            break
+    inner_model_index = next(
+        (i for i, layer in enumerate(model.layers) if layer is inner_model),
+        0,
+    )
     classifier_layers = model.layers[inner_model_index + 1:]
 
     # 3. Create the Gradient Model
     grad_model_inner = tf.keras.models.Model(
         [inner_model.inputs], 
-        [inner_model.get_layer(last_conv_layer_name).output, inner_model.output]
+        [conv_layer.output, inner_model.output]
     )
 
     with tf.GradientTape() as tape:
@@ -264,7 +293,12 @@ async def predict_lesion(
     crop_x: Optional[float] = Form(None),
     crop_y: Optional[float] = Form(None),
     crop_width: Optional[float] = Form(None),
-    crop_height: Optional[float] = Form(None)
+    crop_height: Optional[float] = Form(None),
+    lesion_id: Optional[str] = Form(None),
+    new_lesion_nickname: Optional[str] = Form(None),
+    new_lesion_location: Optional[str] = Form(None),
+    scan_note: Optional[str] = Form(None),
+    user: Optional[dict] = Depends(get_optional_user)
 ):
     # 1. Ingest File Payload
     contents = await file.read()
@@ -362,7 +396,40 @@ async def predict_lesion(
             "confidence": round(float(probs[i]) * 100, 2)
         })
 
+    scan_id = None
+    image_url = None
+    if user:
+        user_id = user.get("sub")
+        if not lesion_id:
+            lesion_res = supabase.table("lesions").insert({
+                "user_id": user_id,
+                "nickname": new_lesion_nickname or f"Quick Scan {new_lesion_location or 'Unspecified'}",
+                "body_location": new_lesion_location or "Unspecified body location",
+            }).execute()
+            if lesion_res.data:
+                lesion_id = lesion_res.data[0]["id"]
+
+        if lesion_id:
+            image_url = upload_scan_image(user_id, contents)
+            heatmap_url = upload_heatmap_image(user_id, buffer.tobytes()) if heatmap_data_uri else None
+            scan_res = supabase.table("scans").insert({
+                "lesion_id": lesion_id,
+                "image_url": image_url,
+                "primary_diagnosis": primary_label,
+                "primary_diagnosis_code": raw_label,
+                "confidence_rate": round(primary_conf, 2),
+                "risk_level": get_risk_level(raw_label, float(probs[top_idx])),
+                "secondary_findings": secondary,
+                "abcde_metrics": structural_metrics,
+                "heatmap_url": heatmap_url,
+                "user_notes": scan_note,
+                "is_valid_upload": True,
+            }).execute()
+            if scan_res.data:
+                scan_id = scan_res.data[0]["id"]
+
     return {
+        "id": scan_id,
         "classification": primary_label,
         "confidence": round(primary_conf, 2),
         "riskLevel": get_risk_level(raw_label, float(probs[top_idx])),
@@ -371,6 +438,25 @@ async def predict_lesion(
         "notes": f"Verified image clarity. Processed at {IMG_SIZE}px using HiResCAM spatial mappings.",
         "heatmap": heatmap_data_uri 
     }
+
+
+@app.post("/reports")
+async def save_pdf_report(
+    scan_id: str = Form(...),
+    file: UploadFile = File(...),
+    user: dict = Depends(get_current_user)
+):
+    scan_res = supabase.table("scans").select("id, lesion_id").eq("id", scan_id).single().execute()
+    if not scan_res.data:
+        raise HTTPException(status_code=404, detail="Scan not found")
+
+    lesion_res = supabase.table("lesions").select("user_id").eq("id", scan_res.data["lesion_id"]).single().execute()
+    if not lesion_res.data or lesion_res.data["user_id"] != user.get("sub"):
+        raise HTTPException(status_code=403, detail="Not authorized to update this scan")
+
+    pdf_url = upload_pdf_report(user["sub"], await file.read())
+    supabase.table("scans").update({"pdf_report_url": pdf_url}).eq("id", scan_id).execute()
+    return {"pdf_report_url": pdf_url}
 
 
 if __name__ == "__main__":
