@@ -44,8 +44,15 @@ const router = createBrowserRouter([
 
 export default function App() {
   return (
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
+    <div style={{
+      backgroundColor: '#FAF7F2',
+      color: '#3E2723',
+      minHeight: '100vh',
+      width: '100%'
+    }}>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </div>
   );
 }
