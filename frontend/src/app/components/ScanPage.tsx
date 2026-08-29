@@ -36,11 +36,27 @@ export function ScanPage() {
   const [newLesionLocation, setNewLesionLocation] = useState('');
 
   useEffect(() => {
-    if (user) {
-      supabase.from('lesions').select('id, nickname').eq('user_id', user.id)
-        .then(({ data }) => setLesions(data || []));
-    }
-  }, [user]);
+    const loadLesionOptions = async () => {
+      if (!user || !session?.access_token) return;
+
+      try {
+        const response = await fetch(`${getApiUrl()}/me/lesions`, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (!response.ok) throw new Error('Unable to load lesion profiles');
+        const data = await response.json();
+        setLesions((data || []).map((lesion: any) => ({ id: lesion.id, nickname: lesion.nickname })));
+      } catch (error) {
+        console.error('Unable to load lesion profiles:', error);
+        setLesions([]);
+      }
+    };
+
+    void loadLesionOptions();
+  }, [user, session?.access_token]);
 
   // Cropper specific states
   const [crop, setCrop] = useState({ x: 0, y: 0 });
@@ -98,24 +114,29 @@ export function ScanPage() {
     const nickname = (newLesionNickname || `Quick Scan ${new Date().toLocaleDateString()}`).trim();
     const bodyLocation = (newLesionLocation || 'Unspecified body location').trim();
 
-    const { data, error } = await supabase
-      .from('lesions')
-      .insert([{
-        user_id: user.id,
-        nickname: nickname || `Quick Scan ${new Date().toLocaleDateString()}`,
-        body_location: bodyLocation || 'Unspecified body location'
-      }])
-      .select('id, nickname, body_location')
-      .single();
+    try {
+      const response = await fetch(`${getApiUrl()}/me/lesions`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          nickname: nickname || `Quick Scan ${new Date().toLocaleDateString()}`,
+          body_location: bodyLocation || 'Unspecified body location',
+        }),
+      });
 
-    if (error) {
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || 'Unable to create lesion profile');
+
+      setSelectedLesionId(data.id);
+      setLesions(prev => [{ id: data.id, nickname: data.nickname }, ...prev]);
+      return data.id;
+    } catch (error) {
       console.error('Unable to create lesion profile for scan:', error);
       return null;
     }
-
-    setSelectedLesionId(data.id);
-    setLesions(prev => [{ id: data.id, nickname: data.nickname }, ...prev]);
-    return data.id;
   };
 
   const handleAnalyze = async () => {

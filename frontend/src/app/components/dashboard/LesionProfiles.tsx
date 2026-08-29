@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../../contexts/AuthContext';
-import { supabase } from '../../../services/supabaseClient';
+import { getApiUrl } from '../../../services/apiUrl';
 import { FolderPlus, User, Loader2, ArrowRight } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -9,7 +9,7 @@ import { Label } from '../ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 
 export function LesionProfiles() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const navigate = useNavigate();
   const [profiles, setProfiles] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -21,42 +21,58 @@ export function LesionProfiles() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
-    if (user) loadProfiles();
-  }, [user]);
+    if (user && session?.access_token) loadProfiles();
+  }, [user, session?.access_token]);
+
+  const getAuthHeaders = () => ({
+    Authorization: `Bearer ${session?.access_token}`,
+    'Content-Type': 'application/json',
+  });
 
   const loadProfiles = async () => {
     setIsLoading(true);
-    const { data } = await supabase
-      .from('lesions')
-      .select('*, scans(id)')
-      .eq('user_id', user?.id)
-      .order('created_at', { ascending: false });
-    
-    setProfiles(data || []);
-    setIsLoading(false);
+    try {
+      const response = await fetch(`${getApiUrl()}/me/lesions`, {
+        headers: getAuthHeaders(),
+      });
+
+      if (!response.ok) throw new Error('Unable to load lesion profiles');
+      const data = await response.json();
+      setProfiles(data || []);
+    } catch (error) {
+      console.error('Unable to load lesion profiles:', error);
+      setProfiles([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsCreating(true);
 
-    const { data, error } = await supabase
-      .from('lesions')
-      .insert([{
-        user_id: user?.id,
-        nickname,
-        body_location: bodyLocation
-      }])
-      .select()
-      .single();
+    try {
+      const response = await fetch(`${getApiUrl()}/me/lesions`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({
+          nickname,
+          body_location: bodyLocation,
+        }),
+      });
 
-    if (!error && data) {
-      setProfiles([data, ...profiles]);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || 'Unable to create lesion profile');
+
+      setProfiles((current) => [data, ...current]);
       setIsDialogOpen(false);
       setNickname('');
       setBodyLocation('');
+    } catch (error) {
+      console.error('Unable to create lesion profile:', error);
+    } finally {
+      setIsCreating(false);
     }
-    setIsCreating(false);
   };
 
   return (

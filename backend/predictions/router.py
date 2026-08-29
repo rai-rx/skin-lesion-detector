@@ -189,6 +189,100 @@ async def predict_lesion(
     }
 
 
+@router.get("/me/lesions")
+async def get_user_lesions(user: Dict[str, Any] = Depends(get_current_user)):
+    user_id = user.get("sub")
+    res = supabase.table("lesions").select("*, scans(id)").eq("user_id", user_id).order("created_at", desc=True).execute()
+    return res.data or []
+
+
+@router.get("/me/lesions/{lesion_id}")
+async def get_user_lesion(lesion_id: str, user: Dict[str, Any] = Depends(get_current_user)):
+    user_id = user.get("sub")
+    res = supabase.table("lesions").select("*").eq("id", lesion_id).single().execute()
+    if not res.data:
+        raise HTTPException(status_code=404, detail="Lesion profile not found")
+    if res.data.get("user_id") != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to view this lesion")
+    return res.data
+
+
+@router.get("/me/lesions/{lesion_id}/scans")
+async def get_user_lesion_scans(lesion_id: str, user: Dict[str, Any] = Depends(get_current_user)):
+    user_id = user.get("sub")
+    lesion_res = supabase.table("lesions").select("id, user_id").eq("id", lesion_id).single().execute()
+    if not lesion_res.data:
+        raise HTTPException(status_code=404, detail="Lesion profile not found")
+    if lesion_res.data.get("user_id") != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to view this lesion")
+
+    scan_res = supabase.table("scans").select("*").eq("lesion_id", lesion_id).order("scanned_at", desc=True).execute()
+    return scan_res.data or []
+
+
+@router.post("/me/lesions")
+async def create_user_lesion(payload: Dict[str, Any], user: Dict[str, Any] = Depends(get_current_user)):
+    nickname = str(payload.get("nickname", "") or "").strip()
+    body_location = str(payload.get("body_location", "") or "").strip() or "Unspecified body location"
+
+    if not nickname:
+        raise HTTPException(status_code=400, detail="Nickname is required")
+
+    res = supabase.table("lesions").insert({
+        "user_id": user.get("sub"),
+        "nickname": nickname,
+        "body_location": body_location,
+    }).select("*, scans(id)").single().execute()
+
+    if res.error:
+        raise HTTPException(status_code=500, detail="Unable to create lesion profile")
+    return res.data
+
+
+@router.put("/me/lesions/{lesion_id}")
+async def update_user_lesion(
+    lesion_id: str,
+    payload: Dict[str, Any],
+    user: Dict[str, Any] = Depends(get_current_user)
+):
+    user_id = user.get("sub")
+    current = supabase.table("lesions").select("user_id").eq("id", lesion_id).single().execute()
+    if not current.data:
+        raise HTTPException(status_code=404, detail="Lesion profile not found")
+    if current.data.get("user_id") != user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to update this lesion")
+
+    updates = {}
+    if payload.get("nickname") is not None:
+        nickname = str(payload["nickname"]).strip()
+        if not nickname:
+            raise HTTPException(status_code=400, detail="Nickname cannot be empty")
+        updates["nickname"] = nickname
+    if payload.get("body_location") is not None:
+        updates["body_location"] = str(payload["body_location"]).strip() or "Unspecified body location"
+
+    if not updates:
+        return current.data
+
+    res = supabase.table("lesions").update(updates).eq("id", lesion_id).select("*").single().execute()
+    if res.error:
+        raise HTTPException(status_code=500, detail="Unable to update lesion profile")
+    return res.data
+
+
+@router.get("/me/pdfs")
+async def get_user_pdfs(user: Dict[str, Any] = Depends(get_current_user)):
+    user_id = user.get("sub")
+    lesion_res = supabase.table("lesions").select("id").eq("user_id", user_id).execute()
+    lesion_ids = [item["id"] for item in (lesion_res.data or []) if item.get("id")]
+
+    if not lesion_ids:
+        return []
+
+    scan_res = supabase.table("scans").select("*, lesions(nickname, body_location)").in_("lesion_id", lesion_ids).not_.is_("pdf_report_url", "null").order("scanned_at", desc=True).execute()
+    return scan_res.data or []
+
+
 @router.post("/reports")
 async def save_pdf_report(
     scan_id: str = Form(...),

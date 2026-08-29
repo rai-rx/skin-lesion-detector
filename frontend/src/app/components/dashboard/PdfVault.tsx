@@ -1,43 +1,39 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { supabase } from '../../../services/supabaseClient';
+import { getApiUrl } from '../../../services/apiUrl';
 import { FileText, Download, Calendar, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '../ui/button';
 import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 
 export function PdfVault() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const [pdfs, setPdfs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (user) loadPdfs();
-  }, [user]);
+    if (user && session?.access_token) loadPdfs();
+  }, [user, session?.access_token]);
 
   const loadPdfs = async () => {
     setIsLoading(true);
 
-    const { data: lesionsData } = await supabase
-      .from('lesions')
-      .select('id')
-      .eq('user_id', user?.id);
+    try {
+      const response = await fetch(`${getApiUrl()}/me/pdfs`, {
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
 
-    if (lesionsData && lesionsData.length > 0) {
-      const lesionIds = lesionsData.map(l => l.id);
-
-      const { data } = await supabase
-        .from('scans')
-        .select('*, lesions(nickname, body_location)')
-        .in('lesion_id', lesionIds)
-        .not('pdf_report_url', 'is', null)
-        .order('scanned_at', { ascending: false });
-
+      if (!response.ok) throw new Error('Unable to load PDF reports');
+      const data = await response.json();
       setPdfs(data || []);
-    } else {
+    } catch (error) {
+      console.error('Unable to load PDF vault:', error);
       setPdfs([]);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   return (

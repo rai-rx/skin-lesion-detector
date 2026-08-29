@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../../contexts/AuthContext';
-import { supabase } from '../../../services/supabaseClient';
+import { getApiUrl } from '../../../services/apiUrl';
 import { Camera, FolderPlus, Clock, ArrowRight, AlertTriangle, FileText } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 
 export function DashboardHome() {
-  const { user } = useAuth();
+  const { user, session } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState({ profiles: 0, scans: 0 });
   const [recentScans, setRecentScans] = useState<any[]>([]);
@@ -18,38 +18,35 @@ export function DashboardHome() {
   }, [user]);
 
   const loadDashboardData = async () => {
-    // Get profiles count
-    const { count: profilesCount } = await supabase
-      .from('lesions')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user?.id);
+    try {
+      const response = await fetch(`${getApiUrl()}/me/lesions`, {
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+        },
+      });
 
-    // Get scans count and recent scans by joining lesions
-    const { data: lesionsData } = await supabase
-      .from('lesions')
-      .select('id, nickname')
-      .eq('user_id', user?.id);
+      if (!response.ok) throw new Error('Unable to load dashboard data');
+      const lesionsData = await response.json();
 
-    if (lesionsData && lesionsData.length > 0) {
-      const lesionIds = lesionsData.map(l => l.id);
-      
-      const { count: scansCount } = await supabase
-        .from('scans')
-        .select('*', { count: 'exact', head: true })
-        .in('lesion_id', lesionIds);
-
-      const { data: recent } = await supabase
-        .from('scans')
-        .select('*, lesions(nickname)')
-        .in('lesion_id', lesionIds)
-        .order('scanned_at', { ascending: false })
-        .limit(3);
+      const statsProfiles = lesionsData?.length || 0;
+      const scanCount = lesionsData.reduce((total: number, lesion: any) => total + (lesion.scans?.length || 0), 0);
+      const recentScans = (lesionsData || [])
+        .flatMap((lesion: any) => (lesion.scans || []).map((scan: any) => ({
+          ...scan,
+          lesions: { nickname: lesion.nickname },
+        })))
+        .sort((a: any, b: any) => new Date(b.scanned_at).getTime() - new Date(a.scanned_at).getTime())
+        .slice(0, 3);
 
       setStats({
-        profiles: profilesCount || 0,
-        scans: scansCount || 0
+        profiles: statsProfiles,
+        scans: scanCount,
       });
-      setRecentScans(recent || []);
+      setRecentScans(recentScans);
+    } catch (error) {
+      console.error('Unable to load dashboard data:', error);
+      setStats({ profiles: 0, scans: 0 });
+      setRecentScans([]);
     }
   };
 

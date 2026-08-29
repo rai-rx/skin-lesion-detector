@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
-import { supabase } from '../../../services/supabaseClient';
+import { useAuth } from '../../../contexts/AuthContext';
+import { getApiUrl } from '../../../services/apiUrl';
 import { ArrowLeft, Camera, Activity, Calendar, FileText } from 'lucide-react';
 import { Button } from '../ui/button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -10,6 +11,7 @@ import { format } from 'date-fns';
 export function LesionDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { session } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [scans, setScans] = useState<any[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
@@ -19,65 +21,78 @@ export function LesionDetail() {
   const [locationInput, setLocationInput] = useState('');
 
   useEffect(() => {
-    if (id) {
+    if (id && session?.access_token) {
       loadProfileAndScans();
     }
-  }, [id]);
+  }, [id, session?.access_token]);
+
+  const getAuthHeaders = (includeJson = false) => {
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${session?.access_token}`,
+    };
+    if (includeJson) headers['Content-Type'] = 'application/json';
+    return headers;
+  };
 
   const handleProfileSave = async () => {
     if (!id || !profile) return;
 
     setIsSavingProfile(true);
-    const { data, error } = await supabase
-      .from('lesions')
-      .update({
-        nickname: nicknameInput.trim() || profile.nickname,
-        body_location: locationInput.trim() || profile.body_location,
-      })
-      .eq('id', id)
-      .select()
-      .single();
+    try {
+      const response = await fetch(`${getApiUrl()}/me/lesions/${id}`, {
+        method: 'PUT',
+        headers: getAuthHeaders(true),
+        body: JSON.stringify({
+          nickname: nicknameInput.trim() || profile.nickname,
+          body_location: locationInput.trim() || profile.body_location,
+        }),
+      });
 
-    setIsSavingProfile(false);
-
-    if (!error && data) {
+      if (!response.ok) throw new Error('Unable to save lesion details');
+      const data = await response.json();
       setProfile(data);
+      setNicknameInput(data.nickname || '');
+      setLocationInput(data.body_location || '');
+    } catch (error) {
+      console.error('Unable to save lesion details:', error);
+    } finally {
+      setIsSavingProfile(false);
     }
   };
 
   const loadProfileAndScans = async () => {
-    // 1. Load Profile
-    const { data: profileData } = await supabase
-      .from('lesions')
-      .select('*')
-      .eq('id', id)
-      .single();
-    
-    if (profileData) {
+    try {
+      const profileResponse = await fetch(`${getApiUrl()}/me/lesions/${id}`, {
+        headers: getAuthHeaders(),
+      });
+
+      if (!profileResponse.ok) throw new Error('Unable to load lesion profile');
+      const profileData = await profileResponse.json();
       setProfile(profileData);
       setNicknameInput(profileData.nickname || '');
       setLocationInput(profileData.body_location || '');
-    }
 
-    // 2. Load Scans
-    const { data: scansData } = await supabase
-      .from('scans')
-      .select('*')
-      .eq('lesion_id', id)
-      .order('scanned_at', { ascending: true }); // chronological
+      const scansResponse = await fetch(`${getApiUrl()}/me/lesions/${id}/scans`, {
+        headers: getAuthHeaders(),
+      });
+      if (!scansResponse.ok) throw new Error('Unable to load lesion scans');
+      const scansData = await scansResponse.json();
 
-    if (scansData) {
-      // Reverse for list display (newest first)
-      setScans([...scansData].reverse());
+      const sortedScans = [...(scansData || [])].reverse();
+      setScans(sortedScans);
 
-      // Prepare chart data (chronological)
-      const dataForChart = scansData.map(s => ({
+      const dataForChart = (scansData || []).map((s: any) => ({
         date: format(new Date(s.scanned_at), 'MMM dd, yy'),
         confidence: s.confidence_rate,
         diagnosis: s.primary_diagnosis,
-        risk: s.risk_level
+        risk: s.risk_level,
       }));
       setChartData(dataForChart);
+    } catch (error) {
+      console.error('Unable to load lesion details:', error);
+      setProfile(null);
+      setScans([]);
+      setChartData([]);
     }
   };
 
