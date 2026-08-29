@@ -6,10 +6,19 @@ from admin.router import router as admin_router
 
 app = FastAPI(title="SkinEleven Backend API")
 
+# Allow requests from any origin (for development)
+# In production, specify exact domains
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*", settings.VITE_API_URL, "http://localhost:5173", "http://localhost:5174"],
-    allow_credentials=False,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://localhost:3000",
+        "https://skin-eleven.vercel.app",
+        "https://*.vercel.app",
+        "*"  # Allow all origins as fallback
+    ],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
