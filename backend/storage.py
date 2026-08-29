@@ -1,5 +1,12 @@
 from database import supabase
 import uuid
+from datetime import datetime, timezone
+
+
+def _timestamped_name(prefix: str, extension: str) -> str:
+    timestamp = datetime.now(timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
+    return f"{prefix}_{timestamp}.{extension}"
+
 
 def upload_scan_image(user_id: str, file_bytes: bytes, file_ext: str = "jpg") -> str:
     file_path = f"{user_id}/{uuid.uuid4()}.{file_ext}"
@@ -13,6 +20,6 @@ def upload_heatmap_image(user_id: str, file_bytes: bytes) -> str:
     return supabase.storage.from_("scan-images").get_public_url(file_path)
 
 def upload_pdf_report(user_id: str, pdf_bytes: bytes) -> str:
-    file_path = f"{user_id}/report_{uuid.uuid4()}.pdf"
+    file_path = f"{user_id}/{_timestamped_name('report', 'pdf')}"
     res = supabase.storage.from_("pdf-reports").upload(file_path, pdf_bytes, {"content-type": "application/pdf"})
     return supabase.storage.from_("pdf-reports").get_public_url(file_path)

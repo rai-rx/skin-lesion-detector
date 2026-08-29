@@ -718,9 +718,10 @@ export function ResultsPage() {
 
   const uploadPdfReport = async (scanId: string, blob: Blob) => {
     try {
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const form = new FormData();
       form.append('scan_id', scanId);
-      form.append('file', new File([blob], `report-${scanId}.pdf`, { type: 'application/pdf' }));
+      form.append('file', new File([blob], `report-${scanId}-${timestamp}.pdf`, { type: 'application/pdf' }));
 
       const res = await fetch(`${getApiUrl()}/reports`, {
         method: 'POST',

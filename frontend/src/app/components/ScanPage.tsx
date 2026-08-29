@@ -92,11 +92,42 @@ export function ScanPage() {
     setCroppedAreaPixels(pixels);
   };
 
+  const ensureProfileForScan = async () => {
+    if (!user || selectedLesionId) return selectedLesionId;
+
+    const nickname = (newLesionNickname || `Quick Scan ${new Date().toLocaleDateString()}`).trim();
+    const bodyLocation = (newLesionLocation || 'Unspecified body location').trim();
+
+    const { data, error } = await supabase
+      .from('lesions')
+      .insert([{
+        user_id: user.id,
+        nickname: nickname || `Quick Scan ${new Date().toLocaleDateString()}`,
+        body_location: bodyLocation || 'Unspecified body location'
+      }])
+      .select('id, nickname, body_location')
+      .single();
+
+    if (error) {
+      console.error('Unable to create lesion profile for scan:', error);
+      return null;
+    }
+
+    setSelectedLesionId(data.id);
+    setLesions(prev => [{ id: data.id, nickname: data.nickname }, ...prev]);
+    return data.id;
+  };
+
   const handleAnalyze = async () => {
     if (!rawFile) return;
 
     setIsProcessing(true);
     setValidationError(null);
+
+    let activeLesionId = selectedLesionId;
+    if (user && !activeLesionId) {
+      activeLesionId = await ensureProfileForScan();
+    }
 
     // Build standard Form Data matching the backend signature
     const formData = new FormData();
@@ -108,8 +139,8 @@ export function ScanPage() {
       formData.append('crop_height', croppedAreaPixels.height.toString());
     }
 
-    if (selectedLesionId) {
-      formData.append('lesion_id', selectedLesionId);
+    if (activeLesionId) {
+      formData.append('lesion_id', activeLesionId);
     } else if (user) {
       const quickName = newLesionNickname || `Quick Scan ${new Date().toLocaleDateString()}`;
       formData.append('new_lesion_nickname', quickName);

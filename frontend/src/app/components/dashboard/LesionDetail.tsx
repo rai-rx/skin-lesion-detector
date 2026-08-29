@@ -14,12 +14,36 @@ export function LesionDetail() {
   const [scans, setScans] = useState<any[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
   const [expandedScan, setExpandedScan] = useState<string | null>(null);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [nicknameInput, setNicknameInput] = useState('');
+  const [locationInput, setLocationInput] = useState('');
 
   useEffect(() => {
     if (id) {
       loadProfileAndScans();
     }
   }, [id]);
+
+  const handleProfileSave = async () => {
+    if (!id || !profile) return;
+
+    setIsSavingProfile(true);
+    const { data, error } = await supabase
+      .from('lesions')
+      .update({
+        nickname: nicknameInput.trim() || profile.nickname,
+        body_location: locationInput.trim() || profile.body_location,
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    setIsSavingProfile(false);
+
+    if (!error && data) {
+      setProfile(data);
+    }
+  };
 
   const loadProfileAndScans = async () => {
     // 1. Load Profile
@@ -29,7 +53,11 @@ export function LesionDetail() {
       .eq('id', id)
       .single();
     
-    if (profileData) setProfile(profileData);
+    if (profileData) {
+      setProfile(profileData);
+      setNicknameInput(profileData.nickname || '');
+      setLocationInput(profileData.body_location || '');
+    }
 
     // 2. Load Scans
     const { data: scansData } = await supabase
@@ -66,15 +94,33 @@ export function LesionDetail() {
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div>
-            <h1 className="text-3xl font-display font-bold text-foreground">{profile.nickname}</h1>
-            <p className="text-muted-foreground mt-1">Location: {profile.body_location}</p>
+          <div className="space-y-2">
+            <div className="flex items-center gap-3">
+              <input
+                value={nicknameInput}
+                onChange={(e) => setNicknameInput(e.target.value)}
+                className="text-3xl font-display font-bold bg-transparent border-b border-border px-1 py-1 outline-none min-w-[220px]"
+              />
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-muted-foreground">Location:</span>
+              <input
+                value={locationInput}
+                onChange={(e) => setLocationInput(e.target.value)}
+                className="bg-transparent border-b border-border px-1 py-1 outline-none min-w-[180px]"
+              />
+            </div>
           </div>
         </div>
         
-        <Button onClick={() => navigate('/dashboard/scan', { state: { lesion_id: profile.id } })} className="gap-2">
-          <Camera className="w-4 h-4" /> New Scan for this Profile
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" onClick={handleProfileSave} disabled={isSavingProfile}>
+            {isSavingProfile ? 'Saving...' : 'Save Details'}
+          </Button>
+          <Button onClick={() => navigate('/dashboard/scan', { state: { lesion_id: profile.id } })} className="gap-2">
+            <Camera className="w-4 h-4" /> New Scan for this Profile
+          </Button>
+        </div>
       </div>
 
       {/* Timeline Chart */}

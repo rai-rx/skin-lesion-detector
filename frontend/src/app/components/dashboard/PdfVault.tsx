@@ -17,7 +17,7 @@ export function PdfVault() {
 
   const loadPdfs = async () => {
     setIsLoading(true);
-    // Find all scans that have a pdf_report_url, joining on lesions to ensure they belong to user
+
     const { data: lesionsData } = await supabase
       .from('lesions')
       .select('id')
@@ -25,7 +25,7 @@ export function PdfVault() {
 
     if (lesionsData && lesionsData.length > 0) {
       const lesionIds = lesionsData.map(l => l.id);
-      
+
       const { data } = await supabase
         .from('scans')
         .select('*, lesions(nickname, body_location)')
@@ -34,6 +34,8 @@ export function PdfVault() {
         .order('scanned_at', { ascending: false });
 
       setPdfs(data || []);
+    } else {
+      setPdfs([]);
     }
     setIsLoading(false);
   };
@@ -80,10 +82,13 @@ export function PdfVault() {
                   <div className="space-y-2 mb-6">
                     <div className="flex items-center text-sm text-muted-foreground gap-2">
                       <Calendar className="w-4 h-4" />
-                      <span>{format(new Date(scan.scanned_at), 'PPP')}</span>
+                      <span>{format(new Date(scan.scanned_at), 'PPP p')}</span>
                     </div>
                     <div className="text-sm">
                       <span className="text-muted-foreground">Profile:</span> <span className="font-medium text-foreground">{scan.lesions?.nickname}</span>
+                    </div>
+                    <div className="text-xs text-muted-foreground break-all">
+                      {scan.pdf_report_url?.split('/').pop() || 'clinical-report.pdf'}
                     </div>
                   </div>
 
@@ -92,7 +97,7 @@ export function PdfVault() {
                     variant="default"
                     onClick={() => window.open(scan.pdf_report_url, '_blank')}
                   >
-                    <Download className="w-4 h-4" /> View Report
+                    <Download className="w-4 h-4" /> Download PDF
                   </Button>
                 </div>
               </div>
