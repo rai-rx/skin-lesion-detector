@@ -283,6 +283,19 @@ async def get_user_pdfs(user: Dict[str, Any] = Depends(get_current_user)):
     return scan_res.data or []
 
 
+@router.get("/me/recent-scans")
+async def get_user_recent_scans(user: Dict[str, Any] = Depends(get_current_user)):
+    user_id = user.get("sub")
+    lesion_res = supabase.table("lesions").select("id").eq("user_id", user_id).execute()
+    lesion_ids = [item["id"] for item in (lesion_res.data or []) if item.get("id")]
+
+    if not lesion_ids:
+        return []
+
+    scan_res = supabase.table("scans").select("*, lesions(nickname, body_location)").in_("lesion_id", lesion_ids).order("scanned_at", desc=True).execute()
+    return scan_res.data or []
+
+
 @router.post("/reports")
 async def save_pdf_report(
     scan_id: str = Form(...),
