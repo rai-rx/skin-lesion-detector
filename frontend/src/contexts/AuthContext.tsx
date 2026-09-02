@@ -56,15 +56,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .from('users')
         .select('role')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
         
       if (!error && data) {
         setIsAdmin(data.role === 'admin');
       } else {
         setIsAdmin(false);
       }
-    } catch (e) {
-      console.error("Error checking admin status:", e);
+    } catch {
+      setIsAdmin(false);
     }
   };
 

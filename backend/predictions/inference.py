@@ -2,7 +2,10 @@ import io
 import base64
 from pathlib import Path
 import numpy as np
-import tensorflow as tf
+try:
+    import tensorflow as tf
+except ImportError:
+    tf = None
 from PIL import Image
 import cv2
 
@@ -30,15 +33,17 @@ MODEL_PATHS = [
     for fold in range(5)
 ]
 
-print("Loading ensemble models...")
-try:
-    ensemble_models = [tf.keras.models.load_model(path) for path in MODEL_PATHS]
-except Exception as e:
-    print(f"Warning: Could not load ensemble models: {e}. Falling back to fold4 (from main0.py)")
+ensemble_models = []
+if tf is not None:
+    print("Loading ensemble models...")
     try:
-        ensemble_models = [tf.keras.models.load_model(MODEL_DIR / "efficientnetv2m_multilabel_fold0.keras")]
-    except:
-        ensemble_models = []
+        ensemble_models = [tf.keras.models.load_model(path) for path in MODEL_PATHS]
+    except Exception as e:
+        print(f"Warning: Could not load ensemble models: {e}. Falling back to fold4 (from main0.py)")
+        try:
+            ensemble_models = [tf.keras.models.load_model(MODEL_DIR / "efficientnetv2m_multilabel_fold0.keras")]
+        except:
+            ensemble_models = []
 
 try:
     thresholds = np.load(MODEL_DIR / "efficientnetv2m_multilabel_fold0_thresholds.npy").astype(np.float32)

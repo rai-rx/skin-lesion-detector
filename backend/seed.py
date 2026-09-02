@@ -25,25 +25,25 @@ def seed_admin_user():
     
     try:
         # Create user in auth.users
-        user_response = supabase.auth.admin.create_user(
-            email=admin_email,
-            password=admin_password,
-            email_confirm=True,
-            user_metadata={"full_name": admin_full_name}
-        )
+        user_response = supabase.auth.admin.create_user({
+            "email": admin_email,
+            "password": admin_password,
+            "email_confirm": True,
+            "user_metadata": {"full_name": admin_full_name}
+        })
         
-        print(f"✓ Admin user created successfully!")
+        print(f"[OK] Admin user created successfully!")
         print(f"  Email: {admin_email}")
         print(f"  User ID: {user_response.user.id}")
         print(f"\nNote: The trigger on auth.users will automatically create a public.users record with admin role.")
         
     except Exception as e:
-        error_msg = str(e)
-        if "already exists" in error_msg or "duplicate" in error_msg:
-            print(f"⚠ Admin user already exists with email: {admin_email}")
+        error_msg = str(e).lower()
+        if "already exists" in error_msg or "duplicate" in error_msg or "already been registered" in error_msg:
+            print(f"[WARN] Admin user already exists with email: {admin_email}")
             print("No action taken.")
         else:
-            print(f"✗ Error creating admin user: {e}")
+            print(f"[ERROR] Error creating admin user: {e}")
             raise
 
 if __name__ == "__main__":
