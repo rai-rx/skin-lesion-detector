@@ -29,6 +29,7 @@ export function ScanPage() {
   // Auth & Lesion Selection
   const location = useLocation();
   const { user, session } = useAuth();
+  const isDashboardScan = location.pathname === '/dashboard/scan';
   const [lesions, setLesions] = useState<any[]>([]);
   const [selectedLesionId, setSelectedLesionId] = useState<string>(location.state?.lesion_id || '');
   const [scanTitle, setScanTitle] = useState('');
@@ -233,7 +234,7 @@ export function ScanPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      {!isDashboardScan && <Header />}
 
       <div className="relative overflow-hidden">
         {/* Background decoration */}
@@ -257,11 +258,11 @@ export function ScanPage() {
           <motion.button
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
-            onClick={() => navigate('/')}
+            onClick={() => navigate(isDashboardScan ? '/dashboard' : '/')}
             className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
           >
             <ArrowLeft className="w-5 h-5" />
-            <span>Back to Home</span>
+            <span>{isDashboardScan ? 'Back to Dashboard' : 'Back to Home'}</span>
           </motion.button>
 
           <motion.div

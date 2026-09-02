@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from 'react-router';
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router';
 import { LandingPage } from './components/LandingPage';
 import { ScanPage } from './components/ScanPage';
 import { ResultsPage } from './components/ResultsPage';
@@ -14,9 +14,17 @@ import { PdfVault } from './components/dashboard/PdfVault';
 import { AdminLayout } from './components/admin/AdminLayout';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { UserDirectory } from './components/admin/UserDirectory';
+import { useAuth } from '../contexts/AuthContext';
+
+function LandingRoute() {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) return null;
+  return user ? <Navigate to="/dashboard" replace /> : <LandingPage />;
+}
 
 const router = createBrowserRouter([
-  { path: "/", element: <LandingPage /> },
+  { path: "/", element: <LandingRoute /> },
   { path: "/scan", element: <ScanPage /> },
   { path: "/results", element: <ResultsPage /> },
   { path: "/login", element: <LoginPage /> },
