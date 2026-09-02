@@ -103,19 +103,19 @@ export function LesionProfiles() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5">
+    <div className="mx-auto max-w-7xl space-y-10">
+      <div className="flex flex-col justify-between gap-5 border-b border-[#d7d2c7] pb-8 sm:flex-row sm:items-end">
         <div>
-          <div className="flex items-center gap-2 text-primary text-xs font-semibold uppercase tracking-[0.16em] mb-2">
-            <ScanLine className="w-4 h-4" /> Your tracking library
+          <div className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#2f604e]">
+            <span className="h-2 w-2 rounded-full bg-[#2f604e]" /> Your tracking library
           </div>
-          <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground">Lesion Profiles</h1>
-          <p className="text-muted-foreground mt-2 max-w-lg">Keep each spot organized so changes are easier to notice over time.</p>
+          <h1 className="font-display text-5xl font-bold leading-none text-[#24332d] md:text-6xl">Lesion Profiles</h1>
+          <p className="mt-4 max-w-lg text-[#607268]">Keep each spot organized so changes are easier to notice over time.</p>
         </div>
         
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="gap-2">
+            <Button className="gap-2 bg-[#2f604e] text-[#f4f0e8] hover:bg-[#244c3e]">
               <FolderPlus className="w-4 h-4" /> Add Profile
             </Button>
           </DialogTrigger>
@@ -157,7 +157,7 @@ export function LesionProfiles() {
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : profiles.length === 0 ? (
-        <div className="bg-card border border-border rounded-2xl p-12 text-center max-w-lg mx-auto">
+        <div className="mx-auto max-w-lg border-y border-[#d7d2c7] bg-[#e3ebdf] p-12 text-center">
           <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
             <FolderPlus className="w-8 h-8 text-muted-foreground" />
           </div>
@@ -167,7 +167,7 @@ export function LesionProfiles() {
         </div>
       ) : (
         <>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="divide-y divide-[#d7d2c7] border-y border-[#d7d2c7]">
           {profiles.map(profile => (
             <div
               key={profile.id}
@@ -180,9 +180,9 @@ export function LesionProfiles() {
               }}
               role="button"
               tabIndex={0}
-              className="relative bg-card border border-border p-6 rounded-2xl text-left hover:bg-[#e3ebdf] hover:shadow-lg hover:-translate-y-0.5 transition-all group flex flex-col h-full"
+              className="group relative flex h-full flex-col bg-transparent px-3 py-7 text-left transition-all hover:bg-[#e3ebdf] md:px-5"
             >
-              <div className="absolute top-4 right-4" onClick={(event) => event.stopPropagation()}>
+              <div className="absolute right-3 top-5" onClick={(event) => event.stopPropagation()}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button
@@ -204,20 +204,20 @@ export function LesionProfiles() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              <h3 className="text-xl font-semibold text-foreground mb-3 pr-8 group-hover:text-primary transition-colors">
+              <h3 className="mb-3 pr-8 font-display text-2xl font-bold text-[#24332d] transition-colors group-hover:text-[#2f604e]">
                 {profile.nickname}
               </h3>
-              <div className="text-muted-foreground text-sm flex-1 mb-5 space-y-2">
+              <div className="mb-5 flex-1 space-y-2 text-sm text-[#607268]">
                 <p className="flex items-center gap-2">
-                  <Crosshair className="w-4 h-4 text-primary/70" />
+                  <Crosshair className="h-4 w-4 text-[#2f604e]" />
                   <span>{profile.body_location === 'Unspecified body location' || !profile.body_location ? 'Unspecified' : profile.body_location}</span>
                 </p>
                 <p className="flex items-center gap-2">
-                  <ScanLine className="w-4 h-4 text-primary/70" />
+                  <ScanLine className="h-4 w-4 text-[#2f604e]" />
                   <span>{profile.scans?.length || 0} scans recorded</span>
                 </p>
               </div>
-              <div className="flex items-center text-primary text-sm font-medium mt-auto">
+              <div className="mt-auto flex items-center text-sm font-semibold text-[#2f604e]">
                 View History <ArrowRight className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
               </div>
             </div>

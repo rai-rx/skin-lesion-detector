@@ -100,10 +100,11 @@ export function PdfVault() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-display font-bold text-foreground">PDF Vault</h1>
-        <p className="text-muted-foreground mt-1">Access all your generated clinical reports</p>
+    <div className="mx-auto max-w-7xl space-y-10">
+      <div className="border-b border-[#d7d2c7] pb-8">
+        <div className="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#2f604e]"><span className="h-2 w-2 rounded-full bg-[#2f604e]" /> Archive / clinical reports</div>
+        <h1 className="font-display text-5xl font-bold leading-none text-[#24332d] md:text-6xl">PDF Vault</h1>
+        <p className="mt-4 text-[#607268]">Access all your generated clinical reports</p>
       </div>
 
       {isLoading ? (
@@ -111,7 +112,7 @@ export function PdfVault() {
           <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </div>
       ) : scans.length === 0 ? (
-        <div className="bg-card border border-border rounded-2xl p-12 text-center max-w-lg mx-auto">
+        <div className="mx-auto max-w-lg border-y border-[#d7d2c7] bg-[#e3ebdf] p-12 text-center">
           <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
             <FileText className="w-8 h-8 text-muted-foreground" />
           </div>
@@ -119,32 +120,32 @@ export function PdfVault() {
           <p className="text-muted-foreground mb-6">When you scan a lesion, you can generate a PDF report that will be saved here.</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="divide-y divide-[#d7d2c7] border-y border-[#d7d2c7]">
           {scans.map(scan => (
-            <div key={scan.id} className="bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:bg-[#e3ebdf] hover:shadow-md transition-all">
-              <div className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
-                <div className="w-20 h-20 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+            <div key={scan.id} className="group transition-colors hover:bg-[#e3ebdf]">
+              <div className="flex flex-col items-start gap-5 px-3 py-7 sm:flex-row sm:items-center md:px-5">
+                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-full bg-[#dce4d4]">
                   {scan.image_url ? (
                     <img src={scan.image_url} alt="Scanned lesion" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-primary/10 to-accent/5 flex items-center justify-center">
-                      <FileText className="w-8 h-8 text-primary/40" />
+                    <div className="flex h-full w-full items-center justify-center">
+                      <FileText className="h-8 w-8 text-[#2f604e]/50" />
                     </div>
                   )}
                 </div>
 
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="mb-2">
-                    <h3 className="font-semibold leading-tight flex-1">{scan.primary_diagnosis}</h3>
+                    <h3 className="font-display text-2xl font-bold leading-tight text-[#24332d]">{scan.primary_diagnosis}</h3>
                   </div>
 
-                  <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+                  <div className="flex flex-col gap-1 text-sm text-[#607268]">
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
+                      <Calendar className="h-4 w-4 text-[#2f604e]" />
                       <span>{format(new Date(scan.scanned_at), 'PPP p')}</span>
                     </div>
                     <div className="text-sm">
-                      <span>Lesion profile: </span><span className="font-medium text-foreground">{scan.lesions?.nickname || 'Unassigned profile'}</span>
+                      <span>Lesion profile: </span><span className="font-medium text-[#24332d]">{scan.lesions?.nickname || 'Unassigned profile'}</span>
                     </div>
                   </div>
                 </div>
