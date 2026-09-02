@@ -1,13 +1,14 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../../../contexts/AuthContext';
-import { Activity, Home, Folder, FileText, User, Settings, Shield } from 'lucide-react';
+import { Activity, Home, Folder, FileText, User, Settings, Shield, Menu, X } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export function DashboardLayout() {
   const { user, isAdmin } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navigation = [
     { name: 'Overview', href: '/dashboard', icon: Home },
@@ -25,6 +26,8 @@ export function DashboardLayout() {
     }
     return location.pathname.startsWith(path);
   };
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
 
   return (
     <div className="flex h-screen bg-background">
@@ -86,8 +89,75 @@ export function DashboardLayout() {
              <Activity className="w-6 h-6 text-primary" />
              <span className="font-display font-bold text-lg">SkinEleven</span>
           </div>
-          {/* Add a simple hamburger menu here if needed, omitted for brevity */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(true)}
+            aria-label="Open navigation menu"
+            className="p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          >
+            <Menu className="w-6 h-6" />
+          </button>
         </header>
+
+        {mobileMenuOpen && (
+          <>
+            <button
+              type="button"
+              aria-label="Close navigation menu"
+              onClick={closeMobileMenu}
+              className="fixed inset-0 z-40 bg-black/30 md:hidden"
+            />
+            <aside className="fixed inset-y-0 left-0 z-50 w-72 bg-card border-r border-border shadow-xl md:hidden flex flex-col">
+              <div className="p-4 flex items-center justify-between border-b border-border">
+                <div className="flex items-center gap-2">
+                  <Activity className="w-6 h-6 text-primary" />
+                  <span className="font-display font-bold text-lg">SkinEleven</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={closeMobileMenu}
+                  aria-label="Close navigation menu"
+                  className="p-2 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <nav className="flex-1 p-4 space-y-1">
+                {navigation.map((item) => {
+                  const active = isActive(item.href);
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      onClick={closeMobileMenu}
+                      className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-colors ${
+                        active
+                          ? 'bg-primary text-primary-foreground font-medium'
+                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                      }`}
+                    >
+                      <item.icon className="w-5 h-5" />
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              <div className="p-4 border-t border-border">
+                <button
+                  type="button"
+                  onClick={() => { closeMobileMenu(); navigate('/settings'); }}
+                  className="flex items-center gap-3 w-full px-3 py-3 text-left rounded-xl hover:bg-muted transition-colors"
+                >
+                  <User className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground truncate">Account Settings</span>
+                  <Settings className="w-4 h-4 text-muted-foreground ml-auto" />
+                </button>
+              </div>
+            </aside>
+          </>
+        )}
 
         <main className="flex-1 overflow-y-auto p-4 md:p-8">
           <motion.div
