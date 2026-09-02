@@ -39,7 +39,6 @@ export function DashboardLayout() {
           </div>
           <div>
             <span className="font-display font-bold text-xl text-foreground block leading-none">SkinEleven</span>
-            <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Skin health journal</span>
           </div>
         </div>
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../../contexts/AuthContext';
 import { getApiUrl } from '../../../services/apiUrl';
-import { FolderPlus, User, Loader2, ArrowRight, MoreVertical, Trash2, AlertTriangle } from 'lucide-react';
+import { FolderPlus, Loader2, ArrowRight, MoreVertical, Trash2, AlertTriangle, Crosshair, ScanLine } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
@@ -104,10 +104,13 @@ export function LesionProfiles() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5">
         <div>
-          <h1 className="text-3xl font-display font-bold text-foreground">Lesion Profiles</h1>
-          <p className="text-muted-foreground mt-1">Organize your scans by specific moles or spots</p>
+          <div className="flex items-center gap-2 text-primary text-xs font-semibold uppercase tracking-[0.16em] mb-2">
+            <ScanLine className="w-4 h-4" /> Your tracking library
+          </div>
+          <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground">Lesion Profiles</h1>
+          <p className="text-muted-foreground mt-2 max-w-lg">Keep each spot organized so changes are easier to notice over time.</p>
         </div>
         
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -164,7 +167,7 @@ export function LesionProfiles() {
         </div>
       ) : (
         <>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {profiles.map(profile => (
             <div
               key={profile.id}
@@ -177,13 +180,8 @@ export function LesionProfiles() {
               }}
               role="button"
               tabIndex={0}
-              className="relative bg-card border border-border p-6 rounded-2xl text-left hover:shadow-md transition-all group flex flex-col h-full"
+              className="relative bg-card border border-border p-6 rounded-2xl text-left hover:shadow-lg hover:-translate-y-0.5 transition-all group flex flex-col h-full"
             >
-              <div className="flex items-start mb-4 pr-8">
-                <div className="w-12 h-12 bg-primary/10 text-primary rounded-xl flex items-center justify-center">
-                  <User className="w-6 h-6" />
-                </div>
-              </div>
               <div className="absolute top-4 right-4" onClick={(event) => event.stopPropagation()}>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -206,13 +204,19 @@ export function LesionProfiles() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
-              <h3 className="text-xl font-semibold text-foreground mb-1 group-hover:text-primary transition-colors">
+              <h3 className="text-xl font-semibold text-foreground mb-3 pr-8 group-hover:text-primary transition-colors">
                 {profile.nickname}
               </h3>
-              <p className="text-muted-foreground text-sm flex-1 mb-4">
-                Location: {profile.body_location === 'Unspecified body location' || !profile.body_location ? 'Unspecified' : profile.body_location}
-                <span className="block mt-1">{profile.scans?.length || 0} Scans</span>
-              </p>
+              <div className="text-muted-foreground text-sm flex-1 mb-5 space-y-2">
+                <p className="flex items-center gap-2">
+                  <Crosshair className="w-4 h-4 text-primary/70" />
+                  <span>{profile.body_location === 'Unspecified body location' || !profile.body_location ? 'Unspecified' : profile.body_location}</span>
+                </p>
+                <p className="flex items-center gap-2">
+                  <ScanLine className="w-4 h-4 text-primary/70" />
+                  <span>{profile.scans?.length || 0} scans recorded</span>
+                </p>
+              </div>
               <div className="flex items-center text-primary text-sm font-medium mt-auto">
                 View History <ArrowRight className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all" />
               </div>
