@@ -113,7 +113,7 @@ export function ScanPage() {
     if (!user || selectedLesionId) return selectedLesionId;
 
     const nickname = (newLesionNickname || `Quick Scan ${new Date().toLocaleDateString()}`).trim();
-    const bodyLocation = (newLesionLocation || 'Unspecified body location').trim();
+    const bodyLocation = (newLesionLocation || 'Unspecified').trim();
 
     try {
       const response = await fetch(`${getApiUrl()}/me/lesions`, {
@@ -124,7 +124,7 @@ export function ScanPage() {
         },
         body: JSON.stringify({
           nickname: nickname || `Quick Scan ${new Date().toLocaleDateString()}`,
-          body_location: bodyLocation || 'Unspecified body location',
+          body_location: bodyLocation || 'Unspecified',
         }),
       });
 
@@ -166,7 +166,7 @@ export function ScanPage() {
     } else if (user) {
       const quickName = newLesionNickname || `Quick Scan ${new Date().toLocaleDateString()}`;
       formData.append('new_lesion_nickname', quickName);
-      formData.append('new_lesion_location', newLesionLocation || 'Unspecified body location');
+      formData.append('new_lesion_location', newLesionLocation || 'Unspecified');
     }
 
     if (scanTitle) {

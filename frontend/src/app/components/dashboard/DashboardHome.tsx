@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../../contexts/AuthContext';
 import { getApiUrl } from '../../../services/apiUrl';
-import { Camera, FolderPlus, Clock, ArrowRight, AlertTriangle, FileText } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Camera, FolderPlus, Clock, ArrowRight, FileText, ScanLine } from 'lucide-react';
 
 export function DashboardHome() {
   const { user, session } = useAuth();
@@ -66,33 +65,39 @@ export function DashboardHome() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-display font-bold text-foreground">
-          Welcome, {user?.user_metadata?.full_name?.split(' ')[0] || 'User'}
-        </h1>
-        <p className="text-muted-foreground mt-1">Here is the overview of your skin health tracking.</p>
+    <div className="max-w-6xl mx-auto space-y-8">
+      <div className="relative overflow-hidden rounded-3xl bg-primary text-primary-foreground px-6 py-7 md:px-9 md:py-8 shadow-lg">
+        <div className="absolute -right-16 -top-20 h-56 w-56 rounded-full border-[24px] border-white/10" />
+        <div className="relative z-10 max-w-2xl">
+          <div className="flex items-center gap-2 text-primary-foreground/70 text-xs font-semibold uppercase tracking-[0.18em] mb-3">
+            <ScanLine className="w-4 h-4" /> Personal health overview
+          </div>
+          <h1 className="text-3xl md:text-4xl font-display font-bold">
+            Welcome back, {user?.user_metadata?.full_name?.split(' ')[0] || 'User'}
+          </h1>
+          <p className="text-primary-foreground/75 mt-2 max-w-lg">Keep your lesion records organized and make every scan part of a clearer health timeline.</p>
+        </div>
       </div>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <button 
           onClick={() => navigate('/dashboard/scan')}
-          className="flex items-center gap-4 p-6 bg-primary text-primary-foreground rounded-2xl shadow-md hover:shadow-lg transition-all group text-left"
+          className="flex items-center gap-4 p-5 bg-card border border-primary/20 text-foreground rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all group text-left"
         >
-          <div className="p-3 bg-white/20 rounded-xl">
+          <div className="p-3 bg-primary/10 text-primary rounded-xl">
             <Camera className="w-6 h-6" />
           </div>
           <div className="flex-1">
             <h3 className="font-semibold text-lg">New Scan</h3>
-            <p className="text-primary-foreground/80 text-sm">Analyze a skin lesion</p>
+            <p className="text-muted-foreground text-sm">Analyze a skin lesion</p>
           </div>
-          <ArrowRight className="w-5 h-5 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+          <ArrowRight className="w-5 h-5 text-primary opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
         </button>
 
         <button 
           onClick={() => navigate('/dashboard/lesions')}
-          className="flex items-center gap-4 p-6 bg-card border border-border text-foreground rounded-2xl shadow-sm hover:shadow-md transition-all group text-left"
+          className="flex items-center gap-4 p-5 bg-card border border-border text-foreground rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all group text-left"
         >
           <div className="p-3 bg-accent/10 text-accent rounded-xl">
             <FolderPlus className="w-6 h-6" />
@@ -106,25 +111,24 @@ export function DashboardHome() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Tracked Profiles</CardDescription>
-            <CardTitle className="text-4xl">{stats.profiles}</CardTitle>
-          </CardHeader>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardDescription>Total Scans</CardDescription>
-            <CardTitle className="text-4xl">{stats.scans}</CardTitle>
-          </CardHeader>
-        </Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+          <p className="text-sm text-muted-foreground">Tracked Profiles</p>
+          <p className="text-4xl font-display font-bold text-foreground mt-2">{stats.profiles}</p>
+        </div>
+        <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
+          <p className="text-sm text-muted-foreground">Total Scans</p>
+          <p className="text-4xl font-display font-bold text-foreground mt-2">{stats.scans}</p>
+        </div>
       </div>
 
       {/* Recent Scans */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Recent Scans</h2>
+          <div>
+            <h2 className="text-2xl font-display font-bold">Recent Scans</h2>
+            <p className="text-sm text-muted-foreground mt-1">Your latest activity at a glance</p>
+          </div>
           <button onClick={() => navigate('/dashboard/lesions')} className="text-sm text-primary hover:underline">
             View All
           </button>

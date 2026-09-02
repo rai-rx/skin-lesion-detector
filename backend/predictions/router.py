@@ -140,7 +140,7 @@ async def predict_lesion(
             lesion_payload = {
                 "user_id": user_id,
                 "nickname": lesion_name,
-                "body_location": new_lesion_location or "Unspecified body location",
+                "body_location": new_lesion_location or "Unspecified",
             }
             if scan_note:
                 lesion_payload["notes"] = scan_note
@@ -246,7 +246,7 @@ async def get_user_lesion_scans(lesion_id: str, user: Dict[str, Any] = Depends(g
 @router.post("/me/lesions")
 async def create_user_lesion(payload: Dict[str, Any], user: Dict[str, Any] = Depends(get_current_user)):
     nickname = str(payload.get("nickname", "") or "").strip()
-    body_location = str(payload.get("body_location", "") or "").strip() or "Unspecified body location"
+    body_location = str(payload.get("body_location", "") or "").strip() or "Unspecified"
 
     if not nickname:
         raise HTTPException(status_code=400, detail="Nickname is required")
@@ -294,7 +294,7 @@ async def update_user_lesion(
                 raise HTTPException(status_code=400, detail="Nickname cannot be empty")
             updates["nickname"] = nickname
         if payload.get("body_location") is not None:
-            updates["body_location"] = str(payload["body_location"]).strip() or "Unspecified body location"
+            updates["body_location"] = str(payload["body_location"]).strip() or "Unspecified"
 
         if not updates:
             return current.data[0]
@@ -307,6 +307,25 @@ async def update_user_lesion(
     except Exception as e:
         print(f"Error updating lesion {lesion_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/me/lesions/{lesion_id}")
+async def delete_user_lesion(lesion_id: str, user: Dict[str, Any] = Depends(get_current_user)):
+    user_id = user.get("sub")
+    try:
+        current = supabase.table("lesions").select("user_id").eq("id", lesion_id).execute()
+        if not current.data or len(current.data) == 0:
+            raise HTTPException(status_code=404, detail="Lesion profile not found")
+        if current.data[0].get("user_id") != user_id:
+            raise HTTPException(status_code=403, detail="Not authorized to delete this lesion")
+
+        supabase.table("lesions").delete().eq("id", lesion_id).execute()
+        return {"message": "Lesion profile deleted"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Error deleting lesion {lesion_id}: {e}")
+        raise HTTPException(status_code=500, detail="Unable to delete lesion profile")
 
 
 @router.get("/me/pdfs")

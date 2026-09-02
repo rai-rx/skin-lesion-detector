@@ -30,14 +30,17 @@ export function DashboardLayout() {
   const closeMobileMenu = () => setMobileMenuOpen(false);
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen bg-background bg-[radial-gradient(circle_at_top_right,rgba(193,123,92,0.12),transparent_32rem)]">
       {/* Sidebar */}
-      <div className="w-64 bg-card border-r border-border hidden md:flex flex-col">
-        <div className="p-6 flex items-center gap-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center">
+      <div className="w-72 bg-card/90 backdrop-blur-sm border-r border-border hidden md:flex flex-col">
+        <div className="p-6 flex items-center gap-3 border-b border-border/70">
+          <div className="w-9 h-9 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-sm">
             <Activity className="w-5 h-5 text-white" />
           </div>
-          <span className="font-display font-bold text-xl text-foreground">SkinEleven</span>
+          <div>
+            <span className="font-display font-bold text-xl text-foreground block leading-none">SkinEleven</span>
+            <span className="text-[10px] uppercase tracking-[0.18em] text-muted-foreground">Skin health journal</span>
+          </div>
         </div>
 
         <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
@@ -47,7 +50,7 @@ export function DashboardLayout() {
               <Link
                 key={item.name}
                 to={item.href}
-                className={`flex items-center gap-3 px-3 py-2 rounded-xl transition-colors ${
+                className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-colors ${
                   active 
                     ? 'bg-primary text-primary-foreground font-medium' 
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'
@@ -60,12 +63,12 @@ export function DashboardLayout() {
           })}
         </nav>
 
-        <div className="p-4 border-t border-border">
+        <div className="p-4 border-t border-border bg-muted/20">
           <button
             type="button"
             onClick={() => navigate('/settings')}
             aria-label="Open account settings"
-            className="flex items-center gap-3 w-full px-3 py-2 text-left rounded-xl hover:bg-muted transition-colors group"
+            className="flex items-center gap-3 w-full px-3 py-3 text-left rounded-xl hover:bg-muted transition-colors group"
           >
             <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
               <User className="w-4 h-4" />
@@ -159,7 +162,7 @@ export function DashboardLayout() {
           </>
         )}
 
-        <main className="flex-1 overflow-y-auto p-4 md:p-8">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 lg:p-10">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

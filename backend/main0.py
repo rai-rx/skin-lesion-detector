@@ -417,7 +417,7 @@ async def predict_lesion(
                 lesion_res = supabase.table("lesions").insert({
                     "user_id": user_id,
                     "nickname": new_lesion_nickname or f"Quick Scan {new_lesion_location or 'Unspecified'}",
-                    "body_location": new_lesion_location or "Unspecified body location",
+                    "body_location": new_lesion_location or "Unspecified",
                 }).execute()
                 if lesion_res.data:
                     lesion_id = lesion_res.data[0]["id"]
