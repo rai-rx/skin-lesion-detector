@@ -11,6 +11,21 @@ export function DashboardHome() {
   const [stats, setStats] = useState({ profiles: 0, scans: 0 });
   const [recentScans, setRecentScans] = useState<any[]>([]);
 
+  const getScanTime = (value: unknown) => {
+    const timestamp = value ? new Date(String(value)).getTime() : NaN;
+    return Number.isFinite(timestamp) ? timestamp : 0;
+  };
+
+  const formatScanDate = (value: unknown) => {
+    const timestamp = getScanTime(value);
+    return timestamp ? new Date(timestamp).toLocaleDateString() : 'Date unavailable';
+  };
+
+  const formatConfidence = (value: unknown) => {
+    const confidence = Number(value);
+    return Number.isFinite(confidence) ? `${confidence.toFixed(2)}% Confidence` : 'Confidence unavailable';
+  };
+
   useEffect(() => {
     if (user) {
       loadDashboardData();
@@ -35,7 +50,7 @@ export function DashboardHome() {
           ...scan,
           lesions: { nickname: lesion.nickname },
         })))
-        .sort((a: any, b: any) => new Date(b.scanned_at).getTime() - new Date(a.scanned_at).getTime())
+        .sort((a: any, b: any) => getScanTime(b.scanned_at) - getScanTime(a.scanned_at))
         .slice(0, 3);
 
       setStats({
@@ -134,7 +149,7 @@ export function DashboardHome() {
                 <div className="flex-1 min-w-0">
                   <h4 className="font-medium text-foreground truncate">{scan.primary_diagnosis}</h4>
                   <p className="text-sm text-muted-foreground truncate">
-                    {scan.lesions?.nickname} • {new Date(scan.scanned_at).toLocaleDateString()}
+                    {scan.lesions?.nickname || 'Unassigned profile'} • {formatScanDate(scan.scanned_at)}
                   </p>
                 </div>
                 <div className="text-right flex-shrink-0">
@@ -142,7 +157,7 @@ export function DashboardHome() {
                     scan.risk_level === 'high' ? 'text-destructive' : 
                     scan.risk_level === 'medium' ? 'text-amber-600' : 'text-green-600'
                   }`}>
-                    {scan.confidence_rate}% Confidence
+                    {formatConfidence(scan.confidence_rate)}
                   </div>
                   {scan.pdf_report_url && (
                     <a href={scan.pdf_report_url} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline flex items-center justify-end gap-1 mt-1">

@@ -1,12 +1,13 @@
 import React from 'react';
-import { Outlet, Link, useLocation } from 'react-router';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../../../contexts/AuthContext';
-import { Activity, Home, Folder, FileText, User, LogOut, Settings, Shield } from 'lucide-react';
+import { Activity, Home, Folder, FileText, User, Settings, Shield } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export function DashboardLayout() {
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navigation = [
     { name: 'Overview', href: '/dashboard', icon: Home },
@@ -57,7 +58,12 @@ export function DashboardLayout() {
         </nav>
 
         <div className="p-4 border-t border-border">
-          <div className="flex items-center gap-3 px-3 py-2 mb-2">
+          <button
+            type="button"
+            onClick={() => navigate('/settings')}
+            aria-label="Open account settings"
+            className="flex items-center gap-3 w-full px-3 py-2 text-left rounded-xl hover:bg-muted transition-colors group"
+          >
             <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
               <User className="w-4 h-4" />
             </div>
@@ -67,13 +73,7 @@ export function DashboardLayout() {
               </p>
               <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
             </div>
-          </div>
-          <button
-            onClick={() => signOut()}
-            className="flex items-center gap-3 px-3 py-2 w-full text-left rounded-xl text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-          >
-            <LogOut className="w-5 h-5" />
-            <span className="text-sm font-medium">Sign Out</span>
+            <Settings className="w-4 h-4 text-muted-foreground ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
           </button>
         </div>
       </div>

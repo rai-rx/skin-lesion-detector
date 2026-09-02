@@ -15,6 +15,7 @@ import { AdminLayout } from './components/admin/AdminLayout';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { UserDirectory } from './components/admin/UserDirectory';
 import { useAuth } from '../contexts/AuthContext';
+import { AccountSettings } from './components/dashboard/AccountSettings';
 
 function LandingRoute() {
   const { user, isLoading } = useAuth();
@@ -30,11 +31,19 @@ const router = createBrowserRouter([
   { path: "/login", element: <LoginPage /> },
   { path: "/register", element: <RegisterPage /> },
   {
+    path: "/settings",
+    element: <ProtectedRoute><DashboardLayout /></ProtectedRoute>,
+    children: [
+      { index: true, element: <AccountSettings /> },
+    ],
+  },
+  {
     path: "/dashboard",
     element: <ProtectedRoute><DashboardLayout /></ProtectedRoute>,
     children: [
       { index: true, element: <DashboardHome /> },
       { path: "scan", element: <ScanPage /> },
+      { path: "settings", element: <AccountSettings /> },
       { path: "lesions", element: <LesionProfiles /> },
       { path: "lesions/:id", element: <LesionDetail /> },
       { path: "pdfs", element: <PdfVault /> },

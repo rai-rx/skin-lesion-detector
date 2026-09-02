@@ -199,7 +199,7 @@ async def predict_lesion(
 async def get_user_lesions(user: Dict[str, Any] = Depends(get_current_user)):
     user_id = user.get("sub")
     try:
-        res = supabase.table("lesions").select("*, scans(id)").eq("user_id", user_id).order("created_at", desc=True).execute()
+        res = supabase.table("lesions").select("*, scans(*)").eq("user_id", user_id).order("created_at", desc=True).execute()
         return res.data or []
     except Exception as e:
         print(f"Error fetching lesions for user {user_id}: {e}")
