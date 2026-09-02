@@ -11,6 +11,7 @@ import type { ModelResult } from '@/services/modelService';
 import { generateScanPdf, downloadScanPdf, type ScanPdfData } from '../../services/generatePdf';
 import { useAuth } from '../../contexts/AuthContext';
 import { getApiUrl } from '../../services/apiUrl';
+import { queuePendingScan } from '../../services/pendingScans';
 
 
 interface LocationState {
@@ -739,6 +740,12 @@ export function ResultsPage() {
     }
   };
   useEffect(() => {
+    if (!user && state?.image && state?.result) {
+      queuePendingScan({ image: state.image, result: state.result as Record<string, unknown> });
+    }
+  }, [user, state?.image, state?.result]);
+
+  useEffect(() => {
     if (!state?.image) {
       navigate('/');
     }
@@ -900,7 +907,6 @@ export function ResultsPage() {
               </div>
               <button
                 onClick={() => {
-                  sessionStorage.setItem('pending_scan', JSON.stringify({ image: state.image, result: state.result }));
                   navigate('/register');
                 }}
                 className="px-4 py-2 bg-accent text-accent-foreground text-sm font-semibold rounded-xl hover:opacity-90 whitespace-nowrap"

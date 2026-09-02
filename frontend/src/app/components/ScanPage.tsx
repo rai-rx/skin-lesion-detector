@@ -18,6 +18,38 @@ interface CroppedPixels {
   height: number;
 }
 
+function createCroppedImage(imageSrc: string, crop: CroppedPixels): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = crop.width;
+      canvas.height = crop.height;
+      const context = canvas.getContext('2d');
+
+      if (!context) {
+        reject(new Error('Unable to prepare the selected lesion region.'));
+        return;
+      }
+
+      context.drawImage(
+        image,
+        crop.x,
+        crop.y,
+        crop.width,
+        crop.height,
+        0,
+        0,
+        crop.width,
+        crop.height,
+      );
+      resolve(canvas.toDataURL('image/jpeg', 0.92));
+    };
+    image.onerror = () => reject(new Error('Unable to lock the selected lesion region.'));
+    image.src = imageSrc;
+  });
+}
+
 export function ScanPage() {
   const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -212,8 +244,12 @@ export function ScanPage() {
         throw new Error(data.detail || 'Server processing error');
       }
 
-      // Success route: Navigate to analytical report screen
-      navigate('/results', { state: { image: selectedImage, result: data } });
+      const resultImage = croppedAreaPixels && selectedImage
+        ? await createCroppedImage(selectedImage, croppedAreaPixels)
+        : selectedImage;
+
+      // Success route: preserve the selected region in the analytical report.
+      navigate('/results', { state: { image: resultImage, result: data } });
     } catch (error: any) {
       console.error('[ScanPage] Analysis pipeline failure:', error);
       setValidationError(error.message || 'Unable to connect to the analysis service. Please verify that the backend server is running and accessible.');
@@ -469,9 +505,18 @@ export function ScanPage() {
                       onCropChange={setCrop}
                       onZoomChange={setZoom}
                       onCropComplete={onCropComplete}
+                      zoomWithScroll={!isProcessing}
+                      onWheelRequest={() => !isProcessing}
+                      onTouchRequest={() => !isProcessing}
                       showGrid={true}
                       cropShape="rect"
                     />
+                    {isProcessing && (
+                      <div
+                        className="absolute inset-0 z-10 cursor-wait"
+                        aria-label="Analysis in progress"
+                      />
+                    )}
                   </div>
 
                   {/* Manual Zoom Tuning Control Bar */}
@@ -484,8 +529,9 @@ export function ScanPage() {
                       max={3}
                       step={0.05}
                       aria-label="Zoom scale adjust"
+                      disabled={isProcessing}
                       onChange={(e) => setZoom(Number(e.target.value))}
-                      className="w-full h-1.5 bg-border rounded-lg appearance-none cursor-pointer accent-primary"
+                      className="w-full h-1.5 bg-border rounded-lg appearance-none cursor-pointer accent-primary disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
 

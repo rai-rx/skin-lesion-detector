@@ -30,6 +30,15 @@ from predictions.inference import (
 
 router = APIRouter()
 
+
+def _decode_data_url(data_url: str) -> tuple[bytes, str]:
+    header, encoded = data_url.split(',', 1)
+    mime_type = header.split(';', 1)[0].replace('data:', '')
+    extension = mime_type.split('/', 1)[-1].lower()
+    if extension == 'jpeg':
+        extension = 'jpg'
+    return base64.b64decode(encoded), extension
+
 @router.post("/predict")
 async def predict_lesion(
     file: UploadFile = File(...),
@@ -193,6 +202,61 @@ async def predict_lesion(
         "heatmap": heatmap_data_uri,
         "imageUrl": image_url
     }
+
+
+@router.post("/me/import-scan")
+async def import_pending_scan(
+    payload: Dict[str, Any],
+    user: Dict[str, Any] = Depends(get_current_user)
+):
+    image_data = payload.get("image")
+    result = payload.get("result") or {}
+    if not isinstance(image_data, str) or not image_data.startswith("data:"):
+        raise HTTPException(status_code=400, detail="Temporarily saved scan image is invalid")
+
+    try:
+        image_bytes, image_extension = _decode_data_url(image_data)
+        user_id = user.get("sub")
+        lesion_name = f"Imported Scan {result.get('classification') or 'Lesion'}"
+        lesion_res = supabase.table("lesions").insert({
+            "user_id": user_id,
+            "nickname": lesion_name,
+            "body_location": "Unspecified",
+        }).execute()
+        if not lesion_res.data:
+            raise HTTPException(status_code=500, detail="Unable to create lesion profile for saved scan")
+
+        lesion_id = lesion_res.data[0]["id"]
+        image_url = upload_scan_image(user_id, image_bytes, image_extension)
+        heatmap_url = None
+        heatmap = result.get("heatmap")
+        if isinstance(heatmap, str) and heatmap.startswith("data:"):
+            heatmap_bytes, _ = _decode_data_url(heatmap)
+            heatmap_url = upload_heatmap_image(user_id, heatmap_bytes)
+
+        scan_res = supabase.table("scans").insert({
+            "lesion_id": lesion_id,
+            "image_url": image_url,
+            "primary_diagnosis": result.get("classification") or "Unknown",
+            "primary_diagnosis_code": result.get("classification"),
+            "confidence_rate": float(result.get("confidence") or 0),
+            "risk_level": result.get("riskLevel") or "low",
+            "secondary_findings": result.get("secondaryPredictions") or [],
+            "abcde_metrics": result.get("abcdMetrics") or {},
+            "heatmap_url": heatmap_url,
+            "is_valid_upload": True,
+        }).execute()
+        if not scan_res.data:
+            raise HTTPException(status_code=500, detail="Unable to save temporarily stored scan")
+
+        return {"id": scan_res.data[0]["id"], "lesion_id": lesion_id}
+    except HTTPException:
+        raise
+    except (ValueError, KeyError, IndexError, base64.binascii.Error) as error:
+        raise HTTPException(status_code=400, detail=f"Unable to import scan data: {error}")
+    except Exception as error:
+        print(f"Failed to import pending scan: {error}")
+        raise HTTPException(status_code=500, detail="Unable to save temporarily stored scan")
 
 
 @router.get("/me/lesions")

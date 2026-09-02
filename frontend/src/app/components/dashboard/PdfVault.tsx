@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { getApiUrl } from '../../../services/apiUrl';
-import { FileText, Download, Calendar, Loader2, RefreshCw } from 'lucide-react';
+import { FileText, Download, Calendar, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '../ui/button';
 import { downloadScanPdf, generateScanPdf, type ScanPdfData } from '../../../services/generatePdf';
@@ -170,15 +170,18 @@ export function PdfVault() {
                     </Button>
                   ) : (
                     <Button
-                      className="w-full gap-2"
-                      variant="outline"
+                      className="gap-2"
+                      size="icon"
+                      variant="default"
                       disabled={generatingIds.has(scan.id)}
+                      aria-label={generatingIds.has(scan.id) ? 'Generating PDF' : 'Generate PDF'}
+                      title={generatingIds.has(scan.id) ? 'Generating PDF' : 'Generate PDF'}
                       onClick={() => handleGeneratePdf(scan)}
                     >
                       {generatingIds.has(scan.id) ? (
-                        <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
+                        <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
-                        <><RefreshCw className="w-4 h-4" /> Generate PDF</>
+                        <Download className="w-4 h-4" />
                       )}
                     </Button>
                   )}
