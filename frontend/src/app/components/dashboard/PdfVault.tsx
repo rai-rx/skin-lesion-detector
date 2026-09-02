@@ -4,7 +4,6 @@ import { getApiUrl } from '../../../services/apiUrl';
 import { FileText, Download, Calendar, Loader2, RefreshCw } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '../ui/button';
-import Masonry, { ResponsiveMasonry } from 'react-responsive-masonry';
 import { downloadScanPdf, generateScanPdf, type ScanPdfData } from '../../../services/generatePdf';
 
 export function PdfVault() {
@@ -120,47 +119,54 @@ export function PdfVault() {
           <p className="text-muted-foreground mb-6">When you scan a lesion, you can generate a PDF report that will be saved here.</p>
         </div>
       ) : (
-        <ResponsiveMasonry columnsCountBreakPoints={{350: 1, 750: 2, 900: 3}}>
-          <Masonry gutter="1.5rem">
-            {scans.map(scan => (
-              <div key={scan.id} className="bg-card border border-border rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <div className="h-32 bg-gradient-to-br from-primary/10 to-accent/5 flex items-center justify-center border-b border-border">
-                  <FileText className="w-12 h-12 text-primary/40" />
-                </div>
-                <div className="p-5">
-                  <div className="flex justify-between items-start mb-4">
-                    <h3 className="font-semibold leading-tight flex-1">{scan.primary_diagnosis}</h3>
-                    <div className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ml-2 flex-shrink-0 ${
-                      scan.risk_level === 'high' ? 'bg-destructive/10 text-destructive' : 
-                      scan.risk_level === 'medium' ? 'bg-amber-100 text-amber-700' : 
-                      'bg-green-100 text-green-700'
-                    }`}>
-                      {scan.risk_level} Risk
+        <div className="space-y-4">
+          {scans.map(scan => (
+            <div key={scan.id} className="bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+              <div className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
+                <div className="w-20 h-20 rounded-lg bg-muted overflow-hidden flex-shrink-0">
+                  {scan.image_url ? (
+                    <img src={scan.image_url} alt="Scanned lesion" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-primary/10 to-accent/5 flex items-center justify-center">
+                      <FileText className="w-8 h-8 text-primary/40" />
                     </div>
+                  )}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="mb-2">
+                    <h3 className="font-semibold leading-tight flex-1">{scan.primary_diagnosis}</h3>
                   </div>
-                  
-                  <div className="space-y-2 mb-6">
-                    <div className="flex items-center text-sm text-muted-foreground gap-2">
+
+                  <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
                       <span>{format(new Date(scan.scanned_at), 'PPP p')}</span>
                     </div>
                     <div className="text-sm">
-                      <span className="text-muted-foreground">Profile:</span> <span className="font-medium text-foreground">{scan.lesions?.nickname}</span>
+                      <span>Lesion profile: </span><span className="font-medium text-foreground">{scan.lesions?.nickname || 'Unassigned profile'}</span>
                     </div>
-                    {scan.pdf_report_url && (
-                      <div className="text-xs text-muted-foreground break-all">
-                        {scan.pdf_report_url?.split('/').pop() || 'clinical-report.pdf'}
-                      </div>
-                    )}
                   </div>
+                </div>
 
+                <div className="w-full sm:w-auto sm:min-w-36 flex-shrink-0 flex items-center justify-center gap-3">
+                  <div className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                    scan.risk_level === 'high' ? 'bg-destructive/10 text-destructive' : 
+                    scan.risk_level === 'medium' ? 'bg-amber-100 text-amber-700' : 
+                    'bg-green-100 text-green-700'
+                  }`}>
+                    {scan.risk_level} Risk
+                  </div>
                   {scan.pdf_report_url ? (
                     <Button 
-                      className="w-full gap-2" 
+                      className="gap-2" 
+                      size="icon"
                       variant="default"
+                      aria-label="Download PDF"
+                      title="Download PDF"
                       onClick={() => window.open(scan.pdf_report_url, '_blank')}
                     >
-                      <Download className="w-4 h-4" /> Download PDF
+                      <Download className="w-4 h-4" />
                     </Button>
                   ) : (
                     <Button
@@ -178,9 +184,9 @@ export function PdfVault() {
                   )}
                 </div>
               </div>
-            ))}
-          </Masonry>
-        </ResponsiveMasonry>
+            </div>
+          ))}
+        </div>
       )}
     </div>
   );
