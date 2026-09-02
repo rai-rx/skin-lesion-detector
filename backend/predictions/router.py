@@ -5,6 +5,7 @@ from database import supabase
 from storage import upload_scan_image, upload_heatmap_image, upload_pdf_report
 import io
 import base64
+from datetime import datetime, timezone
 import numpy as np
 try:
     import tensorflow as tf
@@ -305,6 +306,43 @@ async def get_user_lesion_scans(lesion_id: str, user: Dict[str, Any] = Depends(g
     except Exception as e:
         print(f"Error fetching lesion scans for {lesion_id}: {e}")
         return []
+
+
+@router.patch("/me/scans/{scan_id}/accuracy")
+async def update_scan_accuracy(
+    scan_id: str,
+    payload: Dict[str, Any],
+    user: Dict[str, Any] = Depends(get_current_user)
+):
+    feedback = payload.get("feedback")
+    if feedback not in {"accurate", "inaccurate"}:
+        raise HTTPException(status_code=400, detail="Feedback must be accurate or inaccurate")
+
+    user_id = user.get("sub")
+    try:
+        scan_res = supabase.table("scans").select("id, lesion_id").eq("id", scan_id).execute()
+        if not scan_res.data:
+            raise HTTPException(status_code=404, detail="Scan not found")
+
+        lesion_res = supabase.table("lesions").select("user_id").eq("id", scan_res.data[0]["lesion_id"]).execute()
+        if not lesion_res.data or lesion_res.data[0].get("user_id") != user_id:
+            raise HTTPException(status_code=403, detail="Not authorized to update this scan")
+
+        supabase.table("scans").update({
+            "user_accuracy_feedback": feedback,
+            "user_feedback_at": datetime.now(timezone.utc).isoformat(),
+        }).eq("id", scan_id).execute()
+        return {"scan_id": scan_id, "feedback": feedback}
+    except HTTPException:
+        raise
+    except Exception as error:
+        print(f"Error saving scan accuracy feedback: {error}")
+        if "user_accuracy_feedback" in str(error) or "user_feedback_at" in str(error):
+            raise HTTPException(
+                status_code=503,
+                detail="Scan feedback is not enabled yet. Apply supabase/migrations/005_scan_accuracy_feedback.sql and try again."
+            )
+        raise HTTPException(status_code=500, detail="Unable to save scan feedback")
 
 
 @router.post("/me/lesions")

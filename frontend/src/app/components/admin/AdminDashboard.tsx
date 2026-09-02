@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { Users, Activity, AlertTriangle, Loader2 } from 'lucide-react';
+import { Users, Activity, AlertTriangle, Loader2, Check, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
 import { getApiUrl } from '../../../services/apiUrl';
 
 export function AdminDashboard() {
   const { session } = useAuth();
-  const [stats, setStats] = useState({ totalUsers: 0, totalScans: 0 });
+  const [stats, setStats] = useState({ totalUsers: 0, totalScans: 0, accuracyFeedback: { total: 0, accurate: 0, inaccurate: 0 } });
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -52,6 +52,19 @@ export function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{stats.totalUsers}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium">User Scan Verification</CardTitle>
+              <Check className="w-4 h-4 text-emerald-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{stats.accuracyFeedback.total}</div>
+              <div className="text-xs text-muted-foreground mt-2 flex gap-3">
+                <span className="text-emerald-600 flex items-center gap-1"><Check className="w-3 h-3" /> {stats.accuracyFeedback.accurate} accurate</span>
+                <span className="text-destructive flex items-center gap-1"><X className="w-3 h-3" /> {stats.accuracyFeedback.inaccurate} inaccurate</span>
+              </div>
             </CardContent>
           </Card>
           <Card>

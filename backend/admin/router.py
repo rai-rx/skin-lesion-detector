@@ -18,8 +18,17 @@ async def get_analytics(user: Dict[str, Any] = Depends(require_admin)):
     
     users_res = supabase.table("users").select("id", count="exact").execute()
     scans_res = supabase.table("scans").select("id", count="exact").execute()
+    feedback_res = supabase.table("scans").select("user_accuracy_feedback").not_.is_("user_accuracy_feedback", "null").execute()
+    feedback_rows = feedback_res.data or []
+    accurate_feedback = sum(row.get("user_accuracy_feedback") == "accurate" for row in feedback_rows)
+    inaccurate_feedback = sum(row.get("user_accuracy_feedback") == "inaccurate" for row in feedback_rows)
     
     return {
         "totalUsers": users_res.count if hasattr(users_res, 'count') else 0,
         "totalScans": scans_res.count if hasattr(scans_res, 'count') else 0,
+        "accuracyFeedback": {
+            "total": len(feedback_rows),
+            "accurate": accurate_feedback,
+            "inaccurate": inaccurate_feedback,
+        },
     }

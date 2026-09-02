@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useAuth } from '../../../contexts/AuthContext';
 import { getApiUrl } from '../../../services/apiUrl';
-import { ArrowLeft, Camera, Activity, Calendar, FileText } from 'lucide-react';
+import { ArrowLeft, Camera, Activity, Calendar, FileText, Check, X } from 'lucide-react';
 import { Button } from '../ui/button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { SymptomLogger } from './SymptomLogger';
@@ -19,6 +19,7 @@ export function LesionDetail() {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [nicknameInput, setNicknameInput] = useState('');
   const [locationInput, setLocationInput] = useState('');
+  const [savingFeedbackId, setSavingFeedbackId] = useState<string | null>(null);
 
   useEffect(() => {
     if (id && session?.access_token) {
@@ -57,6 +58,30 @@ export function LesionDetail() {
       console.error('Unable to save lesion details:', error);
     } finally {
       setIsSavingProfile(false);
+    }
+  };
+
+  const handleAccuracyFeedback = async (scanId: string, feedback: 'accurate' | 'inaccurate') => {
+    setSavingFeedbackId(scanId);
+    try {
+      const response = await fetch(`${getApiUrl()}/me/scans/${scanId}/accuracy`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(true),
+        body: JSON.stringify({ feedback }),
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.detail || 'Unable to save scan feedback');
+      }
+      setScans((current) => current.map((scan) => (
+        scan.id === scanId
+          ? { ...scan, user_accuracy_feedback: feedback }
+          : scan
+      )));
+    } catch (error) {
+      console.error('Unable to save scan feedback:', error);
+    } finally {
+      setSavingFeedbackId(null);
     }
   };
 
@@ -212,6 +237,18 @@ export function LesionDetail() {
                       <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {format(new Date(scan.scanned_at), 'PPP')}</span>
                       <span>{scan.confidence_rate}% Confidence</span>
                     </div>
+                    {scan.user_accuracy_feedback && (
+                      <div className={`flex items-center gap-1.5 mt-2 text-xs font-medium ${
+                        scan.user_accuracy_feedback === 'accurate' ? 'text-emerald-600' : 'text-destructive'
+                      }`}>
+                        {scan.user_accuracy_feedback === 'accurate' ? (
+                          <Check className="w-3.5 h-3.5" />
+                        ) : (
+                          <X className="w-3.5 h-3.5" />
+                        )}
+                        Verified {scan.user_accuracy_feedback}
+                      </div>
+                    )}
                   </div>
                   
                   {scan.pdf_report_url && (
@@ -239,6 +276,40 @@ export function LesionDetail() {
                       
                       <div>
                         <SymptomLogger scanId={scan.id} initialNotes={scan.user_notes} />
+                      </div>
+                    </div>
+                    <div className="mt-6 pt-5 border-t border-border flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <h4 className="font-semibold text-sm">Was this scan accurate?</h4>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {scan.user_accuracy_feedback === 'accurate'
+                            ? 'Marked as accurate.'
+                            : scan.user_accuracy_feedback === 'inaccurate'
+                              ? 'Marked as inaccurate.'
+                              : 'Your response helps improve future screening analytics.'}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant={scan.user_accuracy_feedback === 'accurate' ? 'default' : 'outline'}
+                          disabled={savingFeedbackId === scan.id || Boolean(scan.user_accuracy_feedback)}
+                          aria-pressed={scan.user_accuracy_feedback === 'accurate'}
+                          onClick={() => void handleAccuracyFeedback(scan.id, 'accurate')}
+                          className="gap-2"
+                        >
+                          <Check className="w-4 h-4" /> Accurate
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant={scan.user_accuracy_feedback === 'inaccurate' ? 'destructive' : 'outline'}
+                          disabled={savingFeedbackId === scan.id || Boolean(scan.user_accuracy_feedback)}
+                          aria-pressed={scan.user_accuracy_feedback === 'inaccurate'}
+                          onClick={() => void handleAccuracyFeedback(scan.id, 'inaccurate')}
+                          className="gap-2"
+                        >
+                          <X className="w-4 h-4" /> Inaccurate
+                        </Button>
                       </div>
                     </div>
                   </div>
