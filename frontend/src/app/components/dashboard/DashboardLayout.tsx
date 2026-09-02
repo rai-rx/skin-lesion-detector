@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router';
 import { useAuth } from '../../../contexts/AuthContext';
-import { Activity, Home, Folder, FileText, User, Settings, Shield, Menu, X } from 'lucide-react';
+import { Activity, Home, Folder, FileText, User, Settings, Menu, X } from 'lucide-react';
 import { motion } from 'motion/react';
 
 export function DashboardLayout() {
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -15,10 +15,6 @@ export function DashboardLayout() {
     { name: 'Lesion Profiles', href: '/dashboard/lesions', icon: Folder },
     { name: 'PDF Vault', href: '/dashboard/pdfs', icon: FileText },
   ];
-
-  if (isAdmin) {
-    navigation.push({ name: 'Admin Panel', href: '/admin', icon: Shield });
-  }
 
   const isActive = (path: string) => {
     if (path === '/dashboard') {

@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { useNavigate, useLocation, Link } from 'react-router';
-import { Activity, User, LogOut, LayoutDashboard, Shield } from 'lucide-react';
+import { Activity, User, LogOut, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   DropdownMenu,
@@ -13,7 +13,7 @@ import {
 export function Header() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, signOut } = useAuth();
 
   return (
     <motion.header
@@ -65,11 +65,6 @@ export function Header() {
                   <DropdownMenuItem onClick={() => navigate('/dashboard')} className="gap-2 cursor-pointer">
                     <LayoutDashboard className="w-4 h-4" /> Dashboard
                   </DropdownMenuItem>
-                  {isAdmin && (
-                    <DropdownMenuItem onClick={() => navigate('/admin')} className="gap-2 cursor-pointer text-blue-600 focus:text-blue-600">
-                      <Shield className="w-4 h-4" /> Admin Panel
-                    </DropdownMenuItem>
-                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={() => signOut()} className="gap-2 text-destructive focus:text-destructive cursor-pointer">
                     <LogOut className="w-4 h-4" /> Sign Out

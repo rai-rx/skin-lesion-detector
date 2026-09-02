@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../services/supabaseClient';
+import { getApiUrl } from '../services/apiUrl';
 
 interface AuthContextType {
   user: User | null;
@@ -21,11 +22,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession()
-      .then(({ data: { session }, error }) => {
+      .then(async ({ data: { session }, error }) => {
         if (error) throw error;
         setSession(session);
         setUser(session?.user ?? null);
-        void checkAdminStatus(session?.user?.id);
+        await checkAdminStatus(session?.user?.id, session?.access_token);
       })
       .catch((error) => {
         console.error('Unable to restore authentication session:', error);
@@ -39,30 +40,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      void checkAdminStatus(session?.user?.id);
+      void checkAdminStatus(session?.user?.id, session?.access_token);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  const checkAdminStatus = async (userId: string | undefined) => {
-    if (!userId) {
+  const checkAdminStatus = async (userId: string | undefined, accessToken: string | undefined) => {
+    if (!userId || !accessToken) {
       setIsAdmin(false);
       return;
     }
     
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', userId)
-        .maybeSingle();
-        
-      if (!error && data) {
-        setIsAdmin(data.role === 'admin');
-      } else {
-        setIsAdmin(false);
-      }
+      const response = await fetch(`${getApiUrl()}/admin/status`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
+      setIsAdmin(response.ok);
     } catch {
       setIsAdmin(false);
     }

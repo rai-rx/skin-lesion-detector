@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router';
 import { useAuth } from '../../../contexts/AuthContext';
 import { getApiUrl } from '../../../services/apiUrl';
 import { Camera, FolderPlus, Clock, ArrowRight, FileText, ScanLine } from 'lucide-react';
+import { AdminDashboard } from '../admin/AdminDashboard';
 
 export function DashboardHome() {
-  const { user, session } = useAuth();
+  const { user, session, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState({ profiles: 0, scans: 0 });
   const [recentScans, setRecentScans] = useState<any[]>([]);
@@ -78,6 +79,8 @@ export function DashboardHome() {
           <p className="text-primary-foreground/75 mt-2 max-w-lg">Keep your lesion records organized and make every scan part of a clearer health timeline.</p>
         </div>
       </div>
+
+      {isAdmin && <AdminDashboard />}
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
