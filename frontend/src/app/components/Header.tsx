@@ -6,9 +6,10 @@ import { useState } from 'react';
 
 interface HeaderProps {
   onMenuClick?: () => void;
+  showMenu?: boolean;
 }
 
-export function Header({ onMenuClick }: HeaderProps) {
+export function Header({ onMenuClick, showMenu = true }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -27,7 +28,7 @@ export function Header({ onMenuClick }: HeaderProps) {
         <div className="flex items-center justify-between">
           {/* Logo/Brand */}
           <div className="flex items-center gap-3">
-            <button
+            {showMenu && <button
               type="button"
               onClick={() => onMenuClick ? onMenuClick() : setMenuOpen((open) => !open)}
               aria-label={onMenuClick ? 'Expand sidebar' : menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
@@ -35,7 +36,7 @@ export function Header({ onMenuClick }: HeaderProps) {
               className="rounded-full p-2 text-[#607268] transition-colors hover:bg-[#e3ebdf] hover:text-[#2f604e]"
             >
               {onMenuClick ? <Menu className="h-5 w-5" /> : menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
+            </button>}
             <button
               onClick={() => navigate('/')}
               className="group flex items-center gap-3"
@@ -61,7 +62,7 @@ export function Header({ onMenuClick }: HeaderProps) {
             )}
           </nav>
         </div>
-        {!onMenuClick && menuOpen && (
+        {showMenu && !onMenuClick && menuOpen && (
           <div className="fixed inset-0 z-[100] flex min-h-screen">
             <button type="button" aria-label="Close navigation menu" onClick={closeMenu} className="absolute inset-0 bg-[#24332d]/25" />
             <aside className="relative flex h-screen max-h-screen w-64 shrink-0 flex-col overflow-hidden border-r border-[#665548] bg-[#40352d] text-[#f8f0e5] shadow-2xl">

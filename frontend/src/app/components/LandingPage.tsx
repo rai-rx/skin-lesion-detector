@@ -31,7 +31,7 @@ export function LandingPage() {
 
     return (
       <div className="min-h-screen bg-background text-foreground">
-        <Header />
+        <Header showMenu={false} />
 
         <main>
           <section className="relative overflow-hidden border-b border-[#D3C2B0] bg-[#E8DED0]">
