@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { Upload, Camera, AlertCircle, CheckCircle, Info, AlertTriangle } from 'lucide-react';
+import { ArrowRight, Upload, Camera, AlertCircle, CheckCircle, AlertTriangle, ScanLine, BookOpen } from 'lucide-react';
 import { ImageGalleryModal } from './ImageGalleryModal';
 import { Header } from './Header';
 
@@ -19,250 +19,219 @@ const malignantImages = [
   'https://images.unsplash.com/photo-1723540634462-528708cc17aa?w=1080&q=80',
 ];
 
+const steps = [
+  { number: '01', icon: Camera, title: 'Capture a clear image', description: 'Use your camera or upload a photo of the area you want to review.' },
+  { number: '02', icon: ScanLine, title: 'Review the analysis', description: 'Our model compares visual patterns across several lesion categories.' },
+  { number: '03', icon: BookOpen, title: 'Keep context over time', description: 'Save scans to a profile so changes are easier to discuss with a clinician.' },
+];
+
 export function LandingPage() {
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState<'benign' | 'malignant' | null>(null);
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
-  };
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <Header />
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] }
-    }
-  };
+        <main>
+          <section className="relative overflow-hidden border-b border-[#D3C2B0] bg-[#E8DED0]">
+            <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.42),transparent_48%,rgba(193,123,92,0.16))] pointer-events-none" />
+            <div className="relative max-w-7xl mx-auto px-6 lg:px-8 pt-14 pb-16 md:pt-20 md:pb-24">
+              <div className="grid lg:grid-cols-[1.02fr_0.98fr] gap-12 lg:gap-20 items-center">
+                <motion.div
+                  initial={{ opacity: 0, x: -24 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <div className="inline-flex items-center gap-2 text-sm font-semibold tracking-[0.16em] uppercase text-accent mb-6">
+                    <span className="w-8 h-px bg-accent" /> Skin health, made clearer
+                  </div>
+                  <h1 className="text-5xl md:text-7xl leading-[0.98] tracking-tight max-w-xl">
+                    A closer look at your skin.
+                  </h1>
+                  <p className="text-lg md:text-xl text-muted-foreground leading-relaxed max-w-xl mt-7">
+                    SkinEleven helps you review lesion images, understand visual risk signals, and build a timeline to bring to your healthcare provider.
+                  </p>
 
-  return (
-    <div className="min-h-screen bg-background">
-      <Header />
+                  <div className="flex flex-col sm:flex-row gap-3 mt-9">
+                    <button
+                      type="button"
+                      onClick={() => navigate('/scan')}
+                      className="inline-flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
+                    >
+                      <ScanLine className="w-5 h-5" /> Start a scan
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => navigate('/scan')}
+                      className="inline-flex items-center justify-center gap-3 px-6 py-4 rounded-xl border border-border bg-card/70 text-foreground hover:bg-card transition-colors"
+                    >
+                      <Upload className="w-5 h-5 text-accent" /> Upload an image
+                    </button>
+                  </div>
 
-      <div className="relative overflow-hidden">
-      {/* Organic background shapes */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 0.4, scale: 1 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
-          className="absolute -top-40 -right-40 w-96 h-96 bg-accent/20 rounded-full blur-3xl"
-        />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 0.3, scale: 1 }}
-          transition={{ duration: 1.4, ease: "easeOut", delay: 0.2 }}
-          className="absolute top-1/3 -left-32 w-80 h-80 bg-primary/10 rounded-full blur-3xl"
-        />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 0.35, scale: 1 }}
-          transition={{ duration: 1.3, ease: "easeOut", delay: 0.4 }}
-          className="absolute -bottom-32 right-1/4 w-72 h-72 bg-secondary/15 rounded-full blur-3xl"
-        />
-      </div>
+                  <div className="flex items-center gap-6 mt-8 text-sm text-muted-foreground">
+                    <span className="inline-flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-700" /> Educational use</span>
+                  </div>
+                </motion.div>
 
-      {/* Hero Section */}
-      <motion.section
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-        className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 pt-12 pb-8"
-      >
-        <div className="text-center max-w-4xl mx-auto">
-         
-          <motion.h1
-            variants={itemVariants}
-            className="text-6xl md:text-7xl lg:text-8xl text-foreground mb-2 tracking-tight"
-          >
-            Skin Lesion Detection & Awareness
-          </motion.h1>
+                <motion.div
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+                  className="relative"
+                >
+                  <div className="absolute -inset-4 rounded-[2rem] bg-accent/10 rotate-2" />
+                  <div className="relative aspect-[4/5] max-w-lg ml-auto overflow-hidden rounded-[1.5rem] bg-muted shadow-2xl">
+                    <img
+                      src={benignImages[0]}
+                      alt="Close-up example of skin texture"
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-x-4 bottom-4 bg-card/95 backdrop-blur-sm border border-white/70 rounded-xl p-4 shadow-lg">
+                      <div className="flex items-start gap-3">
+                        <div className="w-9 h-9 rounded-lg bg-green-100 text-green-700 flex items-center justify-center shrink-0">
+                          <ScanLine className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold">Image review starts here</p>
+                          <p className="text-xs text-muted-foreground mt-1">Clear, well-lit photos lead to more useful results.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
 
-          <motion.p
-            variants={itemVariants}
-            className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto leading-relaxed mb-6"
-          >
-            Early identification of skin lesions can be critical for successful treatment.
-            Our educational tool helps you understand different types of skin conditions
-            and the importance of regular skin health monitoring.
-          </motion.p>
-
-          <motion.div
-            variants={itemVariants}
-            className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-8"
-          >
-            <motion.button
-              onClick={() => navigate('/scan')}
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              className="group relative px-10 py-5 bg-primary text-primary-foreground rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 min-w-[240px] overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-primary to-secondary opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <span className="relative flex items-center justify-center gap-3 text-lg">
-                <Upload className="w-5 h-5" />
-                Upload Photo
-              </span>
-            </motion.button>
-
-            <motion.button
-              onClick={() => navigate('/scan')}
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              className="group relative px-10 py-5 bg-white text-primary border-2 border-primary rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 min-w-[240px] overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-primary opacity-0 group-hover:opacity-5 transition-opacity duration-300" />
-              <span className="relative flex items-center justify-center gap-3 text-lg">
-                <Camera className="w-5 h-5" />
-                Take a Photo
-              </span>
-            </motion.button>
-          </motion.div>
-        </div>
-      </motion.section>
-
-      {/* Information Section */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-2">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-4xl md:text-5xl text-foreground mb-4">
-            Understanding Skin Lesions
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Knowledge is the first step toward proactive skin health
-          </p>
-        </motion.div>
-
-        <div className="grid md:grid-cols-2 gap-8 mb-16">
-          <InfoCard
-            icon={<CheckCircle className="w-8 h-8" />}
-            title="Benign Lesions"
-            description="Most skin lesions are benign (non-cancerous) and pose no serious health risks. These include moles, freckles, age spots, and seborrheic keratoses. While typically harmless, monitoring changes in appearance is important."
-            iconColor="bg-green-100 text-green-700"
-            delay={0.2}
-            onClick={() => setModalOpen('benign')}
-          />
-
-          <InfoCard
-            icon={<AlertCircle className="w-8 h-8" />}
-            title="Malignant Lesions"
-            description="Malignant lesions require immediate medical attention. These include melanoma, basal cell carcinoma, and squamous cell carcinoma. Early detection dramatically improves treatment outcomes and survival rates."
-            iconColor="bg-amber-100 text-amber-700"
-            delay={0.3}
-            onClick={() => setModalOpen('malignant')}
-          />
-        </div>
-
-        {/* Image Gallery Modals */}
-        <ImageGalleryModal
-          isOpen={modalOpen === 'benign'}
-          onClose={() => setModalOpen(null)}
-          title="Benign Lesions - Sample Images"
-          images={benignImages}
-        />
-        <ImageGalleryModal
-          isOpen={modalOpen === 'malignant'}
-          onClose={() => setModalOpen(null)}
-          title="Malignant Lesions - Sample Images"
-          images={malignantImages}
-        />
-
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7, delay: 0.4 }}
-          className="bg-card rounded-3xl shadow-xl p-8 md:p-12 border border-border"
-        >
-          <div className="flex items-center gap-6">
-            <div className="flex-shrink-0 w-16 h-16 bg-amber-100 rounded-2xl flex items-center justify-center">
-              <AlertTriangle className="w-8 h-8 text-amber-700" />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-14 pt-6 border-t border-[#D3C2B0] max-w-3xl">
+                <Metric value="11" label="lesion categories" />
+                <Metric value="1" label="place for your scans" />
+                <Metric value="24/7" label="available for review" />
+                <Metric value="0" label="diagnoses promised" />
+              </div>
             </div>
-            <div className="flex-1">
-              <h3 className="text-2xl md:text-3xl mb-6">Warning Signs to Watch For</h3>
+          </section>
+
+          <section className="max-w-7xl mx-auto px-6 lg:px-8 py-20 md:py-28">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
               <div>
-                <h4 className="text-foreground mb-4 text-lg">The ABCDE Rule:</h4>
-                <ul className="space-y-3 text-muted-foreground mb-6">
-                  <li><strong className="text-foreground">A</strong>symmetry – One half doesn't match the other</li>
-                  <li><strong className="text-foreground">B</strong>order – Edges are irregular or blurred</li>
-                  <li><strong className="text-foreground">C</strong>olor – Multiple colors or uneven distribution</li>
-                  <li><strong className="text-foreground">D</strong>iameter – Larger than 6mm (pencil eraser)</li>
-                  <li><strong className="text-foreground">E</strong>volving – Changes in size, shape, or color</li>
-                </ul>
-                <div className="text-center pt-4 border-t border-border">
-                  <p className="text-foreground"><strong>Note:</strong> Always consult a dermatologist for proper evaluation</p>
+                <p className="text-sm font-semibold tracking-[0.16em] uppercase text-accent mb-3">From image to insight</p>
+                <h2 className="text-4xl md:text-5xl max-w-xl leading-tight">A simple routine for paying attention.</h2>
+              </div>
+              <p className="text-muted-foreground max-w-sm leading-relaxed">Use the result as a conversation starter, alongside regular skin checks and professional care.</p>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-px bg-border border border-border rounded-2xl overflow-hidden">
+              {steps.map((step) => (
+                <div key={step.number} className="bg-card p-7 md:p-8 min-h-[230px]">
+                  <div className="flex items-center justify-between mb-12">
+                    <step.icon className="w-6 h-6 text-accent" />
+                    <span className="font-display text-3xl text-border">{step.number}</span>
+                  </div>
+                  <h3 className="text-2xl mb-2">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="bg-[#33443D] text-[#FAF7F2]">
+            <div className="max-w-7xl mx-auto px-6 lg:px-8 py-16 md:py-20">
+              <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-12 items-start">
+                <div>
+                  <p className="text-sm font-semibold tracking-[0.16em] uppercase text-[#E5B393] mb-3">Know the signs</p>
+                  <h2 className="text-4xl md:text-5xl leading-tight">The ABCDE check.</h2>
+                  <p className="text-[#D8E0D9]/75 mt-5 leading-relaxed max-w-sm">A quick visual reminder for changes worth documenting and discussing with a dermatologist.</p>
+                </div>
+                <div className="grid sm:grid-cols-2 gap-x-10 gap-y-7">
+                  <SignItem letter="A" title="Asymmetry" text="One half looks different from the other." />
+                  <SignItem letter="B" title="Border" text="Edges look uneven, blurred, or notched." />
+                  <SignItem letter="C" title="Color" text="Color varies across the same spot." />
+                  <SignItem letter="D" title="Diameter" text="The spot is larger than about 6 mm." />
+                  <SignItem letter="E" title="Evolving" text="It changes in size, shape, or color." />
                 </div>
               </div>
             </div>
-          </div>
-        </motion.div>
-      </section>
+          </section>
 
-      {/* Footer Disclaimer */}
-      <motion.footer
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.6 }}
-        className="relative z-10 max-w-7xl mx-auto px-6 lg:px-8 py-12 text-center"
+          <section className="max-w-7xl mx-auto px-6 lg:px-8 py-20 md:py-24">
+            <div className="flex flex-col md:flex-row gap-6 items-start mb-10">
+              <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold tracking-[0.16em] uppercase text-accent mb-3">Explore the library</p>
+                <h2 className="text-4xl leading-tight">Context for the conversation.</h2>
+                <p className="text-muted-foreground mt-3 max-w-2xl leading-relaxed">Browse example images to learn the difference between common visual patterns. Samples are educational and are not a substitute for an examination.</p>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-5">
+              <InfoCard icon={<CheckCircle className="w-6 h-6" />} title="Common benign patterns" description="Explore examples of spots that are often harmless, while remembering that changes still deserve attention." iconColor="bg-green-100 text-green-700" onClick={() => setModalOpen('benign')} />
+              <InfoCard icon={<AlertCircle className="w-6 h-6" />} title="Patterns to discuss promptly" description="Review examples associated with higher concern and learn why an in-person evaluation matters." iconColor="bg-amber-100 text-amber-700" onClick={() => setModalOpen('malignant')} />
+            </div>
+          </section>
+
+          <footer className="border-t border-border bg-card/50">
+            <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 flex flex-col md:flex-row gap-4 md:gap-8 md:justify-start text-sm text-muted-foreground">
+              <p><strong className="text-foreground">Medical disclaimer:</strong> SkinEleven is educational and does not diagnose or replace professional medical advice.</p>
+              <p className="shrink-0">When in doubt, contact a qualified healthcare provider.</p>
+            </div>
+          </footer>
+        </main>
+
+        <ImageGalleryModal isOpen={modalOpen === 'benign'} onClose={() => setModalOpen(null)} title="Benign Lesions - Sample Images" images={benignImages} />
+        <ImageGalleryModal isOpen={modalOpen === 'malignant'} onClose={() => setModalOpen(null)} title="Lesion Patterns - Sample Images" images={malignantImages} />
+      </div>
+    );
+  }
+
+  function Metric({ value, label }: { value: string; label: string }) {
+    return (
+      <div>
+        <p className="font-display text-4xl md:text-5xl leading-none text-foreground">{value}</p>
+        <p className="text-sm md:text-base font-medium text-muted-foreground mt-2">{label}</p>
+      </div>
+    );
+  }
+
+  function SignItem({ letter, title, text }: { letter: string; title: string; text: string }) {
+    return (
+      <div className="flex gap-4">
+        <span className="font-display text-3xl text-[#E5B393] leading-none">{letter}</span>
+        <div>
+          <h3 className="text-xl">{title}</h3>
+          <p className="text-sm text-[#D8E0D9]/70 mt-1 leading-relaxed">{text}</p>
+        </div>
+      </div>
+    );
+  }
+
+  interface InfoCardProps {
+    icon: React.ReactNode;
+    title: string;
+    description: string;
+    iconColor: string;
+    onClick: () => void;
+  }
+
+  function InfoCard({ icon, title, description, iconColor, onClick }: InfoCardProps) {
+    return (
+      <motion.button
+        type="button"
+        whileHover={{ y: -4 }}
+        whileTap={{ scale: 0.99 }}
+        onClick={onClick}
+        className="group w-full text-left bg-card border border-border rounded-2xl p-6 hover:border-primary/40 hover:shadow-lg transition-all"
       >
-        <div className="bg-muted/50 rounded-2xl p-6 border border-border/50">
-          <p className="text-sm text-muted-foreground">
-            <strong className="text-foreground">Medical Disclaimer:</strong> This tool is for educational and informational purposes only.
-            It is not intended to diagnose, treat, or replace professional medical advice.
-            Always consult with a qualified healthcare provider for proper evaluation and diagnosis.
-          </p>
+        <div className={`w-11 h-11 ${iconColor} rounded-xl flex items-center justify-center mb-5`}>{icon}</div>
+        <div className="flex items-center justify-between gap-4">
+          <h3 className="text-2xl">{title}</h3>
+          <ArrowRight className="w-5 h-5 text-primary opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
         </div>
-      </motion.footer>
-      </div>
-    </div>
-  );
-}
-
-interface InfoCardProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  iconColor: string;
-  delay: number;
-  onClick: () => void;
-}
-
-function InfoCard({ icon, title, description, iconColor, delay, onClick }: InfoCardProps) {
-  return (
-    <motion.button
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.7, delay }}
-      whileHover={{ y: -6, scale: 1.02, transition: { duration: 0.2 } }}
-      whileTap={{ scale: 0.98 }}
-      onClick={onClick}
-      className="bg-card rounded-2xl p-8 shadow-lg border border-border hover:shadow-2xl transition-all duration-300 text-left w-full cursor-pointer group relative overflow-hidden"
-    >
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-accent/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      <div className="relative">
-        <div className={`w-16 h-16 ${iconColor} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
-          {icon}
-        </div>
-        <h3 className="text-2xl mb-4">{title}</h3>
-        <p className="text-muted-foreground leading-relaxed mb-4">{description}</p>
-        <div className="text-sm text-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          Click to view sample images →
-        </div>
-      </div>
-    </motion.button>
-  );
-}
+        <p className="text-sm text-muted-foreground leading-relaxed mt-3">{description}</p>
+        <span className="inline-block text-xs font-semibold text-primary mt-5">View sample images</span>
+      </motion.button>
+    );
+  }

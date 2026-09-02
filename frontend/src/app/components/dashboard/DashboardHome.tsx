@@ -82,7 +82,7 @@ export function DashboardHome() {
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <button 
-          onClick={() => navigate('/dashboard/scan')}
+          onClick={() => navigate('/dashboard/scan', { state: { openCamera: true } })}
           className="flex items-center gap-4 p-5 bg-card border border-primary/20 text-foreground rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all group text-left"
         >
           <div className="p-3 bg-primary/10 text-primary rounded-xl">

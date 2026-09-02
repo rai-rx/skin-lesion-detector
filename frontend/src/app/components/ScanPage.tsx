@@ -137,6 +137,25 @@ export function ScanPage() {
     }
   };
 
+  const handleTakePhoto = async () => {
+    const devices = await navigator.mediaDevices?.enumerateDevices().catch(() => []);
+    const hasCamera = devices?.some(device => device.kind === 'videoinput');
+
+    if (!hasCamera) {
+      window.alert('No camera was detected on this device. Please choose an image file instead.');
+      fileInputRef.current?.click();
+      return;
+    }
+
+    cameraInputRef.current?.click();
+  };
+
+  useEffect(() => {
+    if (location.state?.openCamera) {
+      void handleTakePhoto();
+    }
+  }, [location.state?.openCamera]);
+
   const onCropComplete = (_croppedArea: any, pixels: CroppedPixels) => {
     setCroppedAreaPixels(pixels);
   };
@@ -416,7 +435,7 @@ export function ScanPage() {
                       <motion.button
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        onClick={() => cameraInputRef.current?.click()}
+                        onClick={() => void handleTakePhoto()}
                         className="px-8 py-4 bg-secondary text-primary-foreground rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-3"
                       >
                         <Camera className="w-5 h-5" />

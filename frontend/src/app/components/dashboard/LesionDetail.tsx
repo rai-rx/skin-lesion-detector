@@ -157,7 +157,7 @@ export function LesionDetail() {
           <Button variant="outline" onClick={handleProfileSave} disabled={isSavingProfile}>
             {isSavingProfile ? 'Saving...' : 'Save Details'}
           </Button>
-          <Button onClick={() => navigate('/dashboard/scan', { state: { lesion_id: profile.id } })} className="gap-2">
+          <Button onClick={() => navigate('/dashboard/scan', { state: { lesion_id: profile.id, openCamera: true } })} className="gap-2">
             <Camera className="w-4 h-4" /> New Scan for this Profile
           </Button>
         </div>
