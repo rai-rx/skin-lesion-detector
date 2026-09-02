@@ -371,38 +371,51 @@ export function DynamicRiskActionPanel({ riskLevel, classification }: RiskPanelP
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.4 }}
-          className="bg-card rounded-3xl shadow-xl p-6 border-l-4 border-destructive border-t border-r border-b border-border bg-gradient-to-br from-destructive/5 to-transparent dark:from-destructive/10 dark:to-transparent"
+          className="bg-card rounded-3xl shadow-lg p-6 md:p-7 border border-destructive/25 border-l-4 border-l-destructive bg-gradient-to-br from-destructive/[0.08] via-card to-transparent dark:from-destructive/15 dark:via-card dark:to-transparent"
         >
-          <div className="flex items-start gap-3 mb-4">
-            <div className="p-2 bg-destructive/10 text-destructive rounded-lg shrink-0 mt-0.5">
-              <AlertTriangle className="w-6 h-6 animate-pulse" />
+          <div className="flex items-start justify-between gap-4 mb-5">
+            <div className="flex items-start gap-3">
+              <div className="p-2.5 bg-destructive/10 text-destructive rounded-xl shrink-0 mt-0.5">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-destructive mb-1">Action recommended</p>
+                <h3 className="font-semibold text-lg text-destructive dark:text-red-400">
+                  High Priority Review
+                </h3>
+              </div>
             </div>
-            <div>
-              <h3 className="font-semibold text-base text-destructive dark:text-red-400">
-                High Priority Review Flagged
-              </h3>
-              <p className="text-xs text-muted-foreground mt-0.5 leading-normal">
-                The screening profile correlates with metrics characteristic of <span className="font-semibold text-foreground">{classification}</span>. This requires definitive in-person mapping or immediate biopsy assessment.
-              </p>
-            </div>
+            <span className="shrink-0 px-2.5 py-1 rounded-full bg-destructive/10 text-destructive text-[10px] font-bold uppercase tracking-wider">
+              High risk
+            </span>
+          </div>
+
+          <div className="rounded-xl bg-background/70 border border-destructive/15 p-4 mb-5">
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              The screening profile correlates with metrics characteristic of <span className="font-semibold text-foreground">{classification}</span>. This result needs definitive in-person evaluation and may require biopsy assessment.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2 mb-3 text-xs font-semibold text-foreground">
+            <Clock className="w-4 h-4 text-destructive" />
+            Arrange a dermatology appointment within 14 days.
           </div>
 
           {/* High-Urgency CTA Button Array */}
-          <div className="flex flex-col gap-2 mt-2">
+          <div className="flex flex-col gap-2">
             <button
               onClick={handleFindDermatologist}
               disabled={loadingLocation}
-              className="w-full flex items-center justify-center gap-2 bg-destructive hover:bg-destructive/90 text-white text-xs font-semibold py-3 px-4 rounded-xl transition shadow-sm disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 bg-destructive hover:bg-destructive/90 text-white text-sm font-semibold py-3.5 px-4 rounded-xl transition shadow-md shadow-destructive/15 disabled:opacity-50"
             >
               <MapPin className="w-4 h-4" />
               {loadingLocation ? "Accessing GPS..." : "Find Nearest Dermatologist"}
             </button>
           </div>
 
-          <div className="flex items-center gap-1.5 mt-3 text-[10px] text-muted-foreground justify-center sm:justify-start">
-            <Clock className="w-3 h-3" />
-            <span>Early detection significantly improves treatment outcomes. Secure an appointment within 14 days.</span>
-          </div>
+          <p className="text-[11px] text-muted-foreground mt-3 text-center">
+            This screening result is not a diagnosis. A qualified dermatologist should make the final assessment.
+          </p>
         </motion.div>
       )}
 
@@ -424,23 +437,23 @@ function PrimaryClassificationCard({
   getRiskColor
 }: PrimaryClassificationCardProps) {
   return (
-    <div className="bg-card rounded-3xl shadow-xl p-8 border border-border">
-      <div className="flex items-start justify-between mb-6">
+    <div className="bg-card rounded-3xl shadow-lg p-6 md:p-7 border border-primary/15">
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-7">
         <div>
-          <p className="text-sm text-muted-foreground mb-2">Primary Classification</p>
-          <h2 className="text-3xl font-bold">{classification}</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary mb-2">Primary finding</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground">{classification}</h2>
         </div>
-        <div className={`px-4 py-2 rounded-full text-xs font-bold ${getRiskColor(riskLevel)}`}>
+        <div className={`px-3 py-1.5 rounded-lg text-xs font-bold ${getRiskColor(riskLevel)}`}>
           {riskLevel.toUpperCase()} RISK
         </div>
       </div>
 
       <div className="space-y-4">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm text-muted-foreground">Confidence Score</span>
-          <span className="text-2xl font-mono">{confidence}%</span>
+          <span className="text-sm text-muted-foreground">Model confidence</span>
+          <span className="text-2xl font-mono font-semibold text-foreground">{confidence}%</span>
         </div>
-        <div className="h-3 bg-muted rounded-full overflow-hidden">
+        <div className="h-2.5 bg-muted rounded-full overflow-hidden">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${confidence}%` }}
@@ -470,19 +483,23 @@ function InteractiveAnalysisCard({
   setOpacity
 }: InteractiveAnalysisCardProps) {
   return (
-    <div className="bg-card rounded-3xl shadow-xl p-6 border border-border overflow-hidden">
+    <div className="bg-card rounded-3xl shadow-lg p-5 md:p-6 border border-border overflow-hidden">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-medium">Interactive Analysis</h3>
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary mb-1">Visual review</p>
+          <h3 className="text-xl font-medium">Interactive Analysis</h3>
+        </div>
         <button
           onClick={() => setShowOverlay(!showOverlay)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-all ${
+          aria-label={showOverlay ? 'Hide heatmap' : 'Show heatmap'}
+          className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all ${
             showOverlay
               ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
               : 'bg-muted text-muted-foreground hover:bg-muted/80'
           }`}
         >
           <Layers className="w-4 h-4" />
-          <span className="text-sm font-bold">{showOverlay ? 'Hide Heatmap' : 'Overlay Heatmap'}</span>
+          <span className="hidden sm:inline text-sm font-bold">{showOverlay ? 'Hide Heatmap' : 'Overlay Heatmap'}</span>
         </button>
       </div>
 
@@ -867,7 +884,7 @@ export function ResultsPage() {
   }, [user, session?.access_token, state?.result?.id]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background bg-[radial-gradient(circle_at_top_right,rgba(193,123,92,0.12),transparent_34rem)]">
       <Header />
 
       <div className="relative overflow-hidden">
@@ -886,20 +903,19 @@ export function ResultsPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-12"
+            className="text-center mb-10 md:mb-12"
           >
-            <h1 className="text-5xl md:text-6xl mb-4 font-bold tracking-tight">Analysis Results</h1>
-            <p className="text-lg text-muted-foreground">AI-powered skin lesion classification & structural diagnostics</p>
+            <h1 className="text-4xl md:text-5xl mb-3 font-bold tracking-tight text-foreground">Analysis Results</h1>
           </motion.div>
         </div>
 
         {/* Main Content Grid & Stack */}
-        <div className="relative z-10 max-w-5xl mx-auto px-6 pb-24 space-y-12">
+          <div className="relative z-10 max-w-6xl mx-auto px-6 pb-24 space-y-10 md:space-y-12">
           {!user && (
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-accent/10 border border-accent/20 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4"
+              className="bg-card/80 border border-accent/25 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm"
             >
               <div className="flex items-center gap-3 text-accent">
                 <AlertTriangle className="w-5 h-5 shrink-0" />
@@ -976,12 +992,12 @@ export function ResultsPage() {
           </div>
 
           {/* DESKTOP VIEW LAYOUT (hidden lg:grid) */}
-          <div className="hidden lg:grid grid-cols-2 gap-8 mb-8">
+          <div className="hidden lg:grid lg:grid-cols-[1.08fr_0.92fr] gap-8 mb-8 items-start">
             {/* Visual Column: Image, Heatmap & Risk Panel */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="space-y-6"
+              className="space-y-6 min-w-0"
             >
               <InteractiveAnalysisCard
                 image={state.image}
@@ -1002,7 +1018,7 @@ export function ResultsPage() {
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="space-y-6"
+              className="space-y-6 min-w-0"
             >
               <PrimaryClassificationCard
                 classification={analysisResult.classification}
@@ -1023,26 +1039,29 @@ export function ResultsPage() {
           {/* Classification Info Section */}
           {currentInfo && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-              <div className="bg-card rounded-3xl shadow-xl p-8 md:p-10 border border-border">
-                <h2 className="text-3xl mb-4">About {analysisResult.classification}</h2>
-                <p className="text-muted-foreground text-lg mb-8">{currentInfo.description}</p>
-                <div className="grid md:grid-cols-3 gap-6">
-                  <div className="bg-blue-50 dark:bg-blue-950/20 rounded-2xl p-6">
+              <div className="bg-card rounded-3xl shadow-lg p-6 md:p-8 border border-border">
+                <div className="max-w-3xl mb-7">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary mb-2">Clinical context</p>
+                  <h2 className="text-2xl md:text-3xl mb-3">About {analysisResult.classification}</h2>
+                  <p className="text-muted-foreground leading-relaxed">{currentInfo.description}</p>
+                </div>
+                <div className="grid md:grid-cols-3 gap-4">
+                  <div className="bg-blue-50/70 dark:bg-blue-950/20 rounded-2xl p-5 border border-blue-100/70 dark:border-blue-900/30">
                     <h3 className="text-xl text-blue-900 dark:text-blue-400 mb-4 flex items-center gap-2"><Info className="w-5 h-5" /> Characteristics</h3>
                     <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-2">
-                      {currentInfo.characteristics.map((c, i) => <li key={i}>• {c}</li>)}
+                      {currentInfo.characteristics.map((c, i) => <li key={i} className="flex items-start gap-2"><span className="shrink-0" aria-hidden="true">•</span><span>{c}</span></li>)}
                     </ul>
                   </div>
-                  <div className="bg-amber-50 dark:bg-amber-950/20 rounded-2xl p-6">
+                  <div className="bg-amber-50/70 dark:bg-amber-950/20 rounded-2xl p-5 border border-amber-100/70 dark:border-amber-900/30">
                     <h3 className="text-xl text-amber-900 dark:text-amber-400 mb-4 flex items-center gap-2"><AlertTriangle className="w-5 h-5" /> Risks</h3>
                     <ul className="text-sm text-amber-800 dark:text-amber-300 space-y-2">
-                      {currentInfo.dangers.map((d, i) => <li key={i}>• {d}</li>)}
+                      {currentInfo.dangers.map((d, i) => <li key={i} className="flex items-start gap-2"><span className="shrink-0" aria-hidden="true">•</span><span>{d}</span></li>)}
                     </ul>
                   </div>
-                  <div className="bg-green-50 dark:bg-green-950/20 rounded-2xl p-6">
+                  <div className="bg-green-50/70 dark:bg-green-950/20 rounded-2xl p-5 border border-green-100/70 dark:border-green-900/30">
                     <h3 className="text-xl text-green-900 dark:text-green-400 mb-4 flex items-center gap-2"><CheckCircle className="w-5 h-5" /> Actions</h3>
                     <ul className="text-sm text-green-800 dark:text-green-300 space-y-2">
-                      {currentInfo.recommendations.map((r, i) => <li key={i}>• {r}</li>)}
+                      {currentInfo.recommendations.map((r, i) => <li key={i} className="flex items-start gap-2"><span className="shrink-0" aria-hidden="true">•</span><span>{r}</span></li>)}
                     </ul>
                   </div>
                 </div>
@@ -1058,16 +1077,16 @@ export function ResultsPage() {
           </div>
 
           {/* System Control Interaction Row Block */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
             <button
               onClick={() => void handleExportPDF()}
-              className="px-8 py-4 bg-emerald-600 text-white font-medium rounded-xl shadow-lg hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-emerald-600/10"
+              className="px-7 py-3.5 bg-emerald-600 text-white font-medium rounded-xl shadow-lg hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-emerald-600/10"
             >
               <FileText className="w-5 h-5" /> Export Clinical PDF Report
             </button>
             <button
               onClick={() => navigate('/')}
-              className="px-8 py-4 bg-background border border-border text-foreground font-medium rounded-xl shadow-md flex items-center justify-center gap-3 hover:bg-muted/50 transition-colors"
+              className="px-7 py-3.5 bg-background border border-border text-foreground font-medium rounded-xl shadow-sm flex items-center justify-center gap-3 hover:bg-muted/50 transition-colors"
             >
               <Home className="w-5 h-5" /> Return to Home
             </button>
