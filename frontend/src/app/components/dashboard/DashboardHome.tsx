@@ -66,108 +66,112 @@ export function DashboardHome() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      <div className="relative overflow-hidden rounded-3xl bg-primary text-primary-foreground px-6 py-7 md:px-9 md:py-8 shadow-lg">
-        <div className="absolute -right-16 -top-20 h-56 w-56 rounded-full border-[24px] border-white/10" />
-        <div className="relative z-10 max-w-2xl">
-          <div className="flex items-center gap-2 text-primary-foreground/70 text-xs font-semibold uppercase tracking-[0.18em] mb-3">
-            <ScanLine className="w-4 h-4" /> Personal health overview
+    <div className="mx-auto max-w-7xl space-y-12">
+      <div className="grid gap-8 border-b border-[#d7d2c7] pb-10 lg:grid-cols-[1fr_18rem] lg:items-end">
+        <div className="max-w-3xl">
+          <div className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#b66f45]">
+            <span className="h-2 w-2 rounded-full bg-[#b66f45]" /> Personal health overview
           </div>
-          <h1 className="text-3xl md:text-4xl font-display font-bold">
-            Welcome back, {user?.user_metadata?.full_name?.split(' ')[0] || 'User'}
+          <h1 className="font-display text-5xl font-bold leading-[0.95] tracking-tight text-[#24332d] md:text-7xl">
+            Your skin, <span className="text-[#b66f45]">observed.</span>
           </h1>
-          <p className="text-primary-foreground/75 mt-2 max-w-lg">Keep your lesion records organized and make every scan part of a clearer health timeline.</p>
+          <p className="mt-5 max-w-xl text-base leading-7 text-[#607268]">Welcome back, {user?.user_metadata?.full_name?.split(' ')[0] || 'User'}. Keep each check-in close, so small changes have somewhere to become visible.</p>
+        </div>
+        <div className="border-l-2 border-[#d8a36c] pl-5 text-sm text-[#607268]">
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#b66f45]">Today&apos;s intention</p>
+          <p className="font-display text-2xl leading-tight text-[#24332d]">Notice what is new. Keep what matters.</p>
         </div>
       </div>
 
       {isAdmin && <AdminDashboard />}
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-0 border-y border-[#d7d2c7] md:grid-cols-2">
         <button 
           onClick={() => navigate('/dashboard/scan', { state: { openCamera: true } })}
-          className="flex items-center gap-4 p-5 bg-card border border-primary/20 text-foreground rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all group text-left"
+          className="group flex items-center gap-4 border-b border-[#d7d2c7] py-6 text-left transition-colors hover:bg-[#e3ebdf] md:border-b-0 md:border-r md:pr-8"
         >
-          <div className="p-3 bg-primary/10 text-primary rounded-xl">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#c9dcc4] text-[#2f604e]">
             <Camera className="w-6 h-6" />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-lg">New Scan</h3>
-            <p className="text-muted-foreground text-sm">Analyze a skin lesion</p>
+            <h3 className="text-lg font-semibold text-[#24332d]">New Scan</h3>
+            <p className="text-sm text-[#607268]">Analyze a skin lesion</p>
           </div>
           <ArrowRight className="w-5 h-5 text-primary opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
         </button>
 
         <button 
           onClick={() => navigate('/dashboard/lesions')}
-          className="flex items-center gap-4 p-5 bg-card border border-border text-foreground rounded-2xl shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all group text-left"
+          className="group flex items-center gap-4 py-6 text-left transition-colors hover:bg-[#e3ebdf] md:pl-8"
         >
-          <div className="p-3 bg-accent/10 text-accent rounded-xl">
+          <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#c9dcc4] text-[#2f604e]">
             <FolderPlus className="w-6 h-6" />
           </div>
           <div className="flex-1">
-            <h3 className="font-semibold text-lg">Add Profile</h3>
-            <p className="text-muted-foreground text-sm">Track a new mole or spot</p>
+            <h3 className="text-lg font-semibold text-[#24332d]">Add Profile</h3>
+            <p className="text-sm text-[#607268]">Track a new mole or spot</p>
           </div>
           <ArrowRight className="w-5 h-5 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
         </button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
-          <p className="text-sm text-muted-foreground">Tracked Profiles</p>
-          <p className="text-4xl font-display font-bold text-foreground mt-2">{stats.profiles}</p>
+      <div className="grid grid-cols-2 gap-0 border-b border-[#d7d2c7]">
+        <div className="border-r border-[#d7d2c7] py-5 pr-5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#607268]">Tracked profiles</p>
+          <p className="mt-2 font-display text-5xl font-bold text-[#24332d]">{stats.profiles}</p>
         </div>
-        <div className="bg-card border border-border rounded-2xl p-5 shadow-sm">
-          <p className="text-sm text-muted-foreground">Total Scans</p>
-          <p className="text-4xl font-display font-bold text-foreground mt-2">{stats.scans}</p>
+        <div className="py-5 pl-5">
+          <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#607268]">Total scans</p>
+          <p className="mt-2 font-display text-5xl font-bold text-[#24332d]">{stats.scans}</p>
         </div>
       </div>
 
       {/* Recent Scans */}
       <div>
-        <div className="flex items-center justify-between mb-4">
+        <div className="mb-4 flex items-end justify-between border-b border-[#d7d2c7] pb-4">
           <div>
-            <h2 className="text-2xl font-display font-bold">Recent Scans</h2>
-            <p className="text-sm text-muted-foreground mt-1">Your latest activity at a glance</p>
+            <h2 className="font-display text-3xl font-bold text-[#24332d]">Recent scans</h2>
+            <p className="mt-1 text-sm text-[#607268]">Your latest activity at a glance</p>
           </div>
-          <button onClick={() => navigate('/dashboard/lesions')} className="text-sm text-primary hover:underline">
+          <button onClick={() => navigate('/dashboard/lesions')} className="text-sm font-semibold text-[#b66f45] hover:underline">
             View All
           </button>
         </div>
         
         {recentScans.length === 0 ? (
-          <div className="bg-card border border-border rounded-xl p-8 text-center">
-            <Clock className="w-12 h-12 text-muted-foreground/50 mx-auto mb-3" />
-            <p className="text-muted-foreground">No scans found. Start by creating a lesion profile and scanning it.</p>
+          <div className="border-b border-[#d7d2c7] py-12 text-center">
+            <Clock className="mx-auto mb-3 h-12 w-12 text-[#b9c7a9]" />
+            <p className="text-[#607268]">No scans found. Start by creating a lesion profile and scanning it.</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {recentScans.map((scan) => (
-              <div key={scan.id} className="flex items-center gap-4 p-4 bg-card border border-border rounded-xl hover:shadow-sm transition-shadow">
+          <div>
+            {recentScans.map((scan, index) => (
+              <div key={scan.id} className="group flex items-center gap-5 border-b border-[#d7d2c7] px-3 py-7 transition-colors hover:bg-[#e3ebdf] md:px-5">
+                <span className="w-6 text-xs text-[#a0aaa0]">0{index + 1}</span>
                 {scan.image_url ? (
-                  <img src={scan.image_url} alt="Lesion" className="w-16 h-16 rounded-lg object-cover" />
+                  <img src={scan.image_url} alt="Lesion" className="h-16 w-16 rounded-full object-cover grayscale-[0.15]" />
                 ) : (
-                  <div className="w-16 h-16 rounded-lg bg-muted flex items-center justify-center">
-                    <Camera className="w-6 h-6 text-muted-foreground" />
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[#dce4d4]">
+                    <Camera className="h-6 w-6 text-[#607268]" />
                   </div>
                 )}
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-medium text-foreground truncate">{scan.primary_diagnosis}</h4>
-                  <p className="text-sm text-muted-foreground truncate">
-                    {scan.lesions?.nickname || 'Unassigned profile'} • {formatScanDate(scan.scanned_at)}
+                <div className="min-w-0 flex-1">
+                  <h4 className="truncate font-semibold text-[#24332d]">{scan.primary_diagnosis}</h4>
+                  <p className="truncate text-sm text-[#607268]">
+                    {scan.lesions?.nickname || 'Unassigned profile'} <span className="px-1 text-[#b9c7a9]">/</span> {formatScanDate(scan.scanned_at)}
                   </p>
                 </div>
-                <div className="text-right flex-shrink-0">
+                <div className="flex-shrink-0 pl-3 text-right">
                   <div className={`text-sm font-medium ${
-                    scan.risk_level === 'high' ? 'text-destructive' : 
-                    scan.risk_level === 'medium' ? 'text-amber-600' : 'text-green-600'
+                    scan.risk_level === 'high' ? 'text-[#b34e3d]' :
+                    scan.risk_level === 'medium' ? 'text-[#b66f45]' : 'text-[#2f604e]'
                   }`}>
                     {formatConfidence(scan.confidence_rate)}
                   </div>
                   {scan.pdf_report_url && (
-                    <a href={scan.pdf_report_url} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline flex items-center justify-end gap-1 mt-1">
+                    <a href={scan.pdf_report_url} target="_blank" rel="noreferrer" className="mt-1 flex items-center justify-end gap-1 text-xs text-[#b66f45] hover:underline">
                       <FileText className="w-3 h-3" /> View Report
                     </a>
                   )}

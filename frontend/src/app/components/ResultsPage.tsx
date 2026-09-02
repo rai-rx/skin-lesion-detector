@@ -290,10 +290,10 @@ export function DynamicRiskActionPanel({ riskLevel, classification }: RiskPanelP
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.4 }}
-          className="bg-card rounded-3xl shadow-xl p-6 border-l-4 border-emerald-500 border-t border-r border-b border-border bg-gradient-to-br from-emerald-500/5 to-transparent dark:from-emerald-950/10 dark:to-transparent"
+          className="border-l-4 border-[#2f604e] bg-[#e3ebdf] p-6"
         >
           <div className="flex items-center gap-3 mb-3">
-            <div className="p-2 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-lg">
+            <div className="rounded-full bg-[#c9dcc4] p-2 text-[#2f604e]">
               <ShieldCheck className="w-6 h-6" />
             </div>
             <div>
@@ -335,10 +335,10 @@ export function DynamicRiskActionPanel({ riskLevel, classification }: RiskPanelP
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.4 }}
-          className="bg-card rounded-3xl shadow-xl p-6 border-l-4 border-amber-500 border-t border-r border-b border-border bg-gradient-to-br from-amber-500/5 to-transparent dark:from-amber-950/10 dark:to-transparent"
+          className="border-l-4 border-[#b66f45] bg-[#f2e5d6] p-6"
         >
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded-lg text-amber-500">
+            <div className="rounded-full bg-[#ead1b2] p-2 text-[#b66f45]">
               <AlertTriangle className="w-6 h-6" />
             </div>
             <div>
@@ -355,7 +355,7 @@ export function DynamicRiskActionPanel({ riskLevel, classification }: RiskPanelP
             <button
               onClick={handleFindDermatologist}
               disabled={loadingLocation}
-              className="w-full flex items-center justify-center gap-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold py-3 px-4 rounded-xl transition shadow-sm disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 bg-[#806348] px-4 py-3 text-xs font-semibold text-white transition hover:bg-[#684f3b] disabled:opacity-50"
             >
               <MapPin className="w-4 h-4" /> Locate Nearby Dermatologist
             </button>
@@ -371,11 +371,11 @@ export function DynamicRiskActionPanel({ riskLevel, classification }: RiskPanelP
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.4 }}
-          className="bg-card rounded-3xl shadow-lg p-6 md:p-7 border border-destructive/25 border-l-4 border-l-destructive bg-gradient-to-br from-destructive/[0.08] via-card to-transparent dark:from-destructive/15 dark:via-card dark:to-transparent"
+          className="border-l-4 border-[#b34e3d] bg-[#f3dfd8] p-6 md:p-7"
         >
           <div className="flex items-start justify-between gap-4 mb-5">
             <div className="flex items-start gap-3">
-              <div className="p-2.5 bg-destructive/10 text-destructive rounded-xl shrink-0 mt-0.5">
+              <div className="mt-0.5 shrink-0 rounded-full bg-[#ebc7bc] p-2.5 text-[#8d3f34]">
                 <AlertTriangle className="w-6 h-6" />
               </div>
               <div>
@@ -385,12 +385,12 @@ export function DynamicRiskActionPanel({ riskLevel, classification }: RiskPanelP
                 </h3>
               </div>
             </div>
-            <span className="shrink-0 px-2.5 py-1 rounded-full bg-destructive/10 text-destructive text-[10px] font-bold uppercase tracking-wider">
+            <span className="shrink-0 bg-[#ebc7bc] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[#8d3f34]">
               High risk
             </span>
           </div>
 
-          <div className="rounded-xl bg-background/70 border border-destructive/15 p-4 mb-5">
+          <div className="mb-5 border border-[#d8a89d] bg-[#f8eae5] p-4">
             <p className="text-sm text-muted-foreground leading-relaxed">
               The screening profile correlates with metrics characteristic of <span className="font-semibold text-foreground">{classification}</span>. This result needs definitive in-person evaluation and may require biopsy assessment.
             </p>
@@ -406,7 +406,7 @@ export function DynamicRiskActionPanel({ riskLevel, classification }: RiskPanelP
             <button
               onClick={handleFindDermatologist}
               disabled={loadingLocation}
-              className="w-full flex items-center justify-center gap-2 bg-destructive hover:bg-destructive/90 text-white text-sm font-semibold py-3.5 px-4 rounded-xl transition shadow-md shadow-destructive/15 disabled:opacity-50"
+              className="flex w-full items-center justify-center gap-2 bg-[#8d3f34] px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-[#73342c] disabled:opacity-50"
             >
               <MapPin className="w-4 h-4" />
               {loadingLocation ? "Accessing GPS..." : "Find Nearest Dermatologist"}
@@ -437,11 +437,11 @@ function PrimaryClassificationCard({
   getRiskColor
 }: PrimaryClassificationCardProps) {
   return (
-    <div className="bg-card rounded-3xl shadow-lg p-6 md:p-7 border border-primary/15">
+    <div className="border-y border-[#d7d2c7] bg-[#e3ebdf]/55 p-6 md:p-7">
       <div className="flex flex-wrap items-start justify-between gap-4 mb-7">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary mb-2">Primary finding</p>
-          <h2 className="text-2xl md:text-3xl font-bold text-foreground">{classification}</h2>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2f604e]">Primary finding</p>
+          <h2 className="font-display text-2xl font-bold text-[#24332d] md:text-3xl">{classification}</h2>
         </div>
         <div className={`px-3 py-1.5 rounded-lg text-xs font-bold ${getRiskColor(riskLevel)}`}>
           {riskLevel.toUpperCase()} RISK
@@ -453,11 +453,11 @@ function PrimaryClassificationCard({
           <span className="text-sm text-muted-foreground">Model confidence</span>
           <span className="text-2xl font-mono font-semibold text-foreground">{confidence}%</span>
         </div>
-        <div className="h-2.5 bg-muted rounded-full overflow-hidden">
+        <div className="h-2.5 overflow-hidden rounded-full bg-[#b9c7a9]">
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${confidence}%` }}
-            className="h-full bg-gradient-to-r from-primary to-accent rounded-full"
+            className="h-full rounded-full bg-[#2f604e]"
           />
         </div>
       </div>
@@ -483,19 +483,19 @@ function InteractiveAnalysisCard({
   setOpacity
 }: InteractiveAnalysisCardProps) {
   return (
-    <div className="bg-card rounded-3xl shadow-lg p-5 md:p-6 border border-border overflow-hidden">
+    <div className="border-y border-[#d7d2c7] bg-[#f8f5ee] p-5 md:p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary mb-1">Visual review</p>
-          <h3 className="text-xl font-medium">Interactive Analysis</h3>
+          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.16em] text-[#2f604e]">Visual review</p>
+          <h3 className="font-display text-2xl font-bold text-[#24332d]">Interactive analysis</h3>
         </div>
         <button
           onClick={() => setShowOverlay(!showOverlay)}
           aria-label={showOverlay ? 'Hide heatmap' : 'Show heatmap'}
           className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all ${
             showOverlay
-              ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'
-              : 'bg-muted text-muted-foreground hover:bg-muted/80'
+              ? 'bg-[#2f604e] text-[#f4f0e8] shadow-lg shadow-[#2f604e]/20'
+              : 'bg-[#e3ebdf] text-[#607268] hover:bg-[#c9dcc4]'
           }`}
         >
           <Layers className="w-4 h-4" />
@@ -503,7 +503,7 @@ function InteractiveAnalysisCard({
         </button>
       </div>
 
-      <div className="relative aspect-square rounded-2xl overflow-hidden bg-muted group">
+      <div className="group relative aspect-square overflow-hidden border border-[#9fb39e] bg-[#dce4d4]">
         {/* Base Image Layer */}
         <img
           src={image}
@@ -527,7 +527,7 @@ function InteractiveAnalysisCard({
 
         {/* Small Info Badge */}
         <div className="absolute bottom-4 left-4 right-4 pointer-events-none">
-          <div className="bg-black/40 backdrop-blur-md p-3 rounded-xl border border-white/10">
+          <div className="border border-white/10 bg-black/40 p-3 backdrop-blur-md">
             <p className="text-[10px] text-white/90 leading-tight">
               {showOverlay
                 ? "Showing areas of high diagnostic influence (Red) overlaid on lesion."
@@ -551,7 +551,7 @@ function InteractiveAnalysisCard({
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                   Heatmap Intensity
                 </label>
-                <span className="text-xs font-mono bg-muted px-2 py-0.5 rounded text-primary">
+                <span className="rounded bg-[#e3ebdf] px-2 py-0.5 font-mono text-xs text-[#2f604e]">
                   {Math.round(opacity * 100)}%
                 </span>
               </div>
@@ -566,7 +566,7 @@ function InteractiveAnalysisCard({
               />
             </div>
 
-            <div className="flex gap-4 items-center p-3 bg-accent/5 rounded-xl border border-accent/10 text-[11px] text-muted-foreground">
+            <div className="flex items-center gap-4 border-l-2 border-[#2f604e] bg-[#e3ebdf] p-3 text-[11px] text-[#607268]">
               <div className="flex gap-1 items-center font-medium">
                 <div className="w-2 h-2 rounded-full bg-red-500" /> High
               </div>
@@ -591,8 +591,8 @@ interface OtherPossibleFindingsCardProps {
 
 function OtherPossibleFindingsCard({ secondaryPredictions }: OtherPossibleFindingsCardProps) {
   return (
-    <div className="bg-card rounded-3xl shadow-xl p-8 border border-border">
-      <h3 className="text-xl mb-6">Other Possible Findings</h3>
+    <div className="border-y border-[#d7d2c7] p-8">
+      <h3 className="mb-6 font-display text-2xl font-bold text-[#24332d]">Other possible findings</h3>
       <div className="space-y-5">
         {secondaryPredictions.map((prediction) => (
           <div key={prediction.name} className="space-y-2">
@@ -600,8 +600,8 @@ function OtherPossibleFindingsCard({ secondaryPredictions }: OtherPossibleFindin
               <span className="text-muted-foreground">{prediction.name}</span>
               <span className="font-medium">{prediction.confidence}%</span>
             </div>
-            <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-              <div className="h-full bg-primary/40 rounded-full" style={{ width: `${prediction.confidence}%` }} />
+            <div className="h-1.5 overflow-hidden rounded-full bg-[#b9c7a9]">
+              <div className="h-full rounded-full bg-[#806348]" style={{ width: `${prediction.confidence}%` }} />
             </div>
           </div>
         ))}
@@ -622,10 +622,10 @@ interface AbcdeMatrixCardProps {
 
 function AbcdeMatrixCard({ abcd }: AbcdeMatrixCardProps) {
   return (
-    <div className="bg-card rounded-3xl shadow-xl p-8 border border-border">
-      <div className="flex items-center gap-2 mb-2">
-        <Activity className="w-5 h-5 text-primary" />
-        <h3 className="text-xl font-medium">Morphological ABCDE Criteria Matrix</h3>
+    <div className="border-y border-[#d7d2c7] p-8">
+      <div className="mb-2 flex items-center gap-2">
+      <Activity className="h-5 w-5 text-[#2f604e]" />
+      <h3 className="font-display text-2xl font-bold text-[#24332d]">Morphological ABCDE criteria</h3>
       </div>
       <p className="text-xs text-muted-foreground mb-6">
         Structural measurements extracted deterministically via OpenCV digital processing.
@@ -884,28 +884,19 @@ export function ResultsPage() {
   }, [user, session?.access_token, state?.result?.id]);
 
   return (
-    <div className="min-h-screen bg-background bg-[radial-gradient(circle_at_top_right,rgba(193,123,92,0.12),transparent_34rem)]">
+    <div className="min-h-screen bg-[#f4f0e8] text-[#24332d] bg-[radial-gradient(circle_at_top_right,rgba(89,137,94,0.18),transparent_34rem)]">
       <Header />
 
       <div className="relative overflow-hidden">
         {/* Header Title Section */}
-        <div className="relative z-10 max-w-6xl mx-auto px-6 pt-8">
-          <motion.button
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span>Back to Home</span>
-          </motion.button>
-
+        <div className="relative z-10 mx-auto max-w-6xl px-6 pt-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-10 md:mb-12"
+            className="mb-10 border-b border-[#d7d2c7] pb-10 text-left md:mb-12"
           >
-            <h1 className="text-4xl md:text-5xl mb-3 font-bold tracking-tight text-foreground">Analysis Results</h1>
+            <p className="mb-4 text-xs font-bold uppercase tracking-[0.2em] text-[#2f604e]">02 / Review the observation</p>
+            <h1 className="font-display text-5xl font-bold leading-[0.95] tracking-tight text-[#24332d] md:text-7xl">Analysis Results</h1>
           </motion.div>
         </div>
 
@@ -1039,26 +1030,26 @@ export function ResultsPage() {
           {/* Classification Info Section */}
           {currentInfo && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-              <div className="bg-card rounded-3xl shadow-lg p-6 md:p-8 border border-border">
+              <div className="border-y border-[#d7d2c7] bg-[#f8f5ee] p-6 md:p-8">
                 <div className="max-w-3xl mb-7">
-                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary mb-2">Clinical context</p>
-                  <h2 className="text-2xl md:text-3xl mb-3">About {analysisResult.classification}</h2>
-                  <p className="text-muted-foreground leading-relaxed">{currentInfo.description}</p>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2f604e]">Clinical context</p>
+                  <h2 className="mb-3 font-display text-2xl text-[#24332d] md:text-3xl">About {analysisResult.classification}</h2>
+                  <p className="leading-relaxed text-[#607268]">{currentInfo.description}</p>
                 </div>
                 <div className="grid md:grid-cols-3 gap-4">
-                  <div className="bg-blue-50/70 dark:bg-blue-950/20 rounded-2xl p-5 border border-blue-100/70 dark:border-blue-900/30">
+                  <div className="border-l-2 border-[#607f9a] bg-[#e4edf1] p-5">
                     <h3 className="text-xl text-blue-900 dark:text-blue-400 mb-4 flex items-center gap-2"><Info className="w-5 h-5" /> Characteristics</h3>
                     <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-2">
                       {currentInfo.characteristics.map((c, i) => <li key={i} className="flex items-start gap-2"><span className="shrink-0" aria-hidden="true">•</span><span>{c}</span></li>)}
                     </ul>
                   </div>
-                  <div className="bg-amber-50/70 dark:bg-amber-950/20 rounded-2xl p-5 border border-amber-100/70 dark:border-amber-900/30">
+                  <div className="border-l-2 border-[#b66f45] bg-[#f2e5d6] p-5">
                     <h3 className="text-xl text-amber-900 dark:text-amber-400 mb-4 flex items-center gap-2"><AlertTriangle className="w-5 h-5" /> Risks</h3>
                     <ul className="text-sm text-amber-800 dark:text-amber-300 space-y-2">
                       {currentInfo.dangers.map((d, i) => <li key={i} className="flex items-start gap-2"><span className="shrink-0" aria-hidden="true">•</span><span>{d}</span></li>)}
                     </ul>
                   </div>
-                  <div className="bg-green-50/70 dark:bg-green-950/20 rounded-2xl p-5 border border-green-100/70 dark:border-green-900/30">
+                  <div className="border-l-2 border-[#2f604e] bg-[#e3ebdf] p-5">
                     <h3 className="text-xl text-green-900 dark:text-green-400 mb-4 flex items-center gap-2"><CheckCircle className="w-5 h-5" /> Actions</h3>
                     <ul className="text-sm text-green-800 dark:text-green-300 space-y-2">
                       {currentInfo.recommendations.map((r, i) => <li key={i} className="flex items-start gap-2"><span className="shrink-0" aria-hidden="true">•</span><span>{r}</span></li>)}
@@ -1070,7 +1061,7 @@ export function ResultsPage() {
           )}
 
           {/* Disclaimer */}
-          <div className="bg-amber-50 dark:bg-amber-950/10 border-2 border-amber-200 dark:border-amber-900/40 rounded-3xl p-8 mb-8 text-amber-900 dark:text-amber-400">
+          <div className="mb-8 border-l-4 border-[#b66f45] bg-[#f2e5d6] p-8 text-[#684f3b]">
             <h3 className="text-2xl mb-3 flex items-center gap-2"><AlertTriangle /> Medical Disclaimer</h3>
             <p className="mb-4">This tool is for <strong>educational purposes only</strong>. It is not a formal diagnostic statement.</p>
             <p className="font-bold">Always consult a qualified dermatologist for definitive clinical skin concerns.</p>
@@ -1080,13 +1071,13 @@ export function ResultsPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
             <button
               onClick={() => void handleExportPDF()}
-              className="px-7 py-3.5 bg-emerald-600 text-white font-medium rounded-xl shadow-lg hover:bg-emerald-700 transition-all flex items-center justify-center gap-3 shadow-emerald-600/10"
+              className="flex items-center justify-center gap-3 bg-[#2f604e] px-7 py-3.5 font-medium text-white shadow-lg transition-all hover:bg-[#244c3e]"
             >
               <FileText className="w-5 h-5" /> Export Clinical PDF Report
             </button>
             <button
               onClick={() => navigate('/')}
-              className="px-7 py-3.5 bg-background border border-border text-foreground font-medium rounded-xl shadow-sm flex items-center justify-center gap-3 hover:bg-muted/50 transition-colors"
+              className="flex items-center justify-center gap-3 border border-[#b9c7a9] bg-transparent px-7 py-3.5 font-medium text-[#2f604e] transition-colors hover:bg-[#e3ebdf]"
             >
               <Home className="w-5 h-5" /> Return to Home
             </button>

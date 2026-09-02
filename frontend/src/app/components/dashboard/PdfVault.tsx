@@ -121,7 +121,7 @@ export function PdfVault() {
       ) : (
         <div className="space-y-4">
           {scans.map(scan => (
-            <div key={scan.id} className="bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+            <div key={scan.id} className="bg-card border border-border rounded-xl overflow-hidden shadow-sm hover:bg-[#e3ebdf] hover:shadow-md transition-all">
               <div className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5">
                 <div className="w-20 h-20 rounded-lg bg-muted overflow-hidden flex-shrink-0">
                   {scan.image_url ? (

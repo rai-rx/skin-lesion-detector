@@ -1,6 +1,7 @@
 
   import { createRoot } from "react-dom/client";
   import App from "./app/App.tsx";
+  import { AuthProvider } from "./contexts/AuthContext";
   import "./styles/index.css";
 
   // Ensure theme is applied immediately
@@ -9,5 +10,9 @@
   document.body.style.backgroundColor = "#FAF7F2";
   document.body.style.color = "#3E2723";
 
-  createRoot(document.getElementById("root")!).render(<App />);
+  createRoot(document.getElementById("root")!).render(
+    <AuthProvider>
+      <App />
+    </AuthProvider>,
+  );
   

@@ -180,7 +180,7 @@ export function LesionProfiles() {
               }}
               role="button"
               tabIndex={0}
-              className="relative bg-card border border-border p-6 rounded-2xl text-left hover:shadow-lg hover:-translate-y-0.5 transition-all group flex flex-col h-full"
+              className="relative bg-card border border-border p-6 rounded-2xl text-left hover:bg-[#e3ebdf] hover:shadow-lg hover:-translate-y-0.5 transition-all group flex flex-col h-full"
             >
               <div className="absolute top-4 right-4" onClick={(event) => event.stopPropagation()}>
                 <DropdownMenu>

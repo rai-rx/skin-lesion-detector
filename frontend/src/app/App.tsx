@@ -2,7 +2,6 @@ import { createBrowserRouter, Navigate, RouterProvider } from 'react-router';
 import { LandingPage } from './components/LandingPage';
 import { ScanPage } from './components/ScanPage';
 import { ResultsPage } from './components/ResultsPage';
-import { AuthProvider } from '../contexts/AuthContext';
 import { LoginPage } from './components/auth/LoginPage';
 import { RegisterPage } from './components/auth/RegisterPage';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
@@ -67,9 +66,7 @@ export default function App() {
       minHeight: '100vh',
       width: '100%'
     }}>
-      <AuthProvider>
-        <RouterProvider router={router} />
-      </AuthProvider>
+      <RouterProvider router={router} />
     </div>
   );
 }
