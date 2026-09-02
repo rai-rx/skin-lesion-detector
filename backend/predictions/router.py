@@ -210,12 +210,13 @@ async def get_user_lesions(user: Dict[str, Any] = Depends(get_current_user)):
 async def get_user_lesion(lesion_id: str, user: Dict[str, Any] = Depends(get_current_user)):
     user_id = user.get("sub")
     try:
-        res = supabase.table("lesions").select("*").eq("id", lesion_id).single().execute()
-        if not res.data:
+        res = supabase.table("lesions").select("*").eq("id", lesion_id).execute()
+        if not res.data or len(res.data) == 0:
             raise HTTPException(status_code=404, detail="Lesion profile not found")
-        if res.data.get("user_id") != user_id:
+        item = res.data[0]
+        if item.get("user_id") != user_id:
             raise HTTPException(status_code=403, detail="Not authorized to view this lesion")
-        return res.data
+        return item
     except HTTPException:
         raise
     except Exception as e:
@@ -227,10 +228,10 @@ async def get_user_lesion(lesion_id: str, user: Dict[str, Any] = Depends(get_cur
 async def get_user_lesion_scans(lesion_id: str, user: Dict[str, Any] = Depends(get_current_user)):
     user_id = user.get("sub")
     try:
-        lesion_res = supabase.table("lesions").select("id, user_id").eq("id", lesion_id).single().execute()
-        if not lesion_res.data:
+        lesion_res = supabase.table("lesions").select("id, user_id").eq("id", lesion_id).execute()
+        if not lesion_res.data or len(lesion_res.data) == 0:
             raise HTTPException(status_code=404, detail="Lesion profile not found")
-        if lesion_res.data.get("user_id") != user_id:
+        if lesion_res.data[0].get("user_id") != user_id:
             raise HTTPException(status_code=403, detail="Not authorized to view this lesion")
 
         scan_res = supabase.table("scans").select("*").eq("lesion_id", lesion_id).order("scanned_at", desc=True).execute()
@@ -255,11 +256,16 @@ async def create_user_lesion(payload: Dict[str, Any], user: Dict[str, Any] = Dep
             "user_id": user.get("sub"),
             "nickname": nickname,
             "body_location": body_location,
-        }).select("*, scans(id)").single().execute()
+        }).execute()
 
-        if hasattr(res, "error") and res.error:
+        created_data = res.data[0] if (res.data and len(res.data) > 0) else res.data
+        if not created_data:
             raise HTTPException(status_code=500, detail="Unable to create lesion profile")
-        return res.data
+
+        if isinstance(created_data, dict) and "scans" not in created_data:
+            created_data["scans"] = []
+
+        return created_data
     except HTTPException:
         raise
     except Exception as e:
@@ -275,10 +281,10 @@ async def update_user_lesion(
 ):
     user_id = user.get("sub")
     try:
-        current = supabase.table("lesions").select("user_id").eq("id", lesion_id).single().execute()
-        if not current.data:
+        current = supabase.table("lesions").select("user_id").eq("id", lesion_id).execute()
+        if not current.data or len(current.data) == 0:
             raise HTTPException(status_code=404, detail="Lesion profile not found")
-        if current.data.get("user_id") != user_id:
+        if current.data[0].get("user_id") != user_id:
             raise HTTPException(status_code=403, detail="Not authorized to update this lesion")
 
         updates = {}
@@ -291,12 +297,11 @@ async def update_user_lesion(
             updates["body_location"] = str(payload["body_location"]).strip() or "Unspecified body location"
 
         if not updates:
-            return current.data
+            return current.data[0]
 
-        res = supabase.table("lesions").update(updates).eq("id", lesion_id).select("*").single().execute()
-        if hasattr(res, "error") and res.error:
-            raise HTTPException(status_code=500, detail="Unable to update lesion profile")
-        return res.data
+        res = supabase.table("lesions").update(updates).eq("id", lesion_id).execute()
+        updated_data = res.data[0] if (res.data and len(res.data) > 0) else res.data
+        return updated_data
     except HTTPException:
         raise
     except Exception as e:
@@ -346,20 +351,17 @@ async def save_pdf_report(
 ):
     user_id = user.get("sub")
 
-    scan_res = supabase.table("scans").select("id, lesion_id, pdf_report_url").eq("id", scan_id).single().execute()
-    if not scan_res.data:
+    scan_res = supabase.table("scans").select("id, lesion_id, pdf_report_url").eq("id", scan_id).execute()
+    if not scan_res.data or len(scan_res.data) == 0:
         raise HTTPException(status_code=404, detail="Scan not found")
 
-    lesion_id = scan_res.data.get("lesion_id")
-    lesion_res = supabase.table("lesions").select("user_id").eq("id", lesion_id).single().execute()
-    if not lesion_res.data or lesion_res.data.get("user_id") != user_id:
+    lesion_id = scan_res.data[0].get("lesion_id")
+    lesion_res = supabase.table("lesions").select("user_id").eq("id", lesion_id).execute()
+    if not lesion_res.data or len(lesion_res.data) == 0 or lesion_res.data[0].get("user_id") != user_id:
         raise HTTPException(status_code=403, detail="Not authorized to update this scan")
 
     pdf_bytes = await file.read()
     pdf_url = upload_pdf_report(user_id, pdf_bytes)
 
     update_res = supabase.table("scans").update({"pdf_report_url": pdf_url}).eq("id", scan_id).execute()
-    if update_res.error:
-        raise HTTPException(status_code=500, detail="Unable to update PDF report URL")
-
     return {"pdf_report_url": pdf_url}
