@@ -25,7 +25,7 @@ LABEL_MAP = {
     "VASC": "Vascular Lesion"
 }
 
-IMG_SIZE = 384
+IMG_SIZE = 480
 MODEL_DIR = Path(__file__).resolve().parent.parent
 
 MODEL_PATHS = [

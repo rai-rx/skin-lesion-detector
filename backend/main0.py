@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 from PIL import Image
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Depends
-from typing import List, Optional
+from typing import Any, List, Optional, cast
 from fastapi.middleware.cors import CORSMiddleware
 import cv2
 from auth.dependencies import get_optional_user, get_current_user
@@ -48,7 +48,7 @@ LABEL_MAP = {
     "VASC": "Vascular Lesion"
 }
 
-IMG_SIZE = 384
+IMG_SIZE = 480
 
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
@@ -316,8 +316,10 @@ async def predict_lesion(
     crop_params = [crop_x, crop_y, crop_width, crop_height]
     if all(param is not None for param in crop_params):
         try:
+            crop_x_value, crop_y_value, crop_width_value, crop_height_value = crop_params
+            assert crop_x_value is not None and crop_y_value is not None and crop_width_value is not None and crop_height_value is not None
             img_processed = apply_custom_crop(
-                original_img, float(crop_x), float(crop_y), float(crop_width), float(crop_height), IMG_SIZE
+                original_img, crop_x_value, crop_y_value, crop_width_value, crop_height_value, IMG_SIZE
             )
         except Exception:
             img_processed = center_crop_and_resize(original_img, IMG_SIZE)
@@ -376,11 +378,11 @@ async def predict_lesion(
         if heatmap_raw is not None:
             heatmap_resized = cv2.resize(heatmap_raw, (orig_w, orig_h))
             heatmap_uint8 = np.uint8(255 * heatmap_resized)
-            heatmap_color = cv2.applyColorMap(heatmap_uint8, cv2.COLORMAP_JET)
+            heatmap_color = cv2.applyColorMap(cast(Any, heatmap_uint8), cv2.COLORMAP_JET)
             
             _, buffer = cv2.imencode('.png', heatmap_color)
             heatmap_bytes = buffer.tobytes()
-            heatmap_base64 = base64.b64encode(buffer).decode('utf-8')
+            heatmap_base64 = base64.b64encode(buffer.tobytes()).decode('utf-8')
             heatmap_data_uri = f"data:image/png;base64,{heatmap_base64}"
         else:
             heatmap_data_uri = None
