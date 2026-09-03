@@ -71,6 +71,9 @@ export function LandingPage() {
                     </button>
                   </div>
 
+                  <div className="flex items-center gap-6 mt-8 text-sm text-muted-foreground">
+                    <span className="inline-flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-700" /> Educational use</span>
+                  </div>
                 </motion.div>
 
                 <motion.div
@@ -160,7 +163,7 @@ export function LandingPage() {
               <div>
                 <p className="text-sm font-semibold tracking-[0.16em] uppercase text-accent mb-3">Explore the library</p>
                 <h2 className="text-4xl leading-tight">Context for the conversation.</h2>
-                <p className="text-muted-foreground mt-3 max-w-2xl leading-relaxed">Browse example images to compare common visual patterns. These references are not a substitute for an examination.</p>
+                <p className="text-muted-foreground mt-3 max-w-2xl leading-relaxed">Browse example images to learn the difference between common visual patterns. Samples are educational and are not a substitute for an examination.</p>
               </div>
             </div>
 
@@ -172,7 +175,7 @@ export function LandingPage() {
 
           <footer className="border-t border-border bg-card/50">
             <div className="max-w-7xl mx-auto px-6 lg:px-8 py-8 flex flex-col md:flex-row gap-4 md:gap-8 md:justify-start text-sm text-muted-foreground">
-              <p><strong className="text-foreground">Medical disclaimer:</strong> SkinEleven provides screening support and does not diagnose or replace professional medical advice.</p>
+              <p><strong className="text-foreground">Medical disclaimer:</strong> SkinEleven is educational and does not diagnose or replace professional medical advice.</p>
               <p className="shrink-0">When in doubt, contact a qualified healthcare provider.</p>
             </div>
           </footer>
