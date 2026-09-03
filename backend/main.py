@@ -3,8 +3,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from config import settings
 from predictions.router import router as predictions_router
 from admin.router import router as admin_router
+from storage import ensure_storage_buckets
 
 app = FastAPI(title="SkinEleven Backend API")
+
+@app.on_event("startup")
+async def provision_storage_buckets():
+    try:
+        ensure_storage_buckets()
+    except Exception as error:
+        print(f"Storage bucket provisioning warning: {error}")
 
 # Allow requests from any origin (for development)
 # In production, specify exact domains
