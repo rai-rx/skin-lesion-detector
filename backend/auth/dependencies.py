@@ -46,11 +46,29 @@ def verify_supabase_token(token: str) -> Dict[str, Any]:
         )
         return payload
     except (JWTError, requests.RequestException, ValueError) as e:
+        # Supabase can rotate signing keys. Validate through Auth as a fallback
+        # so a valid session is not rejected because local JWT metadata is stale.
+        try:
+            response = requests.get(
+                f"{settings.SUPABASE_URL.rstrip('/')}/auth/v1/user",
+                headers={
+                    "apikey": settings.SUPABASE_SERVICE_ROLE_KEY,
+                    "Authorization": f"Bearer {token}",
+                },
+                timeout=5,
+            )
+            if response.ok:
+                user = response.json()
+                if isinstance(user, dict) and user.get("id"):
+                    return {"sub": user["id"], "email": user.get("email")}
+        except (requests.RequestException, ValueError):
+            pass
+
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Could not validate credentials: {str(e)}",
+            detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
-        )
+        ) from e
 
 def get_current_user(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)) -> Dict[str, Any]:
     if not credentials:
