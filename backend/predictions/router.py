@@ -60,6 +60,33 @@ def _decode_data_url(data_url: str) -> tuple[bytes, str]:
         extension = 'jpg'
     return base64.b64decode(encoded), extension
 
+@router.post("/validate-image")
+async def validate_scan_image(file: UploadFile = File(...)):
+    contents = await _read_limited(file, MAX_SCAN_BYTES)
+    if len(contents) > MAX_SCAN_BYTES:
+        raise HTTPException(status_code=413, detail="Image exceeds the 10 MB upload limit")
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=415, detail="Only image uploads are accepted")
+    if not contents:
+        raise HTTPException(status_code=400, detail="The uploaded image is empty")
+
+    try:
+        image = Image.open(io.BytesIO(contents)).convert("RGB")
+    except Exception:
+        raise HTTPException(status_code=400, detail="The uploaded file is not a valid image")
+
+    if not verify_is_skin_tissue(image):
+        raise HTTPException(
+            status_code=400,
+            detail="This image does not appear to contain human skin. Please upload a clear photo of a skin lesion.",
+        )
+
+    is_valid, error_msg = validate_image_quality(image)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
+
+    return {"valid": True, "message": "Image verified for skin-lesion analysis"}
+
 @router.post("/predict")
 async def predict_lesion(
     file: UploadFile = File(...),
