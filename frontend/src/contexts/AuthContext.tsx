@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../services/supabaseClient';
-import { getApiUrl } from '../services/apiUrl';
+import { getApiUrl, apiFetch } from '../services/apiUrl';
 
 interface AuthContextType {
   user: User | null;
@@ -20,13 +20,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
+    // Check active sessions and sets the user
     supabase.auth.getSession()
-      .then(async ({ data: { session }, error }) => {
-        if (error) throw error;
+      .then(({ data: { session } }) => {
         setSession(session);
         setUser(session?.user ?? null);
-        await checkAdminStatus(session?.user?.id, session?.access_token);
+        void checkAdminStatus(session?.user?.id, session?.access_token);
       })
       .catch((error) => {
         console.error('Unable to restore authentication session:', error);
@@ -53,7 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     
     try {
-      const response = await fetch(`${getApiUrl()}/admin/status`, {
+      const response = await apiFetch('/admin/status', {
         headers: { Authorization: `Bearer ${accessToken}` },
       });
       setIsAdmin(response.ok);

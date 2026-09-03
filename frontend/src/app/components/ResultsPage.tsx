@@ -10,7 +10,7 @@ import { Header } from './Header';
 import type { ModelResult } from '@/services/modelService';
 import { generateScanPdf, downloadScanPdf, type ScanPdfData } from '../../services/generatePdf';
 import { useAuth } from '../../contexts/AuthContext';
-import { getApiUrl } from '../../services/apiUrl';
+import { getApiUrl, apiFetch } from '../../services/apiUrl';
 import { queuePendingScan } from '../../services/pendingScans';
 
 
@@ -728,10 +728,9 @@ export function ResultsPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, session } = useAuth();
-  const state = location.state as LocationState;
-
-  const [showOverlay, setShowOverlay] = useState(false);
-  const [opacity, setOpacity] = useState(0.6);
+  const state = (location.state as LocationState) || {};
+  const [activeTab, setActiveTab] = useState<'overview' | 'explainability' | 'clinical' | 'education'>('overview');
+  const [isExporting, setIsExporting] = useState(false);
   const autoSaveStarted = useRef(false);
 
   const uploadPdfReport = async (scanId: string, blob: Blob) => {
@@ -741,7 +740,7 @@ export function ResultsPage() {
       form.append('scan_id', scanId);
       form.append('file', new File([blob], `report-${scanId}-${timestamp}.pdf`, { type: 'application/pdf' }));
 
-      const res = await fetch(`${getApiUrl()}/reports`, {
+      const res = await apiFetch('/reports', {
         method: 'POST',
         body: form,
         headers: {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../../contexts/AuthContext';
-import { getApiUrl } from '../../../services/apiUrl';
+import { getApiUrl, apiFetch, getApiHeaders } from '../../../services/apiUrl';
 import { FolderPlus, Loader2, ArrowRight, MoreVertical, Trash2, AlertTriangle, Crosshair, ScanLine } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -27,16 +27,11 @@ export function LesionProfiles() {
     if (user && session?.access_token) loadProfiles();
   }, [user, session?.access_token]);
 
-  const getAuthHeaders = () => ({
-    Authorization: `Bearer ${session?.access_token}`,
-    'Content-Type': 'application/json',
-  });
-
   const loadProfiles = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${getApiUrl()}/me/lesions`, {
-        headers: getAuthHeaders(),
+      const response = await apiFetch('/me/lesions', {
+        headers: getApiHeaders(session?.access_token),
       });
 
       if (!response.ok) throw new Error('Unable to load lesion profiles');
@@ -55,9 +50,9 @@ export function LesionProfiles() {
     setIsCreating(true);
 
     try {
-      const response = await fetch(`${getApiUrl()}/me/lesions`, {
+      const response = await apiFetch('/me/lesions', {
         method: 'POST',
-        headers: getAuthHeaders(),
+        headers: getApiHeaders(session?.access_token, { 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           nickname,
           body_location: bodyLocation,
@@ -82,9 +77,9 @@ export function LesionProfiles() {
     if (!profileToDelete) return;
     setIsDeleting(true);
     try {
-      const response = await fetch(`${getApiUrl()}/me/lesions/${profileToDelete.id}`, {
+      const response = await apiFetch(`/me/lesions/${profileToDelete.id}`, {
         method: 'DELETE',
-        headers: getAuthHeaders(),
+        headers: getApiHeaders(session?.access_token),
       });
 
       if (!response.ok) {

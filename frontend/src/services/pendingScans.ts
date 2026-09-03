@@ -38,7 +38,7 @@ export async function importPendingScans(accessToken: string): Promise<boolean> 
   const imported: PendingScan[] = [];
   for (const scan of scans) {
     try {
-      const response = await fetch(`${getApiUrl()}/me/import-scan`, {
+      const response = await apiFetch('/me/import-scan', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${accessToken}`,

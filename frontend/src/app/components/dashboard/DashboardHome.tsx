@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useAuth } from '../../../contexts/AuthContext';
-import { getApiUrl } from '../../../services/apiUrl';
+import { getApiUrl, apiFetch } from '../../../services/apiUrl';
 import { Camera, FolderPlus, Clock, ArrowRight, FileText, ScanLine } from 'lucide-react';
 import { AdminDashboard } from '../admin/AdminDashboard';
 
@@ -34,7 +34,7 @@ export function DashboardHome() {
 
   const loadDashboardData = async () => {
     try {
-      const response = await fetch(`${getApiUrl()}/me/lesions`, {
+      const response = await apiFetch('/me/lesions', {
         headers: {
           Authorization: `Bearer ${session?.access_token}`,
         },

@@ -33,3 +33,29 @@ export function getApiUrl(): string {
 
   return normalizedUrl;
 }
+
+export function getApiHeaders(token?: string | null, customHeaders?: Record<string, string>): Record<string, string> {
+  const headers: Record<string, string> = {
+    'ngrok-skip-browser-warning': 'true',
+    ...(customHeaders || {}),
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
+export async function apiFetch(path: string, options: RequestInit = {}): Promise<Response> {
+  const baseUrl = getApiUrl();
+  const url = path.startsWith('http') ? path : `${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+
+  const headers = new Headers(options.headers || {});
+  if (!headers.has('ngrok-skip-browser-warning')) {
+    headers.set('ngrok-skip-browser-warning', 'true');
+  }
+
+  return fetch(url, {
+    ...options,
+    headers,
+  });
+}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
-import { getApiUrl } from '../../../services/apiUrl';
+import { getApiUrl, apiFetch } from '../../../services/apiUrl';
 import { FileText, Download, Calendar, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '../ui/button';
@@ -20,7 +20,7 @@ export function PdfVault() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${getApiUrl()}/me/recent-scans`, {
+      const response = await apiFetch('/me/recent-scans', {
         headers: {
           Authorization: `Bearer ${session?.access_token}`,
         },
@@ -68,7 +68,7 @@ export function PdfVault() {
           form.append('scan_id', scan.id);
           form.append('file', new File([blob], `report-${scan.id}-${timestamp}.pdf`, { type: 'application/pdf' }));
 
-          const res = await fetch(`${getApiUrl()}/reports`, {
+          const res = await apiFetch('/reports', {
             method: 'POST',
             body: form,
             headers: {

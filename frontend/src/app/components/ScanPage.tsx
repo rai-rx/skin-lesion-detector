@@ -6,7 +6,7 @@ import Cropper from 'react-easy-crop';
 import { Header } from './Header';
 import { useLocation } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
-import { getApiUrl } from '../../services/apiUrl';
+import { getApiUrl, apiFetch } from '../../services/apiUrl';
 import { supabase } from '../../services/supabaseClient';
 import { useEffect } from 'react';
 
@@ -73,7 +73,7 @@ export function ScanPage() {
       if (!user || !session?.access_token) return;
 
       try {
-        const response = await fetch(`${getApiUrl()}/me/lesions`, {
+        const response = await apiFetch('/me/lesions', {
           headers: {
             Authorization: `Bearer ${session.access_token}`,
           },
@@ -167,7 +167,7 @@ export function ScanPage() {
     const bodyLocation = (newLesionLocation || 'Unspecified').trim();
 
     try {
-      const response = await fetch(`${getApiUrl()}/me/lesions`, {
+      const response = await apiFetch('/me/lesions', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${session?.access_token}`,

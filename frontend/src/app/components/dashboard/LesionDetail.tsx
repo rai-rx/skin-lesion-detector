@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import { useAuth } from '../../../contexts/AuthContext';
-import { getApiUrl } from '../../../services/apiUrl';
+import { getApiUrl, apiFetch, getApiHeaders } from '../../../services/apiUrl';
 import { ArrowLeft, Camera, Activity, Calendar, FileText, Check, X } from 'lucide-react';
 import { Button } from '../ui/button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -27,22 +27,14 @@ export function LesionDetail() {
     }
   }, [id, session?.access_token]);
 
-  const getAuthHeaders = (includeJson = false) => {
-    const headers: Record<string, string> = {
-      Authorization: `Bearer ${session?.access_token}`,
-    };
-    if (includeJson) headers['Content-Type'] = 'application/json';
-    return headers;
-  };
-
   const handleProfileSave = async () => {
     if (!id || !profile) return;
 
     setIsSavingProfile(true);
     try {
-      const response = await fetch(`${getApiUrl()}/me/lesions/${id}`, {
+      const response = await apiFetch(`/me/lesions/${id}`, {
         method: 'PUT',
-        headers: getAuthHeaders(true),
+        headers: getApiHeaders(session?.access_token, { 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           nickname: nicknameInput.trim() || profile.nickname,
           body_location: locationInput.trim() || profile.body_location,
@@ -64,9 +56,9 @@ export function LesionDetail() {
   const handleAccuracyFeedback = async (scanId: string, feedback: 'accurate' | 'inaccurate') => {
     setSavingFeedbackId(scanId);
     try {
-      const response = await fetch(`${getApiUrl()}/me/scans/${scanId}/accuracy`, {
+      const response = await apiFetch(`/me/scans/${scanId}/accuracy`, {
         method: 'PATCH',
-        headers: getAuthHeaders(true),
+        headers: getApiHeaders(session?.access_token, { 'Content-Type': 'application/json' }),
         body: JSON.stringify({ feedback }),
       });
       if (!response.ok) {
@@ -87,8 +79,8 @@ export function LesionDetail() {
 
   const loadProfileAndScans = async () => {
     try {
-      const profileResponse = await fetch(`${getApiUrl()}/me/lesions/${id}`, {
-        headers: getAuthHeaders(),
+      const profileResponse = await apiFetch(`/me/lesions/${id}`, {
+        headers: getApiHeaders(session?.access_token),
       });
 
       if (!profileResponse.ok) throw new Error('Unable to load lesion profile');
@@ -97,8 +89,8 @@ export function LesionDetail() {
       setNicknameInput(profileData.nickname || '');
       setLocationInput(profileData.body_location || '');
 
-      const scansResponse = await fetch(`${getApiUrl()}/me/lesions/${id}/scans`, {
-        headers: getAuthHeaders(),
+      const scansResponse = await apiFetch(`/me/lesions/${id}/scans`, {
+        headers: getApiHeaders(session?.access_token),
       });
       if (!scansResponse.ok) throw new Error('Unable to load lesion scans');
       const scansData = await scansResponse.json();
