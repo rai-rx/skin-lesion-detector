@@ -168,6 +168,10 @@ async def predict_lesion(
 
         if lesion_id:
             try:
+                lesion_owner = supabase.table("lesions").select("user_id").eq("id", lesion_id).limit(1).execute()
+                if not lesion_owner.data or lesion_owner.data[0].get("user_id") != user_id:
+                    raise HTTPException(status_code=403, detail="Not authorized to save to this lesion profile")
+
                 # Upload image
                 image_url = upload_scan_image(user_id, contents)
                 hm_url = upload_heatmap_image(user_id, heatmap_bytes) if heatmap_bytes else None
