@@ -58,7 +58,6 @@ export function DashboardLayout() {
               <Link
                 key={item.name}
                 to={item.href}
-                onClick={() => setSidebarOpen(false)}
                 className={`group flex items-center gap-3 border-l-2 px-3 py-3 transition-colors ${
                   active
                     ? 'border-[#d2b17f] bg-[#57483c] text-[#f8f0e5]'
@@ -76,7 +75,7 @@ export function DashboardLayout() {
         <div className="border-t border-[#665548] p-4">
           <button
             type="button"
-            onClick={() => { setSidebarOpen(false); navigate('/settings'); }}
+            onClick={() => navigate('/settings')}
             aria-label="Open account settings"
             className="group flex w-full items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-[#4c4036]"
           >
@@ -176,7 +175,6 @@ export function DashboardLayout() {
         {!sidebarOpen && <Header onMenuClick={() => setSidebarOpen(true)} />}
 
         <main
-          onClick={() => setSidebarOpen(false)}
           className="relative flex-1 overflow-y-auto bg-[radial-gradient(circle_at_85%_0%,rgba(89,137,94,0.18),transparent_28rem)] p-4 md:p-8 lg:p-12"
         >
           <motion.div
