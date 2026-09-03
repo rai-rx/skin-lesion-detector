@@ -729,6 +729,8 @@ export function ResultsPage() {
   const navigate = useNavigate();
   const { user, session } = useAuth();
   const state = (location.state as LocationState) || {};
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [opacity, setOpacity] = useState(0.6);
   const [activeTab, setActiveTab] = useState<'overview' | 'explainability' | 'clinical' | 'education'>('overview');
   const [isExporting, setIsExporting] = useState(false);
   const autoSaveStarted = useRef(false);
