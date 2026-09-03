@@ -7,6 +7,7 @@ import { Button } from '../ui/button';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { SymptomLogger } from './SymptomLogger';
 import { format } from 'date-fns';
+import { generateScanPdf, type ScanPdfData } from '../../../services/generatePdf';
 
 export function LesionDetail() {
   const { id } = useParams();
@@ -20,6 +21,7 @@ export function LesionDetail() {
   const [nicknameInput, setNicknameInput] = useState('');
   const [locationInput, setLocationInput] = useState('');
   const [savingFeedbackId, setSavingFeedbackId] = useState<string | null>(null);
+  const [openingPdfId, setOpeningPdfId] = useState<string | null>(null);
 
   useEffect(() => {
     if (id && session?.access_token) {
@@ -82,6 +84,44 @@ export function LesionDetail() {
       console.error('Unable to save scan feedback:', error);
     } finally {
       setSavingFeedbackId(null);
+    }
+  };
+
+  const handleOpenPdf = async (scan: any) => {
+    setOpeningPdfId(scan.id);
+    const reportWindow = window.open('', '_blank');
+    try {
+      if (scan.pdf_report_url) {
+        if (!reportWindow) throw new Error('The PDF window was blocked. Please allow pop-ups and try again.');
+        reportWindow.location.href = scan.pdf_report_url;
+      } else {
+        const pdfData: ScanPdfData = {
+          classification: scan.primary_diagnosis || 'Unknown',
+          confidence: scan.confidence_rate || 0,
+          riskLevel: scan.risk_level || 'low',
+          secondaryPredictions: scan.secondary_findings || [],
+          abcdeMetrics: scan.abcde_metrics || {
+            asymmetry: 0,
+            borderIrregularity: 0,
+            colorDivergence: 0,
+            diameterProfile: 0,
+            evolvingTracking: 0,
+          },
+          imageUrl: scan.image_url || '',
+          heatmapUrl: scan.heatmap_url,
+        };
+        const blob = await generateScanPdf(pdfData);
+        const url = URL.createObjectURL(blob);
+        if (!reportWindow) throw new Error('The PDF window was blocked. Please allow pop-ups and try again.');
+        reportWindow.location.href = url;
+        window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      }
+    } catch (error) {
+      reportWindow?.close();
+      console.error('PDF opening failed:', error);
+      window.alert(error instanceof Error ? error.message : 'Unable to open this PDF report. Please try again.');
+    } finally {
+      setOpeningPdfId(null);
     }
   };
 
@@ -251,11 +291,9 @@ export function LesionDetail() {
                     )}
                   </div>
                   
-                  {scan.pdf_report_url && (
-                    <Button variant="outline" size="sm" className="gap-2" onClick={(e) => { e.stopPropagation(); window.open(scan.pdf_report_url, '_blank'); }}>
-                      <FileText className="w-4 h-4" /> PDF
-                    </Button>
-                  )}
+                  <Button variant="outline" size="sm" className="gap-2" disabled={openingPdfId === scan.id} onClick={(e) => { e.stopPropagation(); void handleOpenPdf(scan); }}>
+                    <FileText className="w-4 h-4" /> {openingPdfId === scan.id ? 'Opening...' : 'Open PDF'}
+                  </Button>
                 </div>
                 
                 {/* Expanded Details */}
