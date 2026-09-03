@@ -32,9 +32,6 @@ from predictions.inference import (
 
 router = APIRouter()
 
-MAX_SCAN_BYTES = 10 * 1024 * 1024
-MAX_REPORT_BYTES = 10 * 1024 * 1024
-
 async def _read_limited(file: UploadFile, maximum: int) -> bytes:
     chunks = []
     total = 0
@@ -44,6 +41,8 @@ async def _read_limited(file: UploadFile, maximum: int) -> bytes:
         if total > maximum:
             break
     return b"".join(chunks)
+
+MAX_SCAN_BYTES = 10 * 1024 * 1024
 
 def _require_user_id(user: Dict[str, Any]) -> str:
     user_id = user.get("sub")
@@ -100,17 +99,7 @@ async def predict_lesion(
     scan_note: Optional[str] = Form(None),
     user: Optional[Dict[str, Any]] = Depends(get_optional_user)
 ):
-    contents = await _read_limited(file, MAX_SCAN_BYTES)
-    if len(contents) > MAX_SCAN_BYTES:
-        raise HTTPException(status_code=413, detail="Image exceeds the 10 MB upload limit")
-    if not file.content_type or not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=415, detail="Only image uploads are accepted")
-    if not contents:
-        raise HTTPException(status_code=400, detail="The uploaded image is empty")
-    try:
-        Image.open(io.BytesIO(contents)).verify()
-    except Exception:
-        raise HTTPException(status_code=400, detail="The uploaded file is not a valid image")
+    contents = await file.read()
     original_img = Image.open(io.BytesIO(contents)).convert("RGB")
     orig_w, orig_h = original_img.size
 
@@ -173,7 +162,7 @@ async def predict_lesion(
             if heatmap_raw is not None:
                 heatmap_resized = cv2.resize(heatmap_raw, (orig_w, orig_h))
                 heatmap_uint8 = np.uint8(255 * heatmap_resized)
-                heatmap_color = cv2.applyColorMap(cast(Any, heatmap_uint8.astype(np.uint8)), cv2.COLORMAP_JET)
+                heatmap_color = cv2.applyColorMap(cast(Any, heatmap_uint8), cv2.COLORMAP_JET)
                 _, buffer = cv2.imencode('.png', heatmap_color)
                 heatmap_bytes = buffer.tobytes()
                 heatmap_base64 = base64.b64encode(buffer.tobytes()).decode('utf-8')
@@ -531,14 +520,6 @@ async def save_pdf_report(
 ):
     user_id = _require_user_id(user)
 
-    if file.content_type != "application/pdf":
-        raise HTTPException(status_code=415, detail="Only PDF reports are accepted")
-    pdf_bytes = await _read_limited(file, MAX_REPORT_BYTES)
-    if len(pdf_bytes) > MAX_REPORT_BYTES:
-        raise HTTPException(status_code=413, detail="PDF exceeds the 10 MB upload limit")
-    if not pdf_bytes.startswith(b"%PDF-"):
-        raise HTTPException(status_code=400, detail="The uploaded file is not a valid PDF")
-
     scan_res = supabase.table("scans").select("id, lesion_id, pdf_report_url").eq("id", scan_id).execute()
     if not scan_res.data or len(scan_res.data) == 0:
         raise HTTPException(status_code=404, detail="Scan not found")
@@ -548,6 +529,7 @@ async def save_pdf_report(
     if not lesion_res.data or len(lesion_res.data) == 0 or lesion_res.data[0].get("user_id") != user_id:
         raise HTTPException(status_code=403, detail="Not authorized to update this scan")
 
+    pdf_bytes = await file.read()
     pdf_url = upload_pdf_report(user_id, pdf_bytes)
 
     update_res = supabase.table("scans").update({"pdf_report_url": pdf_url}).eq("id", scan_id).execute()

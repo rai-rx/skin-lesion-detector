@@ -66,16 +66,9 @@ async def get_analytics(user: Dict[str, Any] = Depends(require_admin)):
     ).eq("biopsy_confirmed", True).limit(10000).execute()
     positive_codes = {"MEL", "BCC", "SCCKA", "AKIEC", "MAL_OTH"}
     true_positive = false_positive = true_negative = false_negative = 0
-    biopsy_correct = biopsy_incorrect = 0
     for row in correction_res.data or []:
-        actual_diagnosis = str(row.get("actual_diagnosis") or "").upper().strip()
-        ai_prediction = str(row.get("ai_prediction") or "").upper().strip()
-        if actual_diagnosis == ai_prediction:
-            biopsy_correct += 1
-        else:
-            biopsy_incorrect += 1
-        actual_positive = actual_diagnosis in positive_codes
-        predicted_positive = ai_prediction in positive_codes
+        actual_positive = str(row.get("actual_diagnosis") or "").upper() in positive_codes
+        predicted_positive = str(row.get("ai_prediction") or "").upper() in positive_codes
         if actual_positive and predicted_positive:
             true_positive += 1
         elif not actual_positive and predicted_positive:
@@ -97,10 +90,10 @@ async def get_analytics(user: Dict[str, Any] = Depends(require_admin)):
             "inaccurate": inaccurate_feedback,
         },
         "verifiedClassification": {
-            "total": biopsy_correct + biopsy_incorrect,
-            "correct": biopsy_correct,
-            "incorrect": biopsy_incorrect,
-            "accuracyRate": round(biopsy_correct / (biopsy_correct + biopsy_incorrect) * 100, 1) if biopsy_correct + biopsy_incorrect else None,
+            "total": verified_total,
+            "correct": accurate_feedback,
+            "incorrect": inaccurate_feedback,
+            "accuracyRate": round(accurate_feedback / verified_total * 100, 1) if verified_total else None,
         },
         "confidenceDistribution": [
             {"bucket": bucket, "count": count} for bucket, count in confidence_buckets.items()

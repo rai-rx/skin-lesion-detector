@@ -16,15 +16,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.middleware("http")
-async def add_security_headers(request, call_next):
-    response = await call_next(request)
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["Referrer-Policy"] = "no-referrer"
-    response.headers["Permissions-Policy"] = "camera=(self), geolocation=(self)"
-    return response
-
 app.include_router(predictions_router, tags=["predictions"])
 app.include_router(admin_router, prefix="/admin", tags=["admin"])
 
