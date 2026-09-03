@@ -55,8 +55,6 @@ export function ScanPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [rawFile, setRawFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isVerifyingImage, setIsVerifyingImage] = useState(false);
-  const [imageVerified, setImageVerified] = useState(false);
   const [dragActive, setDragActive] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -100,7 +98,6 @@ export function ScanPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-  const verificationRequestRef = useRef(0);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -122,50 +119,15 @@ export function ScanPage() {
     }
   };
 
-  const handleFile = async (file: File) => {
-    if (!file || !file.type.startsWith('image/')) {
-      setValidationError('Please choose an image file.');
-      return;
-    }
-
-    const requestId = ++verificationRequestRef.current;
-    setRawFile(file);
-    setImageVerified(false);
-    setIsVerifyingImage(true);
-    setValidationError(null);
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      if (requestId === verificationRequestRef.current) {
+  const handleFile = (file: File) => {
+    if (file && file.type.startsWith('image/')) {
+      setRawFile(file); // Store binary payload for backend submission
+      setValidationError(null); // Clear previous errors
+      const reader = new FileReader();
+      reader.onload = (e) => {
         setSelectedImage(e.target?.result as string);
-      }
-    };
-    reader.readAsDataURL(file);
-
-    try {
-      const verificationForm = new FormData();
-      verificationForm.append('file', file);
-      const response = await fetch(`${getApiUrl()}/validate-image`, {
-        method: 'POST',
-        headers: { 'ngrok-skip-browser-warning': 'true' },
-        body: verificationForm,
-      });
-      const responseText = await response.text();
-      let data: any = {};
-      try {
-        data = responseText ? JSON.parse(responseText) : {};
-      } catch {
-        throw new Error(`Image verification returned an invalid response (${response.status}).`);
-      }
-      if (!response.ok) throw new Error(data.detail || 'This image is not suitable for skin-lesion analysis.');
-      if (requestId === verificationRequestRef.current) setImageVerified(true);
-    } catch (error: any) {
-      if (requestId === verificationRequestRef.current) {
-        setImageVerified(false);
-        setValidationError(error.message || 'Unable to verify this image.');
-      }
-    } finally {
-      if (requestId === verificationRequestRef.current) setIsVerifyingImage(false);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -230,7 +192,7 @@ export function ScanPage() {
   };
 
   const handleAnalyze = async () => {
-    if (!rawFile || !imageVerified || isVerifyingImage) return;
+    if (!rawFile) return;
 
     setIsProcessing(true);
     setValidationError(null);
@@ -316,26 +278,14 @@ export function ScanPage() {
   };
 
   const handleClear = () => {
-    verificationRequestRef.current += 1;
     setSelectedImage(null);
     setRawFile(null);
     setCroppedAreaPixels(null);
     setValidationError(null);
-    setImageVerified(false);
-    setIsVerifyingImage(false);
     setZoom(1);
     setCrop({ x: 0, y: 0 });
     setIsProcessing(false);
-    setIsVerifyingImage(false);
-    setImageVerified(false);
   };
-
-  const fileInputs = (
-    <>
-      <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileInput} className="hidden" />
-      <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileInput} className="hidden" />
-    </>
-  );
 
   return (
     <div className="min-h-screen bg-[#f4f0e8] text-[#24332d]">
@@ -497,6 +447,21 @@ export function ScanPage() {
                       </motion.button>
                     </div>
 
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileInput}
+                      className="hidden"
+                    />
+                    <input
+                      ref={cameraInputRef}
+                      type="file"
+                      accept="image/*"
+                      capture="environment"
+                      onChange={handleFileInput}
+                      className="hidden"
+                    />
                   </div>
                 </div>
 
@@ -563,9 +528,9 @@ export function ScanPage() {
                       onCropChange={setCrop}
                       onZoomChange={setZoom}
                       onCropComplete={onCropComplete}
-                      zoomWithScroll={!isProcessing && !isVerifyingImage}
-                      onWheelRequest={() => !isProcessing && !isVerifyingImage}
-                      onTouchRequest={() => !isProcessing && !isVerifyingImage}
+                      zoomWithScroll={!isProcessing}
+                      onWheelRequest={() => !isProcessing}
+                      onTouchRequest={() => !isProcessing}
                       showGrid={true}
                       cropShape="rect"
                     />
@@ -587,57 +552,32 @@ export function ScanPage() {
                       max={3}
                       step={0.05}
                       aria-label="Zoom scale adjust"
-                      disabled={isProcessing || isVerifyingImage}
+                      disabled={isProcessing}
                       onChange={(e) => setZoom(Number(e.target.value))}
                       className="h-1.5 w-full cursor-pointer appearance-none rounded-lg bg-[#b9c7a9] accent-[#2f604e] disabled:cursor-not-allowed disabled:opacity-50"
                     />
                   </div>
 
-                  {isVerifyingImage || imageVerified || isProcessing ? (
-                    <motion.button
-                      whileHover={{ scale: isProcessing || isVerifyingImage ? 1 : 1.02 }}
-                      whileTap={{ scale: isProcessing || isVerifyingImage ? 1 : 0.98 }}
-                      onClick={handleAnalyze}
-                      disabled={isProcessing || isVerifyingImage || !imageVerified}
-                      className="flex w-full items-center justify-center gap-3 bg-[#2f604e] py-5 text-lg font-medium text-[#f4f0e8] shadow-lg transition-all hover:bg-[#244c3e] hover:shadow-xl disabled:opacity-70"
-                    >
-                      {isVerifyingImage ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          <span>Verifying Image...</span>
-                        </>
-                      ) : isProcessing ? (
-                        <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                          <span>Running Neural Analysis...</span>
-                        </>
-                      ) : (
-                        <span>Analyze Selected Region</span>
-                      )}
-                    </motion.button>
-                  ) : (
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="flex items-center justify-center gap-2 bg-[#2f604e] px-5 py-4 font-semibold text-[#f4f0e8] transition-colors hover:bg-[#244c3e]"
-                      >
-                        <Upload className="h-5 w-5" /> Re-upload Image
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => void handleTakePhoto()}
-                        className="flex items-center justify-center gap-2 bg-[#806348] px-5 py-4 font-semibold text-[#f4f0e8] transition-colors hover:bg-[#684f3b]"
-                      >
-                        <Camera className="h-5 w-5" /> Retake Photo
-                      </button>
-                    </div>
-                  )}
+                  <motion.button
+                    whileHover={{ scale: isProcessing ? 1 : 1.02 }}
+                    whileTap={{ scale: isProcessing ? 1 : 0.98 }}
+                    onClick={handleAnalyze}
+                    disabled={isProcessing}
+                    className="flex w-full items-center justify-center gap-3 bg-[#2f604e] py-5 text-lg font-medium text-[#f4f0e8] shadow-lg transition-all hover:bg-[#244c3e] hover:shadow-xl disabled:opacity-70"
+                  >
+                    {isProcessing ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>Running Neural Analysis...</span>
+                      </>
+                    ) : (
+                      <span>Analyze Selected Region</span>
+                    )}
+                  </motion.button>
                 </div>
               </motion.div>
             )}
           </AnimatePresence>
-          {fileInputs}
         </div>
       </div>
     </div>

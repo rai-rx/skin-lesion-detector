@@ -1,11 +1,10 @@
 from fastapi import APIRouter, File, UploadFile, Form, Depends, HTTPException
-from typing import Optional, Dict, Any, cast
+from typing import Optional, Dict, Any
 from auth.dependencies import get_current_user, get_optional_user
 from database import supabase
 from storage import upload_scan_image, upload_heatmap_image, upload_pdf_report
 import io
 import base64
-import binascii
 from datetime import datetime, timezone
 import numpy as np
 try:
@@ -32,24 +31,6 @@ from predictions.inference import (
 
 router = APIRouter()
 
-async def _read_limited(file: UploadFile, maximum: int) -> bytes:
-    chunks = []
-    total = 0
-    while chunk := await file.read(min(1024 * 1024, maximum - total + 1)):
-        chunks.append(chunk)
-        total += len(chunk)
-        if total > maximum:
-            break
-    return b"".join(chunks)
-
-MAX_SCAN_BYTES = 10 * 1024 * 1024
-
-def _require_user_id(user: Dict[str, Any]) -> str:
-    user_id = user.get("sub")
-    if not isinstance(user_id, str) or not user_id:
-        raise HTTPException(status_code=401, detail="Invalid authenticated user")
-    return user_id
-
 
 def _decode_data_url(data_url: str) -> tuple[bytes, str]:
     header, encoded = data_url.split(',', 1)
@@ -58,33 +39,6 @@ def _decode_data_url(data_url: str) -> tuple[bytes, str]:
     if extension == 'jpeg':
         extension = 'jpg'
     return base64.b64decode(encoded), extension
-
-@router.post("/validate-image")
-async def validate_scan_image(file: UploadFile = File(...)):
-    contents = await _read_limited(file, MAX_SCAN_BYTES)
-    if len(contents) > MAX_SCAN_BYTES:
-        raise HTTPException(status_code=413, detail="Image exceeds the 10 MB upload limit")
-    if not file.content_type or not file.content_type.startswith("image/"):
-        raise HTTPException(status_code=415, detail="Only image uploads are accepted")
-    if not contents:
-        raise HTTPException(status_code=400, detail="The uploaded image is empty")
-
-    try:
-        image = Image.open(io.BytesIO(contents)).convert("RGB")
-    except Exception:
-        raise HTTPException(status_code=400, detail="The uploaded file is not a valid image")
-
-    if not verify_is_skin_tissue(image):
-        raise HTTPException(
-            status_code=400,
-            detail="This image does not appear to contain human skin. Please upload a clear photo of a skin lesion.",
-        )
-
-    is_valid, error_msg = validate_image_quality(image)
-    if not is_valid:
-        raise HTTPException(status_code=400, detail=error_msg)
-
-    return {"valid": True, "message": "Image verified for skin-lesion analysis"}
 
 @router.post("/predict")
 async def predict_lesion(
@@ -118,9 +72,7 @@ async def predict_lesion(
     # 2. Pre-processing
     crop_params = [crop_x, crop_y, crop_width, crop_height]
     if all(param is not None for param in crop_params):
-        crop_x_value, crop_y_value, crop_width_value, crop_height_value = crop_params
-        assert crop_x_value is not None and crop_y_value is not None and crop_width_value is not None and crop_height_value is not None
-        img_processed = apply_custom_crop(original_img, crop_x_value, crop_y_value, crop_width_value, crop_height_value, IMG_SIZE)
+        img_processed = apply_custom_crop(original_img, crop_x, crop_y, crop_width, crop_height, IMG_SIZE)
     else:
         img_processed = center_crop_and_resize(original_img, IMG_SIZE)
     
@@ -162,10 +114,10 @@ async def predict_lesion(
             if heatmap_raw is not None:
                 heatmap_resized = cv2.resize(heatmap_raw, (orig_w, orig_h))
                 heatmap_uint8 = np.uint8(255 * heatmap_resized)
-                heatmap_color = cv2.applyColorMap(cast(Any, heatmap_uint8), cv2.COLORMAP_JET)
+                heatmap_color = cv2.applyColorMap(heatmap_uint8, cv2.COLORMAP_JET)
                 _, buffer = cv2.imencode('.png', heatmap_color)
                 heatmap_bytes = buffer.tobytes()
-                heatmap_base64 = base64.b64encode(buffer.tobytes()).decode('utf-8')
+                heatmap_base64 = base64.b64encode(buffer).decode('utf-8')
                 heatmap_data_uri = f"data:image/png;base64,{heatmap_base64}"
         except Exception as e:
             print(f"Heatmap generation failed: {e}")
@@ -190,7 +142,7 @@ async def predict_lesion(
     scan_id = None
     image_url = None
     if user:
-        user_id = _require_user_id(user)
+        user_id = user.get("sub")
 
         # Create lesion profile automatically if none provided
         if not lesion_id:
@@ -265,7 +217,7 @@ async def import_pending_scan(
 
     try:
         image_bytes, image_extension = _decode_data_url(image_data)
-        user_id = _require_user_id(user)
+        user_id = user.get("sub")
         lesion_name = f"Imported Scan {result.get('classification') or 'Lesion'}"
         lesion_res = supabase.table("lesions").insert({
             "user_id": user_id,
@@ -301,7 +253,7 @@ async def import_pending_scan(
         return {"id": scan_res.data[0]["id"], "lesion_id": lesion_id}
     except HTTPException:
         raise
-    except (ValueError, KeyError, IndexError, binascii.Error) as error:
+    except (ValueError, KeyError, IndexError, base64.binascii.Error) as error:
         raise HTTPException(status_code=400, detail=f"Unable to import scan data: {error}")
     except Exception as error:
         print(f"Failed to import pending scan: {error}")
@@ -310,7 +262,7 @@ async def import_pending_scan(
 
 @router.get("/me/lesions")
 async def get_user_lesions(user: Dict[str, Any] = Depends(get_current_user)):
-    user_id = _require_user_id(user)
+    user_id = user.get("sub")
     try:
         res = supabase.table("lesions").select("*, scans(*)").eq("user_id", user_id).order("created_at", desc=True).execute()
         return res.data or []
@@ -321,7 +273,7 @@ async def get_user_lesions(user: Dict[str, Any] = Depends(get_current_user)):
 
 @router.get("/me/lesions/{lesion_id}")
 async def get_user_lesion(lesion_id: str, user: Dict[str, Any] = Depends(get_current_user)):
-    user_id = _require_user_id(user)
+    user_id = user.get("sub")
     try:
         res = supabase.table("lesions").select("*").eq("id", lesion_id).execute()
         if not res.data or len(res.data) == 0:
@@ -339,7 +291,7 @@ async def get_user_lesion(lesion_id: str, user: Dict[str, Any] = Depends(get_cur
 
 @router.get("/me/lesions/{lesion_id}/scans")
 async def get_user_lesion_scans(lesion_id: str, user: Dict[str, Any] = Depends(get_current_user)):
-    user_id = _require_user_id(user)
+    user_id = user.get("sub")
     try:
         lesion_res = supabase.table("lesions").select("id, user_id").eq("id", lesion_id).execute()
         if not lesion_res.data or len(lesion_res.data) == 0:
@@ -366,7 +318,7 @@ async def update_scan_accuracy(
     if feedback not in {"accurate", "inaccurate"}:
         raise HTTPException(status_code=400, detail="Feedback must be accurate or inaccurate")
 
-    user_id = _require_user_id(user)
+    user_id = user.get("sub")
     try:
         scan_res = supabase.table("scans").select("id, lesion_id").eq("id", scan_id).execute()
         if not scan_res.data:
@@ -429,7 +381,7 @@ async def update_user_lesion(
     payload: Dict[str, Any],
     user: Dict[str, Any] = Depends(get_current_user)
 ):
-    user_id = _require_user_id(user)
+    user_id = user.get("sub")
     try:
         current = supabase.table("lesions").select("user_id").eq("id", lesion_id).execute()
         if not current.data or len(current.data) == 0:
@@ -461,7 +413,7 @@ async def update_user_lesion(
 
 @router.delete("/me/lesions/{lesion_id}")
 async def delete_user_lesion(lesion_id: str, user: Dict[str, Any] = Depends(get_current_user)):
-    user_id = _require_user_id(user)
+    user_id = user.get("sub")
     try:
         current = supabase.table("lesions").select("user_id").eq("id", lesion_id).execute()
         if not current.data or len(current.data) == 0:
@@ -480,7 +432,7 @@ async def delete_user_lesion(lesion_id: str, user: Dict[str, Any] = Depends(get_
 
 @router.get("/me/pdfs")
 async def get_user_pdfs(user: Dict[str, Any] = Depends(get_current_user)):
-    user_id = _require_user_id(user)
+    user_id = user.get("sub")
     try:
         lesion_res = supabase.table("lesions").select("id").eq("user_id", user_id).execute()
         lesion_ids = [item["id"] for item in (lesion_res.data or []) if item.get("id")]
@@ -518,7 +470,7 @@ async def save_pdf_report(
     file: UploadFile = File(...),
     user: Dict[str, Any] = Depends(get_current_user)
 ):
-    user_id = _require_user_id(user)
+    user_id = user.get("sub")
 
     scan_res = supabase.table("scans").select("id, lesion_id, pdf_report_url").eq("id", scan_id).execute()
     if not scan_res.data or len(scan_res.data) == 0:

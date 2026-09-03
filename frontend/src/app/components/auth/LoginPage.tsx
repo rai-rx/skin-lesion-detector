@@ -28,13 +28,7 @@ export function LoginPage() {
       });
 
       if (error) {
-        if (error.status === 400 && error.message.toLowerCase().includes('invalid login credentials')) {
-          setError('Incorrect email or password. Check your credentials and try again.');
-        } else if (error.message.toLowerCase().includes('email not confirmed')) {
-          setError('Confirm your email address before signing in.');
-        } else {
-          setError(error.message);
-        }
+        setError(error.message);
       } else if (data.session) {
         await importPendingScans(data.session.access_token);
         navigate('/dashboard');
