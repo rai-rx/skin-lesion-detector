@@ -27,12 +27,14 @@ export function DashboardHome() {
   };
 
   useEffect(() => {
-    if (user) {
+    if (user && session?.access_token) {
       loadDashboardData();
     }
-  }, [user]);
+  }, [user, session?.access_token]);
 
   const loadDashboardData = async () => {
+    if (!session?.access_token) return;
+
     try {
       const response = await fetch(`${getApiUrl()}/me/lesions`, {
         headers: {

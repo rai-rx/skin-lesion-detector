@@ -45,10 +45,14 @@ export function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadAnalytics();
-  }, [session]);
+    if (session?.access_token) {
+      loadAnalytics();
+    }
+  }, [session?.access_token]);
 
   const loadAnalytics = async () => {
+    if (!session?.access_token) return;
+
     try {
       const res = await fetch(`${getApiUrl()}/admin/analytics`, {
         headers: {

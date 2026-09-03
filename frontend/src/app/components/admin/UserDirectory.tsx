@@ -10,10 +10,14 @@ export function UserDirectory() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    loadUsers();
-  }, [session]);
+    if (session?.access_token) {
+      loadUsers();
+    }
+  }, [session?.access_token]);
 
   const loadUsers = async () => {
+    if (!session?.access_token) return;
+
     try {
       const res = await fetch(`${getApiUrl()}/admin/users`, {
         headers: {
