@@ -821,6 +821,9 @@ export function ResultsPage() {
 
   const analysisResult = state.result;
   const currentInfo = classificationInfo[analysisResult.classification];
+  const displayClassification = analysisResult.classification === 'Squamous Cell Carcinoma'
+    ? 'SCC'
+    : analysisResult.classification;
   const abcd = analysisResult.abcdMetrics || {
     asymmetry: 0,
     borderIrregularity: 0,
@@ -841,7 +844,7 @@ export function ResultsPage() {
   async function handleExportPDF(autoDownload = true) {
     try {
       const pdfData: ScanPdfData = {
-        classification: analysisResult.classification,
+        classification: displayClassification,
         confidence: analysisResult.confidence,
         riskLevel: analysisResult.riskLevel,
         secondaryPredictions: analysisResult.secondaryPredictions,
@@ -933,7 +936,7 @@ export function ResultsPage() {
               transition={{ duration: 0.4 }}
             >
               <PrimaryClassificationCard
-                classification={analysisResult.classification}
+                classification={displayClassification}
                 riskLevel={analysisResult.riskLevel}
                 confidence={analysisResult.confidence}
                 getRiskColor={getRiskColor}
@@ -959,7 +962,7 @@ export function ResultsPage() {
             {/* 3. Review Flag */}
             <DynamicRiskActionPanel
               riskLevel={analysisResult.riskLevel as 'low' | 'medium' | 'high'}
-              classification={analysisResult.classification}
+              classification={displayClassification}
             />
 
             {/* 4. Other Possible Findings */}
@@ -1002,7 +1005,7 @@ export function ResultsPage() {
 
               <DynamicRiskActionPanel
                 riskLevel={analysisResult.riskLevel as 'low' | 'medium' | 'high'}
-                classification={analysisResult.classification}
+                classification={displayClassification}
               />
             </motion.div>
 
@@ -1013,7 +1016,7 @@ export function ResultsPage() {
               className="space-y-6 min-w-0"
             >
               <PrimaryClassificationCard
-                classification={analysisResult.classification}
+                classification={displayClassification}
                 riskLevel={analysisResult.riskLevel}
                 confidence={analysisResult.confidence}
                 getRiskColor={getRiskColor}
@@ -1034,7 +1037,7 @@ export function ResultsPage() {
               <div className="border-y border-[#d7d2c7] bg-[#f8f5ee] p-6 md:p-8">
                 <div className="max-w-3xl mb-7">
                   <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2f604e]">Clinical context</p>
-                  <h2 className="mb-3 font-display text-2xl text-[#24332d] md:text-3xl">About {analysisResult.classification}</h2>
+                  <h2 className="mb-3 font-display text-2xl text-[#24332d] md:text-3xl">About {displayClassification}</h2>
                   <p className="leading-relaxed text-[#607268]">{currentInfo.description}</p>
                 </div>
                 <div className="grid md:grid-cols-3 gap-4">
