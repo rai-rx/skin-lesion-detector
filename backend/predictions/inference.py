@@ -151,23 +151,24 @@ def center_crop_and_resize(img, size):
     img = img.crop((left, top, right, bottom))
     return img.resize((size, size), Image.Resampling.LANCZOS)
 
-def validate_image_quality(img_pil) -> tuple[bool, str]:
+def validate_image_quality(img_pil) -> tuple[bool, str, str | None]:
     open_cv_image = np.array(img_pil.convert("RGB"))
     open_cv_image = open_cv_image[:, :, ::-1].copy() 
     gray = cv2.cvtColor(open_cv_image, cv2.COLOR_BGR2GRAY)
     
     laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
+    quality_warning = None
     if laplacian_var < 12.0:
-        return False, f"Image is too blurry (Sharpness Score: {round(laplacian_var, 2)}). Please stabilize your camera and retake."
+        quality_warning = f"Image sharpness is low (Sharpness Score: {round(laplacian_var, 2)}). The scan was processed, but image quality may reduce result accuracy."
         
     brightness_low = float(np.percentile(gray, 10))
     brightness_high = float(np.percentile(gray, 90))
     if brightness_high < 35.0:
-        return False, f"Image is too dark (Brightness range: {round(brightness_low, 2)}-{round(brightness_high, 2)}). Please use more even lighting and retake."
+        return False, f"Image is too dark (Brightness range: {round(brightness_low, 2)}-{round(brightness_high, 2)}). Please use more even lighting and retake.", None
     if brightness_low > 245.0:
-        return False, f"Image is overexposed (Brightness range: {round(brightness_low, 2)}-{round(brightness_high, 2)}). Avoid direct glare and retake."
+        return False, f"Image is overexposed (Brightness range: {round(brightness_low, 2)}-{round(brightness_high, 2)}). Avoid direct glare and retake.", None
         
-    return True, "Success"
+    return True, "Success", quality_warning
 
 def compute_abcde_structural_metrics(img_processed) -> dict:
     open_cv_rgb = np.array(img_processed).astype(np.uint8)

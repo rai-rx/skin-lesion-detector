@@ -12,6 +12,7 @@ export type ModelResult = {
   riskLevel: 'low' | 'medium' | 'high';
   secondaryPredictions: ModelPrediction[];
   notes?: string;
+  qualityWarning?: string;
   heatmap?: string; // <--- ADD THIS: This will hold the Base64 string from FastAPI
 };
 

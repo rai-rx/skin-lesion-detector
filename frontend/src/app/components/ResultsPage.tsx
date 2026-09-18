@@ -967,6 +967,21 @@ export function ResultsPage() {
             </motion.div>
           )}
 
+          {analysisResult.qualityWarning && (
+            <motion.div
+              initial={{ opacity: 0, y: -12 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex items-start gap-3 border-l-4 border-[#b66f45] bg-[#f2e5d6] p-4 text-sm text-[#684f3b]"
+              role="status"
+            >
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0" />
+              <div>
+                <p className="font-semibold">Image quality notice</p>
+                <p className="mt-1 leading-relaxed">{analysisResult.qualityWarning}</p>
+              </div>
+            </motion.div>
+          )}
+
           {/* MOBILE VIEW LAYOUT (lg:hidden) */}
           <div className="flex flex-col gap-6 lg:hidden mb-8">
             {/* 1. Primary Classification */}

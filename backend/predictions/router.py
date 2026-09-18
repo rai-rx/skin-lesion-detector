@@ -68,7 +68,7 @@ async def predict_lesion(
     else:
         img_processed = center_crop_and_resize(original_img, IMG_SIZE)
 
-    is_valid, error_msg = validate_image_quality(img_processed)
+    is_valid, error_msg, quality_warning = validate_image_quality(img_processed)
     if not is_valid:
         raise HTTPException(status_code=400, detail=error_msg)
     
@@ -203,6 +203,7 @@ async def predict_lesion(
         "secondaryPredictions": secondary,
         "abcdMetrics": structural_metrics,
         "notes": f"Verified image clarity. Processed at {IMG_SIZE}px using HiResCAM spatial mappings.",
+        "qualityWarning": quality_warning,
         "heatmap": heatmap_data_uri,
         "imageUrl": image_url
     }
