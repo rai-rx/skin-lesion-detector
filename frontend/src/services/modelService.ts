@@ -7,6 +7,7 @@ export type ModelPrediction = {
 
 export type ModelResult = {
   classification: string;
+  description?: string;
   confidence: number;
   riskLevel: 'low' | 'medium' | 'high';
   secondaryPredictions: ModelPrediction[];

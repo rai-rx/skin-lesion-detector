@@ -32,195 +32,237 @@ const classificationInfo: Record<string, {
   recommendations: string[];
 }> = {
   'Actinic Keratosis': {
-    description: 'A precancerous skin growth caused by long-term sun damage. It is considered the earliest stage in the development of skin cancer.',
+    description: 'A rough, scaly patch caused by long-term sun damage. Actinic keratoses commonly appear on sun-exposed areas such as the face, ears, scalp, forearms, and backs of the hands. They may be easier to feel than see, can be tender or irritated, and some can progress to squamous cell carcinoma if untreated. A lesion may be pale, pink, red, or brown and can resemble dry or irritated skin. Multiple actinic keratoses suggest cumulative sun exposure and make regular skin checks especially important.',
     characteristics: [
       'Rough, scaly, or "sandpaper-like" texture',
       'Small, flat spots (usually <1 inch)',
       'May be pink, red, or brown',
-      'Common on face, scalp, and hands'
+      'Common on face, scalp, and hands',
+      'May feel rougher than it looks and can be tender or sensitive'
     ],
     dangers: [
       'If left untreated, up to 10% may progress to Squamous Cell Carcinoma',
-      'Indicates significant cumulative UV damage to the skin'
+      'Indicates significant cumulative UV damage to the skin',
+      'Multiple lesions may signal a broader area of sun-damaged skin'
     ],
     recommendations: [
       'Consult a dermatologist for removal (Cryotherapy or topical creams)',
       'Strict sun protection is mandatory to prevent progression',
-      'Regular full-body skin checks'
+      'Regular full-body skin checks',
+      'Report rapid growth, bleeding, increasing tenderness, or a thickened surface'
     ]
   },
   'Basal Cell Carcinoma': {
-    description: 'BCC is the most common type of skin cancer. While it rarely spreads, it can cause significant local tissue damage if left untreated.',
+    description: 'The most common type of skin cancer, usually slow-growing and rarely spread to distant organs. It may look like a pearly bump, a pink patch, or a sore that repeatedly bleeds, scabs, or fails to heal. Although it tends to grow slowly, it can damage nearby tissue and structures if it is not treated. Its edges may look raised or shiny, and small surface blood vessels can sometimes be visible. Early treatment is generally effective and helps limit tissue damage and recurrence.',
     characteristics: [
       'Pearly or waxy bump, often with visible blood vessels',
       'Flat, flesh-colored or brown scar-like lesion',
-      'Bleeding or oozing sore that heals and returns'
+      'Bleeding or oozing sore that heals and returns',
+      'May develop a central depression, crust, or rolled-looking edge',
+      'Most often appears on chronically sun-exposed skin'
     ],
     dangers: [
       'Rarely metastasizes but can be locally destructive',
       'Can invade surrounding tissue and bone if untreated',
-      'May recur after treatment'
+      'May recur after treatment',
+      'A lesion near the eyes, nose, ears, or lips may require especially careful treatment'
     ],
     recommendations: [
       'Schedule prompt evaluation with a dermatologist',
       'Treatment options include surgical excision or Mohs surgery',
-      'Use sun protection to prevent new BCCs'
+      'Use sun protection to prevent new BCCs',
+      'Do not repeatedly cover a non-healing sore without having it assessed'
     ]
   },
   'Other Benign Lesion': {
-    description: 'A general category for non-cancerous skin conditions that do not fit into specific categories like moles or keratosis.',
+    description: 'A broad category for a non-cancerous skin growth or change that does not fit the model\'s more specific groups. These lesions may include several different harmless conditions, so their appearance can vary considerably. They are often stable, but a new, changing, painful, or irritated spot still deserves professional review. The classification does not identify one specific disease or explain the exact cause of the lesion. A physical examination is useful when the appearance, symptoms, or history do not match a stable benign pattern.',
     characteristics: [
       'Generally stable appearance',
       'Uniform color and symmetrical shape',
-      'No signs of inflammation or rapid growth'
+      'No signs of inflammation or rapid growth',
+      'May represent a cyst, benign growth, irritation, or another non-cancerous process',
+      'Appearance can vary widely because this is a broad classification'
     ],
     dangers: [
       'Poses no immediate health risk',
-      'The primary danger is misdiagnosis without a professional biopsy'
+      'The primary danger is misdiagnosis without a professional biopsy',
+      'A lesion that changes may no longer fit a low-concern pattern'
     ],
     recommendations: [
       'Keep a photo log to ensure the lesion remains stable',
       'No treatment required unless for comfort or aesthetics',
-      'Consult a professional if any change occurs'
+      'Consult a professional if any change occurs',
+      'Ask for examination if it becomes painful, inflamed, ulcerated, or persistently irritated'
     ]
   },
   'Seborrheic Keratosis': {
-    description: 'Seborrheic keratoses are common, non-cancerous skin growths that typically appear in middle age. They are often referred to as "barnacles" of aging.',
+    description: 'A common non-cancerous growth that often develops with age. It may look waxy, rough, or stuck onto the skin and can range from light tan to dark brown or black. It is not contagious, but it can become irritated by clothing or friction and can sometimes resemble a more concerning pigmented lesion. These growths may be flat at first and become more raised or textured over time. A sudden change in one lesion should be examined rather than assumed to be a normal seborrheic keratosis.',
     characteristics: [
       'Waxy, slightly elevated growths with a "stuck-on" appearance',
       'Color ranges from light tan to brown or black',
-      'Round or oval shape with a rough surface'
+      'Round or oval shape with a rough surface',
+      'May have small keratin-filled openings or a crumbly surface',
+      'Often occurs on the trunk, chest, back, face, or scalp'
     ],
     dangers: [
       'Completely benign with no cancer risk',
       'May become irritated if rubbed by clothing',
-      'Can sometimes be confused with melanoma'
+      'Can sometimes be confused with melanoma',
+      'A sudden change in one lesion should not be assumed to be benign'
     ],
     recommendations: [
       'No treatment necessary unless for cosmetic reasons',
       'Can be removed via cryotherapy or curettage',
-      'Have any rapidly changing lesion evaluated'
+      'Have any rapidly changing lesion evaluated',
+      'Seek care if it repeatedly bleeds, becomes painful, or develops an ulcer'
     ]
   },
   'Dermatofibroma': {
-    description: 'A common, harmless fibrous growth typically found on the legs. It is often the result of a minor injury like an insect bite.',
+    description: 'A common, usually harmless fibrous nodule that is often found on the legs. It is typically firm, small, and slow-changing, and may follow an insect bite or minor injury. It often forms a small dimple when the surrounding skin is pinched, although unusual growth or persistent symptoms should be checked. The color may become darker after irritation or sun exposure without indicating cancer. Persistent pain, bleeding, rapid enlargement, or an atypical appearance warrants confirmation by a clinician.',
     characteristics: [
       'Small, firm, "button-like" bump under the skin',
       'Shows a "dimple sign" (dents inward when pinched)',
-      'Varies from dusky pink to dull brown'
+      'Varies from dusky pink to dull brown',
+      'Usually measures less than 1 to 1.5 centimeters',
+      'Often remains stable after it first appears'
     ],
     dangers: [
       'Harmless and non-cancerous',
-      'Can be itchy or tender in some cases'
+      'Can be itchy or tender in some cases',
+      'An unusually large, rapidly growing, or changing nodule may need a biopsy to confirm the diagnosis'
     ],
     recommendations: [
       'Usually left alone unless it causes discomfort',
       'Surgical removal is an option but may leave a small scar',
-      'Ignore unless it changes size or color rapidly'
+      'Ignore unless it changes size or color rapidly',
+      'Arrange an examination if it becomes persistently painful, bleeds, or changes noticeably'
     ]
   },
   'Infectious Lesion': {
-    description: 'Skin changes caused by bacteria, viruses, or fungi. This category includes conditions like warts, herpes, or fungal infections.',
+    description: 'A skin change that may be related to bacteria, viruses, or fungi. Depending on the cause, it may produce redness, warmth, itching, pain, scaling, blisters, drainage, or clusters of bumps. Some infectious lesions can spread between body areas or to other people, so the cause and appropriate treatment should be confirmed by a clinician. The correct treatment depends on the organism involved, so antibiotics, antifungals, and antivirals are not interchangeable. Worsening pain, fever, pus, rapidly spreading redness, or swelling can indicate a more urgent infection.',
     characteristics: [
       'May present as clusters of small bumps or blisters',
       'Often accompanied by redness, warmth, or itching',
-      'May have a "crusty" or weeping surface'
+      'May have a "crusty" or weeping surface',
+      'May spread outward or appear in nearby areas',
+      'Pain, fever, swelling, or rapidly increasing redness can indicate a more active infection'
     ],
     dangers: [
       'Can spread to other parts of the body or other people',
-      'Secondary bacterial infections can occur if scratched'
+      'Secondary bacterial infections can occur if scratched',
+      'Some infections can worsen quickly or require prescription treatment'
     ],
     recommendations: [
       'Seek evaluation for appropriate antimicrobial treatment',
       'Avoid touching or picking at the lesion',
-      'Practice good hygiene to prevent transmission'
+      'Practice good hygiene to prevent transmission',
+      'Seek urgent care for rapidly spreading redness, severe pain, fever, or facial/eye involvement'
     ]
   },
   'Other Malignant Lesion': {
-    description: 'A rare or atypical form of skin cancer that does not fall under the BCC, SCC, or Melanoma categories.',
+    description: 'A possible skin cancer pattern that does not fit the model\'s more specific basal cell carcinoma, squamous cell carcinoma, or melanoma categories. These lesions may look unusual, rapidly change, bleed, form a persistent crust, or fail to heal. Because this is a broad high-concern category, prompt specialist assessment and possible biopsy are important. The category does not identify the exact cancer type from an image alone. A dermatologist may need to examine the lesion closely and test a tissue sample to determine the diagnosis and treatment.',
     characteristics: [
       'Rapidly growing or non-healing mass',
       'Unusual appearance, texture, or color',
-      'May bleed easily'
+      'May bleed easily',
+      'May form an ulcer, persistent crust, or firm irregular nodule',
+      'Can arise in previously normal skin or within an existing lesion'
     ],
     dangers: [
       'High risk of local destruction and possible spread',
-      'Requires specific specialized treatment'
+      'Requires specific specialized treatment',
+      'Delay can allow deeper invasion and make treatment more extensive'
     ],
     recommendations: [
       'URGENT: Dermatologist evaluation and biopsy required',
-      'Do not delay seeking medical advice'
+      'Do not delay seeking medical advice',
+      'Avoid picking, cutting, or attempting home removal before examination'
     ]
   },
   'Melanoma': {
-    description: 'Melanoma is the most serious type of skin cancer. Early detection and treatment are critical for successful outcomes.',
+    description: 'A cancer of pigment-producing skin cells and the most serious common form of skin cancer. It may show asymmetry, an irregular border, several colors, a changing appearance, or a new dark spot. Melanoma can occur in a pre-existing mole or on previously normal skin, and early assessment is important because it can spread if untreated. Some melanomas are small or do not show every ABCDE warning sign. Any evolving or distinctly different lesion should be assessed promptly, usually with a focused examination and biopsy when indicated.',
     characteristics: [
       'Asymmetric shape with irregular borders',
       'Multiple colors or uneven color distribution',
       'Diameter larger than 6mm',
-      'Evolving in size, shape, or color'
+      'Evolving in size, shape, or color',
+      'May itch, bleed, become raised, or look different from the person\'s other moles',
+      'Can occur on areas with or without frequent sun exposure'
     ],
     dangers: [
       'Can spread rapidly to other parts of the body',
       'Metastatic melanoma can be life-threatening',
-      'Early-stage melanoma has excellent survival rates'
+      'Early-stage melanoma has excellent survival rates',
+      'A small lesion can still be clinically important if it is changing'
     ],
     recommendations: [
       'URGENT: Seek immediate evaluation by a dermatologist',
       'May require surgical excision and biopsy',
-      'Avoid sun exposure and use broad-spectrum sunscreen daily'
+      'Avoid sun exposure and use broad-spectrum sunscreen daily',
+      'Photograph the lesion and note the date and changes while arranging care'
     ]
   },
   'Benign Nevus (Mole)': {
-    description: 'A benign nevus, commonly known as a mole, is a non-cancerous growth on the skin formed by clusters of pigment-producing cells.',
+    description: 'A common mole formed by a cluster of pigment-producing cells. Benign nevi are often round or oval, evenly colored, and stable over time, and may be flat or raised. A mole that is new, changing, bleeding, itching, or noticeably different from a person\'s other moles should be examined. Moles can naturally vary by skin tone, age, and body location. Comparing the lesion with previous photographs and with the person\'s other moles can help identify meaningful change.',
     characteristics: [
       'Usually round or oval in shape with a smooth edge',
       'Uniform in color (brown, tan, black, or skin-colored)',
       'Generally smaller than 6mm',
-      'Remain stable over time'
+      'Remain stable over time',
+      'May be flat or raised and can develop during childhood or adulthood'
     ],
     dangers: [
       'Most benign nevi pose no health risk',
-      'Atypical nevi have a slightly higher risk of changing'
+      'Atypical nevi have a slightly higher risk of changing',
+      'A new or changing mole can require assessment even when it resembles an existing mole'
     ],
     recommendations: [
       'Monitor using the ABCDE rule',
       'Perform regular self-examinations monthly',
-      'Seek evaluation if a mole bleeds, itches, or changes'
+      'Seek evaluation if a mole bleeds, itches, or changes',
+      'Use consistent lighting and distance when taking comparison photographs'
     ]
   },
   'Squamous Cell Carcinoma': {
-    description: 'SCC is the second most common skin cancer. It arises from the squamous cells in the outer layer of the skin.',
+    description: 'A skin cancer that begins in squamous cells on the outer layer of the skin. It may appear as a rough or scaly patch, a firm red bump, a wart-like growth, or a sore that does not heal. It can grow deeper or spread, particularly when it is large, recurrent, or treatment is delayed, so prompt evaluation is recommended. It may be tender or bleed with minor contact, although symptoms are not always present. Treatment is usually curative when found early, but the appropriate procedure depends on the lesion\'s size, depth, location, and risk features.',
     characteristics: [
       'Firm, red nodule',
       'Flat sore with a scaly crust',
-      'A new sore or raised area on an old scar or ulcer'
+      'A new sore or raised area on an old scar or ulcer',
+      'May be tender, thickened, wart-like, or persistently rough',
+      'Often develops on sun-exposed skin but can occur elsewhere'
     ],
     dangers: [
       'More likely to spread than Basal Cell Carcinoma',
-      'Can become disfiguring if left untreated'
+      'Can become disfiguring if left untreated',
+      'Risk is higher for lesions that are large, deep, recurrent, or located on the lips or ears'
     ],
     recommendations: [
       'Requires prompt surgical removal',
       'Frequent follow-up skin exams are necessary',
-      'Protect skin from UV radiation'
+      'Protect skin from UV radiation',
+      'Have any sore that does not heal within a few weeks examined'
     ]
   },
   'Vascular Lesion': {
-    description: 'Non-cancerous growths made of blood vessels. Examples include cherry angiomas and "port-wine" stains.',
+    description: 'A lesion made up of blood vessels, often non-cancerous, that may appear bright red, purple, or blue. Examples include cherry angiomas and port-wine stains, which may be flat or raised and may lighten briefly when pressed. Some can bleed when injured, and a lesion that changes suddenly in size, color, or symptoms should be assessed. The exact appearance depends on the depth and type of blood vessels involved. Pain, repeated bleeding, ulceration, or rapid growth should be evaluated rather than treated at home.',
     characteristics: [
       'Bright red, blue, or purple in color',
       'Blanches (turns white) briefly when pressed',
-      'Can be flat or slightly raised'
+      'Can be flat or slightly raised',
+      'May be pinpoint-sized or form a larger patch',
+      'Color can become more noticeable with heat, exertion, or age'
     ],
     dangers: [
       'Typically harmless',
-      'Can bleed heavily if nicked or injured'
+      'Can bleed heavily if nicked or injured',
+      'A sudden increase in size, pain, or bleeding should be assessed'
     ],
     recommendations: [
       'No treatment required for health reasons',
       'Can be removed by laser for cosmetic purposes',
-      'Monitor for sudden changes in size or bleeding'
+      'Monitor for sudden changes in size or bleeding',
+      'Avoid attempting to puncture or remove the lesion at home'
     ]
   }
 };
@@ -842,6 +884,7 @@ export function ResultsPage() {
     try {
       const pdfData: ScanPdfData = {
         classification: analysisResult.classification,
+        description: currentInfo?.description || analysisResult.description,
         confidence: analysisResult.confidence,
         riskLevel: analysisResult.riskLevel,
         secondaryPredictions: analysisResult.secondaryPredictions,
@@ -1032,26 +1075,26 @@ export function ResultsPage() {
           {currentInfo && (
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
               <div className="border-y border-[#d7d2c7] bg-[#f8f5ee] p-6 md:p-8">
-                <div className="max-w-3xl mb-7">
-                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2f604e]">Clinical context</p>
+                <div className="mb-8 max-w-4xl">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#2f604e]">Clinical analysis</p>
                   <h2 className="mb-3 font-display text-2xl text-[#24332d] md:text-3xl">About {analysisResult.classification}</h2>
-                  <p className="leading-relaxed text-[#607268]">{currentInfo.description}</p>
+                  <p className="text-base leading-relaxed text-[#607268]">{currentInfo.description || analysisResult.description}</p>
                 </div>
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="border-l-2 border-[#607f9a] bg-[#e4edf1] p-5">
-                    <h3 className="text-xl text-blue-900 dark:text-blue-400 mb-4 flex items-center gap-2"><Info className="w-5 h-5" /> Characteristics</h3>
+                    <h3 className="text-xl text-blue-900 dark:text-blue-400 mb-4 flex items-center gap-2"><Info className="w-5 h-5" /> Common characteristics</h3>
                     <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-2">
                       {currentInfo.characteristics.map((c, i) => <li key={i} className="flex items-start gap-2"><span className="shrink-0" aria-hidden="true">•</span><span>{c}</span></li>)}
                     </ul>
                   </div>
                   <div className="border-l-2 border-[#b66f45] bg-[#f2e5d6] p-5">
-                    <h3 className="text-xl text-amber-900 dark:text-amber-400 mb-4 flex items-center gap-2"><AlertTriangle className="w-5 h-5" /> Risks</h3>
+                    <h3 className="text-xl text-amber-900 dark:text-amber-400 mb-4 flex items-center gap-2"><AlertTriangle className="w-5 h-5" /> Risks and considerations</h3>
                     <ul className="text-sm text-amber-800 dark:text-amber-300 space-y-2">
                       {currentInfo.dangers.map((d, i) => <li key={i} className="flex items-start gap-2"><span className="shrink-0" aria-hidden="true">•</span><span>{d}</span></li>)}
                     </ul>
                   </div>
                   <div className="border-l-2 border-[#2f604e] bg-[#e3ebdf] p-5">
-                    <h3 className="text-xl text-green-900 dark:text-green-400 mb-4 flex items-center gap-2"><CheckCircle className="w-5 h-5" /> Actions</h3>
+                    <h3 className="text-xl text-green-900 dark:text-green-400 mb-4 flex items-center gap-2"><CheckCircle className="w-5 h-5" /> Recommended actions</h3>
                     <ul className="text-sm text-green-800 dark:text-green-300 space-y-2">
                       {currentInfo.recommendations.map((r, i) => <li key={i} className="flex items-start gap-2"><span className="shrink-0" aria-hidden="true">•</span><span>{r}</span></li>)}
                     </ul>

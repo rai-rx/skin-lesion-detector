@@ -5,6 +5,7 @@ from database import supabase
 from storage import upload_scan_image, upload_heatmap_image, upload_pdf_report
 import io
 import base64
+import binascii
 from datetime import datetime, timezone
 import numpy as np
 try:
@@ -26,6 +27,7 @@ from predictions.inference import (
     make_gradcam_heatmap,
     LABEL_COLS,
     LABEL_MAP,
+    DISEASE_DESCRIPTIONS,
     get_risk_level
 )
 
@@ -57,26 +59,20 @@ async def predict_lesion(
     original_img = Image.open(io.BytesIO(contents)).convert("RGB")
     orig_w, orig_h = original_img.size
 
-    # 1. Validation
-    if not verify_is_skin_tissue(original_img):
-        # We could log this to the DB as an invalid upload if user is auth'd
-        raise HTTPException(
-            status_code=400, 
-            detail="Invalid Asset Detected: The uploaded image does not appear to contain human skin tissue architecture."
-        )
-    
-    is_valid, error_msg = validate_image_quality(original_img)
-    if not is_valid:
-        raise HTTPException(status_code=400, detail=error_msg)
-
-    # 2. Pre-processing
+    # 1. Pre-processing
     crop_params = [crop_x, crop_y, crop_width, crop_height]
     if all(param is not None for param in crop_params):
+        assert crop_x is not None and crop_y is not None
+        assert crop_width is not None and crop_height is not None
         img_processed = apply_custom_crop(original_img, crop_x, crop_y, crop_width, crop_height, IMG_SIZE)
     else:
         img_processed = center_crop_and_resize(original_img, IMG_SIZE)
+
+    is_valid, error_msg = validate_image_quality(img_processed)
+    if not is_valid:
+        raise HTTPException(status_code=400, detail=error_msg)
     
-    # 3. ABCDE Metrics
+    # 2. ABCDE Metrics
     structural_metrics = {
         "asymmetry": 0.0, "borderIrregularity": 0.0,
         "colorDivergence": 0.0, "diameterProfile": 0.0, "evolvingTracking": 0.0
@@ -86,7 +82,7 @@ async def predict_lesion(
     except Exception as e:
         print(f"CV Warning: {e}")
 
-    # 4. Inference
+    # 3. Inference
     x = None
     if tf is not None and ensemble_models:
         arr = np.asarray(img_processed).astype(np.float32)
@@ -108,16 +104,16 @@ async def predict_lesion(
     # Heatmap
     heatmap_data_uri = None
     heatmap_bytes = None
-    if ensemble_models:
+    if ensemble_models and x is not None:
         try:
             heatmap_raw = make_gradcam_heatmap(x, ensemble_models[0], "efficientnetv2m_multilabel", "top_activation")
             if heatmap_raw is not None:
                 heatmap_resized = cv2.resize(heatmap_raw, (orig_w, orig_h))
-                heatmap_uint8 = np.uint8(255 * heatmap_resized)
+                heatmap_uint8 = np.asarray(255 * heatmap_resized, dtype=np.uint8)
                 heatmap_color = cv2.applyColorMap(heatmap_uint8, cv2.COLORMAP_JET)
                 _, buffer = cv2.imencode('.png', heatmap_color)
                 heatmap_bytes = buffer.tobytes()
-                heatmap_base64 = base64.b64encode(buffer).decode('utf-8')
+                heatmap_base64 = base64.b64encode(buffer.tobytes()).decode('utf-8')
                 heatmap_data_uri = f"data:image/png;base64,{heatmap_base64}"
         except Exception as e:
             print(f"Heatmap generation failed: {e}")
@@ -143,6 +139,8 @@ async def predict_lesion(
     image_url = None
     if user:
         user_id = user.get("sub")
+        if not isinstance(user_id, str):
+            raise HTTPException(status_code=401, detail="Authenticated user identity is missing")
 
         # Create lesion profile automatically if none provided
         if not lesion_id:
@@ -199,6 +197,7 @@ async def predict_lesion(
     return {
         "id": scan_id,
         "classification": primary_label,
+        "description": DISEASE_DESCRIPTIONS.get(raw_label, "A skin lesion category identified by the screening model. Professional evaluation is recommended for diagnosis."),
         "confidence": round(primary_conf, 2),
         "riskLevel": risk,
         "secondaryPredictions": secondary,
@@ -222,6 +221,8 @@ async def import_pending_scan(
     try:
         image_bytes, image_extension = _decode_data_url(image_data)
         user_id = user.get("sub")
+        if not isinstance(user_id, str):
+            raise HTTPException(status_code=401, detail="Authenticated user identity is missing")
         lesion_name = f"Imported Scan {result.get('classification') or 'Lesion'}"
         lesion_res = supabase.table("lesions").insert({
             "user_id": user_id,
@@ -257,7 +258,7 @@ async def import_pending_scan(
         return {"id": scan_res.data[0]["id"], "lesion_id": lesion_id}
     except HTTPException:
         raise
-    except (ValueError, KeyError, IndexError, base64.binascii.Error) as error:
+    except (ValueError, KeyError, IndexError, binascii.Error) as error:
         raise HTTPException(status_code=400, detail=f"Unable to import scan data: {error}")
     except Exception as error:
         print(f"Failed to import pending scan: {error}")
@@ -475,6 +476,8 @@ async def save_pdf_report(
     user: Dict[str, Any] = Depends(get_current_user)
 ):
     user_id = user.get("sub")
+    if not isinstance(user_id, str):
+        raise HTTPException(status_code=401, detail="Authenticated user identity is missing")
 
     scan_res = supabase.table("scans").select("id, lesion_id, pdf_report_url").eq("id", scan_id).execute()
     if not scan_res.data or len(scan_res.data) == 0:

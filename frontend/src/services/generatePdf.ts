@@ -2,6 +2,7 @@ import jsPDF from 'jspdf/dist/jspdf.es.min.js';
 
 export interface ScanPdfData {
   classification: string;
+  description?: string;
   confidence: number;
   riskLevel: string;
   secondaryPredictions: Array<{ name: string; confidence: number }>;
@@ -74,6 +75,12 @@ export async function generateScanPdf(data: ScanPdfData): Promise<Blob> {
   doc.setFont("helvetica", "normal");
   doc.setTextColor(secondary);
   doc.text(`Confidence: ${data.confidence}%  [Risk Level: ${data.riskLevel.toUpperCase()}]`, 22, 67);
+
+  if (data.description) {
+    doc.setFontSize(9);
+    const descriptionLines = doc.splitTextToSize(data.description, 170);
+    doc.text(descriptionLines, 22, 72);
+  }
 
   // Rank 2 & 3
   const sec1 = data.secondaryPredictions?.[0]

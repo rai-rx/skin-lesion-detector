@@ -24,6 +24,19 @@ LABEL_MAP = {
     "SCCKA": "Squamous Cell Carcinoma",
     "VASC": "Vascular Lesion"
 }
+DISEASE_DESCRIPTIONS = {
+    "AKIEC": "A sun-damage-related precancerous lesion that can develop into squamous cell carcinoma and should be evaluated by a clinician.",
+    "BCC": "The most common skin cancer, which usually grows slowly but can damage nearby tissue if untreated.",
+    "BEN_OTH": "A general category for non-cancerous skin lesions that do not fit another specific classification.",
+    "BKL": "A common non-cancerous growth that often has a waxy or stuck-on appearance.",
+    "DF": "A common harmless, firm skin growth, often found on the legs and sometimes associated with a prior minor injury.",
+    "INF": "A skin change that may be caused by a bacterial, viral, or fungal infection and may require medical evaluation.",
+    "MAL_OTH": "An atypical malignant skin lesion that requires prompt specialist assessment and possible biopsy.",
+    "MEL": "A serious skin cancer that can spread; early professional evaluation is important when it is suspected.",
+    "NV": "A common non-cancerous mole formed by a group of pigment-producing cells, usually monitored for change over time.",
+    "SCCKA": "A skin cancer arising from squamous cells that can become locally destructive and should be assessed promptly.",
+    "VASC": "A usually non-cancerous lesion made up of blood vessels, which may appear red, blue, or purple."
+}
 
 IMG_SIZE = 480
 MODEL_DIR = Path(__file__).resolve().parent.parent
@@ -144,14 +157,15 @@ def validate_image_quality(img_pil) -> tuple[bool, str]:
     gray = cv2.cvtColor(open_cv_image, cv2.COLOR_BGR2GRAY)
     
     laplacian_var = cv2.Laplacian(gray, cv2.CV_64F).var()
-    if laplacian_var < 40.0: 
+    if laplacian_var < 12.0:
         return False, f"Image is too blurry (Sharpness Score: {round(laplacian_var, 2)}). Please stabilize your camera and retake."
         
-    mean_brightness = gray.mean()
-    if mean_brightness < 45.0:
-        return False, f"Image is too dark (Brightness: {round(mean_brightness, 2)}). Please activate your camera flash or use external light."
-    if mean_brightness > 230.0:
-        return False, f"Image is overexposed (Brightness: {round(mean_brightness, 2)}). Avoid direct glare or harsh lighting on the skin lesion."
+    brightness_low = float(np.percentile(gray, 10))
+    brightness_high = float(np.percentile(gray, 90))
+    if brightness_high < 35.0:
+        return False, f"Image is too dark (Brightness range: {round(brightness_low, 2)}-{round(brightness_high, 2)}). Please use more even lighting and retake."
+    if brightness_low > 245.0:
+        return False, f"Image is overexposed (Brightness range: {round(brightness_low, 2)}-{round(brightness_high, 2)}). Avoid direct glare and retake."
         
     return True, "Success"
 
