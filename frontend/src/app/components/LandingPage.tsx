@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { motion } from 'motion/react';
-import { ArrowRight, Upload, Camera, AlertCircle, CheckCircle, AlertTriangle, ScanLine, BookOpen } from 'lucide-react';
+import { ArrowRight, Camera, ScanLine, BookOpen } from 'lucide-react';
 import { ImageGalleryModal } from './ImageGalleryModal';
 import { Header } from './Header';
 
@@ -62,18 +62,8 @@ export function LandingPage() {
                       <ScanLine className="w-5 h-5" /> Start a scan
                       <ArrowRight className="w-4 h-4" />
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => navigate('/scan')}
-                      className="inline-flex items-center justify-center gap-3 px-6 py-4 rounded-xl border border-border bg-card/70 text-foreground hover:bg-card transition-colors"
-                    >
-                      <Upload className="w-5 h-5 text-accent" /> Upload an image
-                    </button>
                   </div>
 
-                  <div className="flex items-center gap-6 mt-8 text-sm text-muted-foreground">
-                    <span className="inline-flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-700" /> Educational use</span>
-                  </div>
                 </motion.div>
 
                 <motion.div
@@ -82,8 +72,8 @@ export function LandingPage() {
                   transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
                   className="relative"
                 >
-                  <div className="absolute -inset-4 rounded-[2rem] bg-accent/10 rotate-2" />
-                  <div className="relative aspect-[4/5] max-w-lg ml-auto overflow-hidden rounded-[1.5rem] bg-muted shadow-2xl">
+                  <div className="absolute -inset-3 rounded-[2rem] bg-accent/10 rotate-2" />
+                  <div className="relative ml-auto aspect-[4/5] max-w-sm overflow-hidden rounded-[1.5rem] bg-muted shadow-2xl">
                     <img
                       src={benignImages[0]}
                       alt="Close-up example of skin texture"
@@ -157,9 +147,6 @@ export function LandingPage() {
 
           <section className="max-w-7xl mx-auto px-6 lg:px-8 py-20 md:py-24">
             <div className="flex flex-col md:flex-row gap-6 items-start mb-10">
-              <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-                <AlertTriangle className="w-6 h-6" />
-              </div>
               <div>
                 <p className="text-sm font-semibold tracking-[0.16em] uppercase text-accent mb-3">Explore the library</p>
                 <h2 className="text-4xl leading-tight">Context for the conversation.</h2>
@@ -168,8 +155,8 @@ export function LandingPage() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-5">
-              <InfoCard icon={<CheckCircle className="w-6 h-6" />} title="Common benign patterns" description="Explore examples of spots that are often harmless, while remembering that changes still deserve attention." iconColor="bg-green-100 text-green-700" onClick={() => setModalOpen('benign')} />
-              <InfoCard icon={<AlertCircle className="w-6 h-6" />} title="Patterns to discuss promptly" description="Review examples associated with higher concern and learn why an in-person evaluation matters." iconColor="bg-amber-100 text-amber-700" onClick={() => setModalOpen('malignant')} />
+              <InfoCard title="Common benign patterns" description="Explore examples of spots that are often harmless, while remembering that changes still deserve attention." onClick={() => setModalOpen('benign')} />
+              <InfoCard title="Patterns to discuss promptly" description="Review examples associated with higher concern and learn why an in-person evaluation matters." onClick={() => setModalOpen('malignant')} />
             </div>
           </section>
 
@@ -209,14 +196,12 @@ export function LandingPage() {
   }
 
   interface InfoCardProps {
-    icon: React.ReactNode;
     title: string;
     description: string;
-    iconColor: string;
     onClick: () => void;
   }
 
-  function InfoCard({ icon, title, description, iconColor, onClick }: InfoCardProps) {
+  function InfoCard({ title, description, onClick }: InfoCardProps) {
     return (
       <motion.button
         type="button"
@@ -225,7 +210,6 @@ export function LandingPage() {
         onClick={onClick}
         className="group w-full text-left bg-card border border-border rounded-2xl p-6 hover:border-primary/40 hover:shadow-lg transition-all"
       >
-        <div className={`w-11 h-11 ${iconColor} rounded-xl flex items-center justify-center mb-5`}>{icon}</div>
         <div className="flex items-center justify-between gap-4">
           <h3 className="text-2xl">{title}</h3>
           <ArrowRight className="w-5 h-5 text-primary opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
