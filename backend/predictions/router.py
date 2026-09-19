@@ -146,6 +146,12 @@ async def predict_lesion(
     is_valid, error_msg, quality_warning = validate_image_quality(img_processed)
     if not is_valid:
         raise HTTPException(status_code=400, detail=error_msg)
+
+    if not verify_is_skin_tissue(img_processed):
+        raise HTTPException(
+            status_code=400,
+            detail="Uploaded image does not appear to be a real skin photo. Please upload a clear close-up image of actual skin or a lesion on the skin."
+        )
     
     # 2. ABCDE Metrics
     structural_metrics = {
@@ -296,6 +302,12 @@ async def import_pending_scan(
 
     try:
         image_bytes, image_extension = _decode_data_url(image_data)
+        image_for_validation = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        if not verify_is_skin_tissue(image_for_validation):
+            raise HTTPException(
+                status_code=400,
+                detail="Uploaded image does not appear to be a real skin photo. Please upload a clear close-up image of actual skin or a lesion on the skin."
+            )
         user_id = user.get("sub")
         if not isinstance(user_id, str):
             raise HTTPException(status_code=401, detail="Authenticated user identity is missing")

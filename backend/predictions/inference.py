@@ -133,13 +133,16 @@ def get_risk_level(top_label: str, top_conf: float) -> str:
     return "low"
 
 def verify_is_skin_tissue(img_pil) -> bool:
-    open_cv_image = np.array(img_pil.convert("RGB"))[:, :, ::-1].copy()
-    hsv = cv2.cvtColor(open_cv_image, cv2.COLOR_BGR2HSV)
-    lower_skin = np.array([0, 20, 70], dtype=np.uint8)
-    upper_skin = np.array([25, 180, 255], dtype=np.uint8)
-    skin_mask = cv2.inRange(hsv, lower_skin, upper_skin)
-    skin_percentage = (np.sum(skin_mask == 255) / skin_mask.size) * 100
-    return skin_percentage >= 45.0
+    try:
+        open_cv_image = np.array(img_pil.convert("RGB"))[:, :, ::-1].copy()
+        hsv = cv2.cvtColor(open_cv_image, cv2.COLOR_BGR2HSV)
+        lower_skin = np.array([0, 20, 70], dtype=np.uint8)
+        upper_skin = np.array([25, 180, 255], dtype=np.uint8)
+        skin_mask = cv2.inRange(hsv, lower_skin, upper_skin)
+        skin_percentage = (np.sum(skin_mask == 255) / skin_mask.size) * 100
+        return skin_percentage >= 45.0
+    except Exception:
+        return False
 
 def center_crop_and_resize(img, size):
     width, height = img.size
