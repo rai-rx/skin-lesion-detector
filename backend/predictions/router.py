@@ -2,12 +2,17 @@ from fastapi import APIRouter, File, UploadFile, Form, Depends, HTTPException
 from typing import Optional, Dict, Any
 from auth.dependencies import get_current_user, get_optional_user
 from database import supabase
+from config import settings
 from storage import upload_scan_image, upload_heatmap_image, upload_pdf_report
 import io
 import base64
 import binascii
+import smtplib
+import uuid
+from email.message import EmailMessage
 from datetime import datetime, timezone
 import numpy as np
+from pydantic import BaseModel
 try:
     import tensorflow as tf
 except ImportError:
@@ -32,6 +37,76 @@ from predictions.inference import (
 )
 
 router = APIRouter()
+
+
+class ContactMessage(BaseModel):
+    name: str
+    email: str
+    message: str
+
+
+@router.post("/contact")
+async def send_contact_message(payload: ContactMessage):
+    smtp_host = settings.SMTP_HOST.strip()
+    smtp_username = settings.SMTP_USERNAME.strip()
+    smtp_password = settings.SMTP_PASSWORD.strip()
+    if not smtp_host or not smtp_username or not smtp_password:
+        raise HTTPException(status_code=503, detail="Contact email service is not configured")
+
+    ticket_id = f"SKN-{uuid.uuid4().hex[:8].upper()}"
+    submitted_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    requester_name = payload.name.strip().replace("\r", " ").replace("\n", " ")
+    requester_email = payload.email.strip().replace("\r", " ").replace("\n", " ")
+    requester_message = payload.message.strip()
+
+    message = EmailMessage()
+    message["Subject"] = f"[SkinEleven Support] Ticket {ticket_id} - New Contact Request"
+    message["From"] = smtp_username
+    message["To"] = settings.CONTACT_EMAIL
+    message["Reply-To"] = requester_email
+    message.set_content(
+        "SKINELEVEN SUPPORT TICKET\n"
+        "=========================\n\n"
+        f"Ticket ID:       {ticket_id}\n"
+        f"Submitted:       {submitted_at}\n"
+        "Status:          New\n"
+        "Priority:        Normal\n\n"
+        "REQUESTER DETAILS\n"
+        "------------------\n"
+        f"Name:            {requester_name}\n"
+        f"Email:           {requester_email}\n\n"
+        "MESSAGE\n"
+        "-------\n"
+        f"{requester_message}\n\n"
+        "RESPONSE HANDLING\n"
+        "-----------------\n"
+        f"Reply directly to this email to respond to {requester_name}.\n"
+        f"Reference ticket {ticket_id} in any follow-up communication.\n\n"
+        "This message was submitted through the SkinEleven Contact Us form."
+    )
+
+    try:
+        if settings.SMTP_PORT == 465:
+            smtp_connection = smtplib.SMTP_SSL(smtp_host, settings.SMTP_PORT, timeout=15)
+        else:
+            smtp_connection = smtplib.SMTP(smtp_host, settings.SMTP_PORT, timeout=15)
+
+        with smtp_connection as smtp:
+            if settings.SMTP_PORT != 465:
+                smtp.starttls()
+            smtp.login(smtp_username, smtp_password)
+            smtp.send_message(message)
+    except smtplib.SMTPAuthenticationError as error:
+        print(f"Contact email authentication failed: {error}")
+        raise HTTPException(
+            status_code=502,
+            detail="Gmail rejected the SMTP credentials. Use a valid Google App Password for the configured account.",
+        ) from error
+    except (OSError, smtplib.SMTPException) as error:
+        print(f"Contact email delivery failed: {error}")
+        raise HTTPException(status_code=502, detail="Unable to deliver contact message") from error
+
+    return {"message": "Contact message sent"}
 
 
 def _decode_data_url(data_url: str) -> tuple[bytes, str]:

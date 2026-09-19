@@ -1,8 +1,18 @@
 import { motion } from 'motion/react';
 import { useNavigate, useLocation, Link } from 'react-router';
-import { Activity, Menu, X, Home, Folder, FileText, User, Settings } from 'lucide-react';
+import { Activity, Menu, X, Home, Folder, FileText, User, Settings, Mail } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from './ui/dialog';
+import { Button } from './ui/button';
+import { getApiUrl } from '../../services/apiUrl';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -14,8 +24,34 @@ export function Header({ onMenuClick, showMenu = true }: HeaderProps) {
   const location = useLocation();
   const { user } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
+  const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
+  const [contactStatus, setContactStatus] = useState<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
 
   const closeMenu = () => setMenuOpen(false);
+
+  const handleContactSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsSending(true);
+    setContactStatus(null);
+
+    try {
+      const response = await fetch(`${getApiUrl()}/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(contactForm),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.detail || 'Unable to send your message.');
+      setContactStatus('Message sent successfully. We will get back to you soon.');
+      setContactForm({ name: '', email: '', message: '' });
+    } catch (error) {
+      setContactStatus(error instanceof Error ? error.message : 'Unable to send your message.');
+    } finally {
+      setIsSending(false);
+    }
+  };
 
   return (
     <motion.header
@@ -50,6 +86,15 @@ export function Header({ onMenuClick, showMenu = true }: HeaderProps) {
 
           {/* Navigation */}
           <nav className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => setContactOpen(true)}
+              aria-label="Open Contact Us form"
+              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-[#607268] transition-colors hover:text-[#2f604e]"
+            >
+              <Mail className="h-4 w-4" />
+              Contact Us
+            </button>
             {!user && (
               <div className="flex items-center gap-3">
                 <Link to="/login" className="px-3 py-2 text-sm font-medium text-[#607268] transition-colors hover:text-[#2f604e]">
@@ -102,6 +147,63 @@ export function Header({ onMenuClick, showMenu = true }: HeaderProps) {
           </div>
         )}
       </div>
+
+      <Dialog open={contactOpen} onOpenChange={setContactOpen}>
+        <DialogContent className="border-[#D3C2B0] bg-[#FAF7F2] sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-[#33443D]">Contact SkinEleven</DialogTitle>
+            <DialogDescription className="text-[#5F514B]">
+              Send us a message directly through the SkinEleven support team.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleContactSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <label htmlFor="contact-name" className="text-sm font-medium text-[#33443D]">Name</label>
+              <input
+                id="contact-name"
+                required
+                value={contactForm.name}
+                onChange={(event) => setContactForm({ ...contactForm, name: event.target.value })}
+                className="w-full border border-[#D3C2B0] bg-white px-3 py-2.5 text-sm text-[#33443D] outline-none focus:border-[#2f604e] focus:ring-2 focus:ring-[#2f604e]/20"
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="contact-email" className="text-sm font-medium text-[#33443D]">Email</label>
+              <input
+                id="contact-email"
+                required
+                type="email"
+                value={contactForm.email}
+                onChange={(event) => setContactForm({ ...contactForm, email: event.target.value })}
+                className="w-full border border-[#D3C2B0] bg-white px-3 py-2.5 text-sm text-[#33443D] outline-none focus:border-[#2f604e] focus:ring-2 focus:ring-[#2f604e]/20"
+              />
+            </div>
+            <div className="space-y-2">
+              <label htmlFor="contact-message" className="text-sm font-medium text-[#33443D]">Message</label>
+              <textarea
+                id="contact-message"
+                required
+                rows={5}
+                value={contactForm.message}
+                onChange={(event) => setContactForm({ ...contactForm, message: event.target.value })}
+                className="w-full resize-y border border-[#D3C2B0] bg-white px-3 py-2.5 text-sm text-[#33443D] outline-none focus:border-[#2f604e] focus:ring-2 focus:ring-[#2f604e]/20"
+              />
+            </div>
+            {contactStatus && (
+              <p role="status" className="border-l-2 border-[#2f604e] bg-[#e3ebdf] px-3 py-2 text-sm text-[#2f604e]">
+                {contactStatus}
+              </p>
+            )}
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setContactOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={isSending} className="bg-[#2f604e] text-white hover:bg-[#244c3e]">
+                {isSending ? 'Sending...' : 'Send Message'}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </motion.header>
   );
 }
