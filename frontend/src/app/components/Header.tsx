@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate, useLocation, Link } from 'react-router';
 import { Activity, Menu, X, Home, Folder, FileText, User, Settings } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
@@ -24,6 +24,7 @@ export function Header({ onMenuClick, showMenu = true }: HeaderProps) {
   const location = useLocation();
   const { user } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
   const [contactStatus, setContactStatus] = useState<string | null>(null);
@@ -60,32 +61,32 @@ export function Header({ onMenuClick, showMenu = true }: HeaderProps) {
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
       className="sticky top-0 z-50 bg-[#f4f0e8]/80 backdrop-blur-md"
     >
-      <div className="mx-auto max-w-7xl px-6 py-4">
-        <div className="flex items-center justify-between">
+      <div className="mx-auto max-w-7xl px-3 py-3 sm:px-6 sm:py-4">
+        <div className="flex items-center justify-between gap-2 sm:gap-4">
           {/* Logo/Brand */}
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
             {showMenu && <button
               type="button"
               onClick={() => onMenuClick ? onMenuClick() : setMenuOpen((open) => !open)}
               aria-label={onMenuClick ? 'Expand sidebar' : menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
               title={onMenuClick ? 'Expand sidebar' : menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-              className="rounded-full p-2 text-[#607268] transition-colors hover:bg-[#e3ebdf] hover:text-[#2f604e]"
+              className="rounded-full p-1.5 text-[#607268] transition-colors hover:bg-[#e3ebdf] hover:text-[#2f604e] sm:p-2"
             >
-              {onMenuClick ? <Menu className="h-5 w-5" /> : menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              {onMenuClick ? <Menu className="h-4 w-4 sm:h-5 sm:w-5" /> : menuOpen ? <X className="h-4 w-4 sm:h-5 sm:w-5" /> : <Menu className="h-4 w-4 sm:h-5 sm:w-5" />}
             </button>}
             <button
               onClick={() => navigate('/')}
-              className="group flex items-center gap-3"
+              className="group flex min-w-0 items-center gap-2 sm:gap-3"
             >
-              <div className="flex h-9 w-9 items-center justify-center rounded-full border border-[#806348] text-[#806348] transition-colors group-hover:border-[#2f604e] group-hover:text-[#2f604e]">
-                <Activity className="h-4 w-4" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[#806348] text-[#806348] transition-colors group-hover:border-[#2f604e] group-hover:text-[#2f604e] sm:h-9 sm:w-9">
+                <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </div>
-              <h1 className="font-display text-xl font-bold leading-tight text-[#40352d]">SkinEleven</h1>
+              <h1 className="truncate font-display text-base font-bold leading-tight text-[#40352d] sm:text-xl">SkinEleven</h1>
             </button>
           </div>
 
           {/* Navigation */}
-          <nav className="flex items-center gap-4">
+          <nav className="hidden items-center justify-end gap-4 md:flex">
             <Link
               to="/about"
               className="px-3 py-2 text-sm font-medium text-[#607268] transition-colors hover:text-[#2f604e]"
@@ -111,7 +112,74 @@ export function Header({ onMenuClick, showMenu = true }: HeaderProps) {
               </div>
             )}
           </nav>
+
+          <div className="md:hidden">
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen((open) => !open)}
+              aria-label={mobileNavOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              className="p-1.5 text-[#2f604e] transition-colors hover:text-[#1d3a2f] focus:outline-none"
+            >
+              {mobileNavOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </div>
+
+        <AnimatePresence>
+          {mobileNavOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+              className="md:hidden overflow-hidden"
+            >
+              <motion.nav
+                initial={{ y: -8, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -8, opacity: 0 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
+                className="mt-3 flex flex-col gap-2 rounded-2xl border border-[#D3C2B0] bg-[#FAF7F2] p-3 shadow-sm"
+              >
+                <Link
+                  to="/about"
+                  onClick={() => setMobileNavOpen(false)}
+                  className="rounded-lg px-3 py-2 text-sm font-medium text-[#607268] transition-colors hover:bg-[#e3ebdf] hover:text-[#2f604e]"
+                >
+                  About Us
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setContactOpen(true);
+                    setMobileNavOpen(false);
+                  }}
+                  className="rounded-lg px-3 py-2 text-left text-sm font-medium text-[#607268] transition-colors hover:bg-[#e3ebdf] hover:text-[#2f604e]"
+                >
+                  Contact Us
+                </button>
+                {!user && (
+                  <>
+                    <Link
+                      to="/login"
+                      onClick={() => setMobileNavOpen(false)}
+                      className="rounded-lg px-3 py-2 text-sm font-medium text-[#607268] transition-colors hover:bg-[#e3ebdf] hover:text-[#2f604e]"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      to="/register"
+                      onClick={() => setMobileNavOpen(false)}
+                      className="rounded-lg bg-[#2f604e] px-3 py-2 text-center text-sm font-medium text-[#f4f0e8] transition-colors hover:bg-[#244c3e]"
+                    >
+                      Get Started
+                    </Link>
+                  </>
+                )}
+              </motion.nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
         {showMenu && !onMenuClick && menuOpen && (
           <div className="fixed inset-0 z-[100] flex min-h-screen">
             <button type="button" aria-label="Close navigation menu" onClick={closeMenu} className="absolute inset-0 bg-[#24332d]/25" />
