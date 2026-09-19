@@ -16,6 +16,7 @@ import { AdminDashboard } from './components/admin/AdminDashboard';
 import { UserDirectory } from './components/admin/UserDirectory';
 import { useAuth } from '../contexts/AuthContext';
 import { AccountSettings } from './components/dashboard/AccountSettings';
+import { AboutPage } from './components/AboutPage';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +44,7 @@ const router = createBrowserRouter([
   { path: "/results", element: <ResultsPage /> },
   { path: "/login", element: <LoginPage /> },
   { path: "/register", element: <RegisterPage /> },
+  { path: "/about", element: <AboutPage /> },
   {
     path: "/settings",
     element: <ProtectedRoute><DashboardLayout /></ProtectedRoute>,

@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { useNavigate, useLocation, Link } from 'react-router';
-import { Activity, Menu, X, Home, Folder, FileText, User, Settings, Mail } from 'lucide-react';
+import { Activity, Menu, X, Home, Folder, FileText, User, Settings } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useState } from 'react';
 import {
@@ -86,13 +86,18 @@ export function Header({ onMenuClick, showMenu = true }: HeaderProps) {
 
           {/* Navigation */}
           <nav className="flex items-center gap-4">
+            <Link
+              to="/about"
+              className="px-3 py-2 text-sm font-medium text-[#607268] transition-colors hover:text-[#2f604e]"
+            >
+              About Us
+            </Link>
             <button
               type="button"
               onClick={() => setContactOpen(true)}
               aria-label="Open Contact Us form"
-              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-[#607268] transition-colors hover:text-[#2f604e]"
+              className="px-3 py-2 text-sm font-medium text-[#607268] transition-colors hover:text-[#2f604e]"
             >
-              <Mail className="h-4 w-4" />
               Contact Us
             </button>
             {!user && (
@@ -204,6 +209,7 @@ export function Header({ onMenuClick, showMenu = true }: HeaderProps) {
           </form>
         </DialogContent>
       </Dialog>
+
     </motion.header>
   );
 }
