@@ -127,13 +127,13 @@ export function AboutPage() {
           </div>
         </section>
 
-        <section className="border-t border-[#d7d2c7] bg-[#f4f0e8]">
-          <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
-            <p className="max-w-4xl text-sm leading-7 text-[#607268]">
+        <footer className="border-t border-[#d7d2c7] bg-[#f4f0e8]">
+          <div className="mx-auto max-w-7xl px-6 py-5 lg:px-8">
+            <p className="max-w-5xl text-xs leading-5 text-[#607268]">
               SkinEleven does not provide a formal diagnosis or treatment plan. If a lesion is new, changing, bleeding, painful, persistent, or concerning, seek assessment from a qualified dermatologist.
             </p>
           </div>
-        </section>
+        </footer>
       </main>
     </div>
   );
