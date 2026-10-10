@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import { motion } from 'motion/react';
+import { motion, useReducedMotion } from 'motion/react';
 import { ArrowRight, Camera, ScanLine, BookOpen } from 'lucide-react';
 import { ImageGalleryModal } from './ImageGalleryModal';
 import { Header } from './Header';
@@ -25,6 +25,22 @@ const steps = [
   { number: '03', icon: BookOpen, title: 'Keep context over time', description: 'Save scans to a profile so changes are easier to discuss with a clinician.' },
 ];
 
+function ScrollReveal({ children, className, delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
+  const prefersReducedMotion = useReducedMotion();
+
+  return (
+    <motion.div
+      className={className}
+      initial={prefersReducedMotion ? false : { opacity: 0, y: 18 }}
+      whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.15 }}
+      transition={{ duration: 0.55, delay, ease: 'easeOut' }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 export function LandingPage() {
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState<'benign' | 'malignant' | null>(null);
@@ -38,11 +54,7 @@ export function LandingPage() {
             <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.42),transparent_48%,rgba(193,123,92,0.16))] pointer-events-none" />
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-12 sm:pt-14 sm:pb-16 md:pt-20 md:pb-24">
               <div className="grid lg:grid-cols-[1.02fr_0.98fr] gap-8 sm:gap-10 lg:gap-20 items-center">
-                <motion.div
-                  initial={{ opacity: 0, x: -24 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                >
+                <ScrollReveal>
                   <div className="inline-flex items-center gap-2 text-[11px] sm:text-sm font-semibold tracking-[0.16em] uppercase text-accent mb-5 sm:mb-6">
                     <span className="w-8 h-px bg-accent" /> Skin health, made clearer
                   </div>
@@ -64,14 +76,9 @@ export function LandingPage() {
                     </button>
                   </div>
 
-                </motion.div>
+                </ScrollReveal>
 
-                <motion.div
-                  initial={{ opacity: 0, y: 24 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-                  className="relative mt-2 sm:mt-0"
-                >
+                <ScrollReveal delay={0.12} className="relative mt-2 sm:mt-0">
                   <div className="absolute -inset-3 rounded-[2rem] bg-accent/10 rotate-2" />
                   <div className="relative mx-auto lg:ml-auto aspect-[4/5] w-full max-w-[320px] sm:max-w-sm overflow-hidden rounded-[1.5rem] bg-muted shadow-2xl">
                     <img
@@ -91,36 +98,42 @@ export function LandingPage() {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </ScrollReveal>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-5 md:gap-6 mt-10 sm:mt-14 pt-6 border-t border-[#D3C2B0] max-w-3xl">
-                <Metric value="11" label="lesion categories" />
-                <Metric value="1" label="place for your scans" />
-                <Metric value="24/7" label="available for review" />
-                <Metric value="0" label="diagnoses promised" />
+                <ScrollReveal delay={0.04}><Metric value="11" label="lesion categories" /></ScrollReveal>
+                <ScrollReveal delay={0.08}><Metric value="1" label="place for your scans" /></ScrollReveal>
+                <ScrollReveal delay={0.12}><Metric value="24/7" label="available for review" /></ScrollReveal>
+                <ScrollReveal delay={0.16}><Metric value="0" label="diagnoses promised" /></ScrollReveal>
               </div>
             </div>
           </section>
 
           <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-18 md:py-28">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-5 sm:gap-6 mb-8 sm:mb-10">
-              <div>
-                <p className="text-sm font-semibold tracking-[0.16em] uppercase text-accent mb-3">From image to insight</p>
-                <h2 className="text-3xl sm:text-4xl md:text-5xl max-w-xl leading-tight">A simple routine for paying attention.</h2>
-              </div>
-              <p className="text-muted-foreground max-w-sm leading-relaxed">Use the result as a conversation starter, alongside regular skin checks and professional care.</p>
+              <ScrollReveal>
+                <div>
+                  <p className="text-sm font-semibold tracking-[0.16em] uppercase text-accent mb-3">From image to insight</p>
+                  <h2 className="text-3xl sm:text-4xl md:text-5xl max-w-xl leading-tight">A simple routine for paying attention.</h2>
+                </div>
+              </ScrollReveal>
+              <ScrollReveal delay={0.1}>
+                <p className="text-muted-foreground max-w-sm leading-relaxed">Use the result as a conversation starter, alongside regular skin checks and professional care.</p>
+              </ScrollReveal>
             </div>
 
             <div className="grid md:grid-cols-3 gap-px bg-border border border-border rounded-2xl overflow-hidden">
-              {steps.map((step) => (
+              {steps.map((step, index) => (
                 <div key={step.number} className="bg-card p-5 sm:p-7 md:p-8 min-h-[230px]">
-                  <div className="flex items-center justify-between mb-8 sm:mb-12">
-                    <step.icon className="w-6 h-6 text-accent" />
-                    <span className="font-display text-3xl text-border">{step.number}</span>
-                  </div>
-                  <h3 className="text-xl sm:text-2xl mb-2">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
+                  <ScrollReveal delay={index * 0.08}>
+                    <div className="flex items-center justify-between mb-8 sm:mb-12">
+                      <step.icon className="w-6 h-6 text-accent" />
+                      <span className="font-display text-3xl text-border">{step.number}</span>
+                    </div>
+                    <h3 className="text-xl sm:text-2xl mb-2">{step.title}</h3>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
+                  </ScrollReveal>
                 </div>
               ))}
             </div>
@@ -129,17 +142,19 @@ export function LandingPage() {
           <section className="bg-[#33443D] text-[#FAF7F2]">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-16 md:py-20">
               <div className="grid lg:grid-cols-[0.7fr_1.3fr] gap-8 sm:gap-10 lg:gap-12 items-start">
-                <div>
-                  <p className="text-sm font-semibold tracking-[0.16em] uppercase text-[#E5B393] mb-3">Know the signs</p>
-                  <h2 className="text-3xl sm:text-4xl md:text-5xl leading-tight">The ABCDE check.</h2>
-                  <p className="text-[#D8E0D9]/75 mt-5 leading-relaxed max-w-sm">A quick visual reminder for changes worth documenting and discussing with a dermatologist.</p>
-                </div>
+                <ScrollReveal>
+                  <div>
+                    <p className="text-sm font-semibold tracking-[0.16em] uppercase text-[#E5B393] mb-3">Know the signs</p>
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl leading-tight">The ABCDE check.</h2>
+                    <p className="text-[#D8E0D9]/75 mt-5 leading-relaxed max-w-sm">A quick visual reminder for changes worth documenting and discussing with a dermatologist.</p>
+                  </div>
+                </ScrollReveal>
                 <div className="grid sm:grid-cols-2 gap-x-6 sm:gap-x-10 gap-y-6 sm:gap-y-7">
-                  <SignItem letter="A" title="Asymmetry" text="One half looks different from the other." />
-                  <SignItem letter="B" title="Border" text="Edges look uneven, blurred, or notched." />
-                  <SignItem letter="C" title="Color" text="Color varies across the same spot." />
-                  <SignItem letter="D" title="Diameter" text="The spot is larger than about 6 mm." />
-                  <SignItem letter="E" title="Evolving" text="It changes in size, shape, or color." />
+                  <ScrollReveal><SignItem letter="A" title="Asymmetry" text="One half looks different from the other." /></ScrollReveal>
+                  <ScrollReveal delay={0.06}><SignItem letter="B" title="Border" text="Edges look uneven, blurred, or notched." /></ScrollReveal>
+                  <ScrollReveal><SignItem letter="C" title="Color" text="Color varies across the same spot." /></ScrollReveal>
+                  <ScrollReveal delay={0.06}><SignItem letter="D" title="Diameter" text="The spot is larger than about 6 mm." /></ScrollReveal>
+                  <ScrollReveal><SignItem letter="E" title="Evolving" text="It changes in size, shape, or color." /></ScrollReveal>
                 </div>
               </div>
             </div>
@@ -147,11 +162,13 @@ export function LandingPage() {
 
           <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-16 md:py-24">
             <div className="flex flex-col md:flex-row gap-6 items-start mb-8 sm:mb-10">
-              <div>
-                <p className="text-sm font-semibold tracking-[0.16em] uppercase text-accent mb-3">Explore the library</p>
-                <h2 className="text-3xl sm:text-4xl leading-tight">Context for the conversation.</h2>
-                <p className="text-muted-foreground mt-3 max-w-2xl leading-relaxed">Browse example images to learn the difference between common visual patterns. Samples are educational and are not a substitute for an examination.</p>
-              </div>
+              <ScrollReveal>
+                <div>
+                  <p className="text-sm font-semibold tracking-[0.16em] uppercase text-accent mb-3">Explore the library</p>
+                  <h2 className="text-3xl sm:text-4xl leading-tight">Context for the conversation.</h2>
+                  <p className="text-muted-foreground mt-3 max-w-2xl leading-relaxed">Browse example images to learn the difference between common visual patterns. Samples are educational and are not a substitute for an examination.</p>
+                </div>
+              </ScrollReveal>
             </div>
 
             <div className="grid md:grid-cols-2 gap-4 sm:gap-5">
@@ -160,10 +177,14 @@ export function LandingPage() {
             </div>
           </section>
 
-          <footer className="border-t border-border bg-card/50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row gap-4 md:gap-8 md:justify-start text-sm text-muted-foreground">
-              <p><strong className="text-foreground">Medical disclaimer:</strong> SkinEleven is educational and does not diagnose or replace professional medical advice.</p>
-              <p className="shrink-0">When in doubt, contact a qualified healthcare provider.</p>
+          <footer className="border-t border-[#607268] bg-[#33443D] text-[#d8e0d9]/80">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row gap-4 md:gap-8 md:justify-start text-sm">
+              <ScrollReveal>
+                <p><strong className="text-[#f8f0e5]">Medical disclaimer:</strong> SkinEleven is educational and does not diagnose or replace professional medical advice.</p>
+              </ScrollReveal>
+              <ScrollReveal delay={0.08} className="shrink-0">
+                <p>When in doubt, contact a qualified healthcare provider.</p>
+              </ScrollReveal>
             </div>
           </footer>
         </main>
@@ -210,12 +231,14 @@ export function LandingPage() {
         onClick={onClick}
         className="group w-full text-left bg-card border border-border rounded-2xl p-5 sm:p-6 hover:border-primary/40 hover:shadow-lg transition-all"
       >
-        <div className="flex items-center justify-between gap-4">
-          <h3 className="text-xl sm:text-2xl">{title}</h3>
-          <ArrowRight className="w-5 h-5 text-primary opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
-        </div>
-        <p className="text-sm text-muted-foreground leading-relaxed mt-3">{description}</p>
-        <span className="inline-block text-xs font-semibold text-primary mt-5">View sample images</span>
+        <ScrollReveal>
+          <div className="flex items-center justify-between gap-4">
+            <h3 className="text-xl sm:text-2xl">{title}</h3>
+            <ArrowRight className="w-5 h-5 text-primary opacity-60 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed mt-3">{description}</p>
+          <span className="inline-block text-xs font-semibold text-primary mt-5">View sample images</span>
+        </ScrollReveal>
       </motion.button>
     );
   }

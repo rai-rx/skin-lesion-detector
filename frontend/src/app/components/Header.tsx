@@ -1,6 +1,6 @@
 import { motion, AnimatePresence } from 'motion/react';
 import { useNavigate, useLocation, Link } from 'react-router';
-import { Activity, Menu, X, Home, Folder, FileText, User, Settings } from 'lucide-react';
+import { Activity, Menu, X, Home, Folder, FileText, User, Settings, Mail, Send, CircleCheck, CircleAlert } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useState } from 'react';
 import {
@@ -27,7 +27,7 @@ export function Header({ onMenuClick, showMenu = true }: HeaderProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
   const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
-  const [contactStatus, setContactStatus] = useState<string | null>(null);
+  const [contactStatus, setContactStatus] = useState<{ kind: 'success' | 'error'; message: string } | null>(null);
   const [isSending, setIsSending] = useState(false);
 
   const closeMenu = () => setMenuOpen(false);
@@ -45,10 +45,10 @@ export function Header({ onMenuClick, showMenu = true }: HeaderProps) {
       });
       const data = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(data.detail || 'Unable to send your message.');
-      setContactStatus('Message sent successfully. We will get back to you soon.');
+      setContactStatus({ kind: 'success', message: 'Message sent. The SkinEleven team will be in touch.' });
       setContactForm({ name: '', email: '', message: '' });
     } catch (error) {
-      setContactStatus(error instanceof Error ? error.message : 'Unable to send your message.');
+      setContactStatus({ kind: 'error', message: error instanceof Error ? error.message : 'Unable to send your message.' });
     } finally {
       setIsSending(false);
     }
@@ -222,59 +222,91 @@ export function Header({ onMenuClick, showMenu = true }: HeaderProps) {
       </div>
 
       <Dialog open={contactOpen} onOpenChange={setContactOpen}>
-        <DialogContent className="border-[#D3C2B0] bg-[#FAF7F2] sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-2xl text-[#33443D]">Contact SkinEleven</DialogTitle>
-            <DialogDescription className="text-[#5F514B]">
-              Send us a message directly through the SkinEleven support team.
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="max-h-[min(90vh,760px)] overflow-y-auto rounded-xl border-0 bg-[#FAF7F2] p-0 shadow-2xl sm:max-w-3xl">
+          <div className="grid md:grid-cols-[0.82fr_1.18fr]">
+            <aside className="flex flex-col justify-between gap-10 bg-[#33443D] p-7 text-[#FAF7F2] sm:p-9">
+              <div>
+                <div className="mb-10 flex h-11 w-11 items-center justify-center border border-[#91a79b]/50 bg-[#40574d] text-[#e5b393]">
+                  <Mail className="h-5 w-5" />
+                </div>
+                <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-[#e5b393]">SkinEleven support</p>
+                <h2 className="font-display text-3xl font-bold leading-tight sm:text-4xl">Let’s talk.</h2>
+                <p className="mt-4 max-w-xs text-sm leading-6 text-[#d8e0d9]/80">
+                  Questions, feedback, or a hand with your account? Send a note to our team.
+                </p>
+              </div>
+              <div className="border-t border-[#91a79b]/40 pt-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#d8e0d9]/60">A note from you</p>
+                <p className="mt-2 text-sm leading-6 text-[#d8e0d9]/85">Messages go directly to the SkinEleven support team.</p>
+              </div>
+            </aside>
 
-          <form onSubmit={handleContactSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="contact-name" className="text-sm font-medium text-[#33443D]">Name</label>
-              <input
-                id="contact-name"
-                required
-                value={contactForm.name}
-                onChange={(event) => setContactForm({ ...contactForm, name: event.target.value })}
-                className="w-full border border-[#D3C2B0] bg-white px-3 py-2.5 text-sm text-[#33443D] outline-none focus:border-[#2f604e] focus:ring-2 focus:ring-[#2f604e]/20"
-              />
+            <div className="p-6 sm:p-9">
+              <DialogHeader className="mb-7 pr-7">
+                <DialogTitle className="font-display text-2xl font-bold text-[#33443D]">Contact us</DialogTitle>
+                <DialogDescription className="text-sm leading-6 text-[#607268]">
+                  Fill in the details below and we’ll get back to you.
+                </DialogDescription>
+              </DialogHeader>
+
+              <form onSubmit={handleContactSubmit} className="space-y-5">
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div className="space-y-2">
+                    <label htmlFor="contact-name" className="text-sm font-semibold text-[#33443D]">Name</label>
+                    <input
+                      id="contact-name"
+                      required
+                      autoComplete="name"
+                      placeholder="Your name"
+                      value={contactForm.name}
+                      onChange={(event) => setContactForm({ ...contactForm, name: event.target.value })}
+                      className="h-11 w-full rounded-md border border-[#D3C2B0] bg-white px-3.5 text-sm text-[#33443D] outline-none transition-shadow placeholder:text-[#9b8c80] focus:border-[#2f604e] focus:ring-2 focus:ring-[#2f604e]/15"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="contact-email" className="text-sm font-semibold text-[#33443D]">Email</label>
+                    <input
+                      id="contact-email"
+                      required
+                      type="email"
+                      autoComplete="email"
+                      placeholder="you@example.com"
+                      value={contactForm.email}
+                      onChange={(event) => setContactForm({ ...contactForm, email: event.target.value })}
+                      className="h-11 w-full rounded-md border border-[#D3C2B0] bg-white px-3.5 text-sm text-[#33443D] outline-none transition-shadow placeholder:text-[#9b8c80] focus:border-[#2f604e] focus:ring-2 focus:ring-[#2f604e]/15"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="contact-message" className="text-sm font-semibold text-[#33443D]">Message</label>
+                  <textarea
+                    id="contact-message"
+                    required
+                    rows={4}
+                    placeholder="How can we help?"
+                    value={contactForm.message}
+                    onChange={(event) => setContactForm({ ...contactForm, message: event.target.value })}
+                    className="w-full resize-y rounded-md border border-[#D3C2B0] bg-white px-3.5 py-3 text-sm leading-6 text-[#33443D] outline-none transition-shadow placeholder:text-[#9b8c80] focus:border-[#2f604e] focus:ring-2 focus:ring-[#2f604e]/15"
+                  />
+                </div>
+                {contactStatus && (
+                  <div
+                    role="status"
+                    className={`flex items-start gap-2.5 border px-3.5 py-3 text-sm leading-5 ${contactStatus.kind === 'success' ? 'border-[#c3d5c9] bg-[#e3ebdf] text-[#2f604e]' : 'border-[#dfb9ad] bg-[#f7e9e4] text-[#8a3c2b]'}`}
+                  >
+                    {contactStatus.kind === 'success' ? <CircleCheck className="mt-0.5 h-4 w-4 shrink-0" /> : <CircleAlert className="mt-0.5 h-4 w-4 shrink-0" />}
+                    <span>{contactStatus.message}</span>
+                  </div>
+                )}
+                <DialogFooter className="border-t border-[#e2d8cc] pt-5 sm:justify-between">
+                  <Button type="button" variant="ghost" onClick={() => setContactOpen(false)} className="text-[#607268] hover:bg-[#ece6dc] hover:text-[#33443D]">Cancel</Button>
+                  <Button type="submit" disabled={isSending} className="h-11 bg-[#2f604e] px-5 text-white hover:bg-[#244c3e]">
+                    {isSending ? 'Sending...' : <><Send className="h-4 w-4" /> Send message</>}
+                  </Button>
+                </DialogFooter>
+              </form>
             </div>
-            <div className="space-y-2">
-              <label htmlFor="contact-email" className="text-sm font-medium text-[#33443D]">Email</label>
-              <input
-                id="contact-email"
-                required
-                type="email"
-                value={contactForm.email}
-                onChange={(event) => setContactForm({ ...contactForm, email: event.target.value })}
-                className="w-full border border-[#D3C2B0] bg-white px-3 py-2.5 text-sm text-[#33443D] outline-none focus:border-[#2f604e] focus:ring-2 focus:ring-[#2f604e]/20"
-              />
-            </div>
-            <div className="space-y-2">
-              <label htmlFor="contact-message" className="text-sm font-medium text-[#33443D]">Message</label>
-              <textarea
-                id="contact-message"
-                required
-                rows={5}
-                value={contactForm.message}
-                onChange={(event) => setContactForm({ ...contactForm, message: event.target.value })}
-                className="w-full resize-y border border-[#D3C2B0] bg-white px-3 py-2.5 text-sm text-[#33443D] outline-none focus:border-[#2f604e] focus:ring-2 focus:ring-[#2f604e]/20"
-              />
-            </div>
-            {contactStatus && (
-              <p role="status" className="border-l-2 border-[#2f604e] bg-[#e3ebdf] px-3 py-2 text-sm text-[#2f604e]">
-                {contactStatus}
-              </p>
-            )}
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setContactOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={isSending} className="bg-[#2f604e] text-white hover:bg-[#244c3e]">
-                {isSending ? 'Sending...' : 'Send Message'}
-              </Button>
-            </DialogFooter>
-          </form>
+          </div>
         </DialogContent>
       </Dialog>
 

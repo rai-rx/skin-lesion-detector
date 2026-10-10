@@ -39,6 +39,34 @@ from predictions.inference import (
 router = APIRouter()
 
 
+@router.get("/system/accuracy")
+async def get_system_accuracy():
+    feedback_count = 0
+    accurate_count = 0
+    offset = 0
+    page_size = 1000
+
+    while True:
+        response = (
+            supabase.table("scans")
+            .select("user_accuracy_feedback")
+            .not_.is_("user_accuracy_feedback", "null")
+            .range(offset, offset + page_size - 1)
+            .execute()
+        )
+        feedback_rows = response.data or []
+        feedback_count += len(feedback_rows)
+        accurate_count += sum(row.get("user_accuracy_feedback") == "accurate" for row in feedback_rows)
+        if len(feedback_rows) < page_size:
+            break
+        offset += page_size
+
+    return {
+        "accuracyRate": round(accurate_count / feedback_count * 100, 1) if feedback_count else None,
+        "feedbackCount": feedback_count,
+    }
+
+
 class ContactMessage(BaseModel):
     name: str
     email: str
