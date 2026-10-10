@@ -151,14 +151,6 @@ export default function App() {
               <p>Under no circumstances shall the research team, developers, or <strong>Our Lady of Fatima University</strong> be held liable for any decisions, actions, or medical outcomes resulting from reliance upon stored scan histories, PDF exports, or lesion tracking data provided by this application.</p>
             </section>
 
-            <section>
-              <h3 className="mb-2 text-base font-semibold text-[#33443D]">6. Contact Information</h3>
-              <p className="mb-2">For privacy inquiries, data deletion requests, or technical support:</p>
-              <ul className="list-disc space-y-1 pl-5">
-                <li><a className="text-[#2f604e] underline" href="mailto:dpcastillo1013qc@student.fatima.edu.ph">dpcastillo1013qc@student.fatima.edu.ph</a></li>
-                <li><a className="text-[#2f604e] underline" href="mailto:cssantos2988qc@student.fatima.edu.ph">cssantos2988qc@student.fatima.edu.ph</a></li>
-              </ul>
-            </section>
           </div>
 
           <label className="flex shrink-0 cursor-pointer items-start gap-3 text-sm leading-relaxed text-[#5F514B]">
