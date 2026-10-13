@@ -29,81 +29,84 @@ const systemSteps = [
 
 const lesionCategories = [
   {
-    code: 'bcc',
+    code: 'BCC',
     title: 'Basal Cell Carcinoma',
     type: 'Malignant',
-    description: 'A common skin cancer that usually grows slowly but may damage nearby tissue if untreated.',
-    examples: 'The broad category can include nodular, superficial, infiltrative, morpheaform, and pigmented forms.',
+    description: 'The largest single group in the dataset. Basal cell carcinoma is a skin cancer that may damage nearby tissue if untreated.',
+    examples: 'Includes nodular, superficial, infiltrative, and morpheaform variants.',
+    notes: 'Clinically associated with the highest erythema (redness) concept scores.',
   },
   {
-    code: 'nv',
+    code: 'NV',
     title: 'Melanocytic Nevus',
     type: 'Usually benign',
-    description: 'Moles formed by clusters of pigment-producing cells, spanning many appearances and patterns.',
-    examples: 'Examples include acquired junctional, compound, and dermal nevi; congenital nevi; dysplastic nevi; blue nevi; and Spitz nevi.',
+    description: 'Common moles formed by clusters of pigment-producing cells.',
+    examples: 'Includes congenital, acquired, atypical (dysplastic), blue, spitzoid, and halo nevi.',
+    notes: 'Associated with high baseline pigmentation markers.',
   },
   {
-    code: 'bkl',
+    code: 'BK1',
     title: 'Benign Keratinocytic Lesion',
     type: 'Benign',
-    description: 'Non-melanocytic growths of the epidermis that can sometimes resemble more serious lesions.',
-    examples: 'May include common, irritated, or reticulated seborrheic keratoses, lichen planus-like keratosis (LPLK), and solar lentigines.',
+    description: 'Benign keratinocytic growths that can sometimes resemble malignant lesions.',
+    examples: 'Includes seborrheic keratoses, solar lentigines (age spots), and lichen-planus-like keratoses (LPLK).',
   },
   {
-    code: 'sccka',
+    code: 'SCCKA',
     title: 'Squamous Cell Carcinoma / Keratoacanthoma',
     type: 'Malignant / requires assessment',
     description: 'A category for squamous-cell skin cancer patterns and keratoacanthoma-like lesions.',
-    examples: 'Includes invasive squamous cell carcinoma and keratoacanthoma, which can appear as a rapidly growing, crater-shaped lesion.',
+    examples: 'Includes invasive cutaneous squamous cell carcinomas and rapid-growth keratoacanthoma simulators.',
+    notes: 'Associated with frequent visual occurrences of keratin and ulceration or crust.',
   },
   {
-    code: 'mel',
+    code: 'MEL',
     title: 'Melanoma',
     type: 'Malignant',
     description: 'A potentially serious cancer of pigment-producing cells that can spread to other parts of the body.',
-    examples: 'Variants include melanoma in situ, superficial spreading, nodular, lentigo maligna, and amelanotic melanoma.',
+    examples: 'Includes superficial spreading and nodular melanoma, lentigo maligna, and amelanotic (non-pigmented) melanoma.',
   },
   {
-    code: 'akiec',
+    code: 'AKIEC',
     title: 'Actinic Keratosis / Intraepithelial Carcinoma',
     type: 'Precancerous / in situ',
     description: 'Sun-damage-related lesions, including precancerous changes and squamous cell carcinoma in situ.',
-    examples: 'Actinic keratoses and intraepithelial lesions warrant clinical review because some can progress or resemble invasive disease.',
+    examples: "Includes actinic keratoses and squamous cell carcinoma in situ (Bowen's disease). These lesions commonly appear dry, scaly, and erythematous.",
   },
   {
-    code: 'df',
+    code: 'DF',
     title: 'Dermatofibroma',
     type: 'Benign',
-    description: 'A usually harmless, firm fibrous nodule, often found on the legs.',
-    examples: 'It may follow a minor skin injury and can persist as a small, firm spot.',
+    description: 'A benign dermal nodule often triggered by minor injuries or bug bites.',
+    examples: 'Dermatoscopy may show a central white, scar-like patch.',
   },
   {
-    code: 'inf',
-    title: 'Infectious Lesion',
+    code: 'INF',
+    title: 'Inflammatory & Infectious Conditions',
     type: 'Non-neoplastic',
-    description: 'Skin changes associated with infection rather than a tumor.',
-    examples: 'Possible causes include bacterial, viral, and fungal infections; the correct evaluation depends on symptoms and examination.',
+    description: 'Non-neoplastic dermatological conditions.',
+    examples: 'Includes psoriasis, eczema or dermatitis, lichen planus, and localized viral or bacterial infections.',
   },
   {
-    code: 'vasc',
-    title: 'Vascular Lesion',
+    code: 'VASC',
+    title: 'Vascular Lesions & Hemorrhage',
     type: 'Usually benign',
-    description: 'A lesion involving blood vessels that may appear red, purple, or blue.',
-    examples: 'This broad group includes vascular growths and abnormalities; appearance alone cannot establish the exact cause.',
+    description: 'Benign blood-vessel proliferations and pooling.',
+    examples: 'Includes cherry angiomas, angiokeratomas, pyogenic granulomas, and subungual or subcutaneous hemorrhages (blood spots).',
   },
   {
-    code: 'ben_oth',
-    title: 'Other Benign Lesion',
+    code: 'BEN_OTH',
+    title: 'Other Benign Proliferations',
     type: 'Benign',
-    description: 'A catch-all category for non-cancerous lesions that do not fit one of the model’s more specific classes.',
-    examples: 'It represents a varied group rather than one single condition.',
+    description: 'A broad group of rare or miscellaneous benign skin tumors.',
+    examples: 'May include complex collision tumors containing two distinct benign growths in a single lesion.',
   },
   {
-    code: 'mal_oth',
-    title: 'Other Malignant Lesion',
+    code: 'MAL_OTH',
+    title: 'Other Malignant Proliferations',
     type: 'Malignant',
-    description: 'A broad category for suspected malignant lesions outside the model’s named cancer classes.',
-    examples: 'It can include uncommon skin malignancies; prompt assessment by a qualified clinician is important.',
+    description: 'A broad group of rare cutaneous malignancies and metastatic deposits on the skin.',
+    examples: 'May include malignant collision tumors containing at least one malignant component.',
   },
 ];
 
@@ -239,11 +242,11 @@ export function AboutPage() {
               {lesionCategories.map((category, index) => (
                 <ScrollReveal
                   key={category.code}
-                  className={category.code === 'mal_oth' ? 'md:col-span-2' : undefined}
+                  className={category.code === 'MAL_OTH' ? 'md:col-span-2' : undefined}
                   delay={(index % 2) * 0.08}
                 >
                   <article
-                    className={`h-full border border-[#d7d2c7] bg-[#f8f5ee] p-6 md:p-7 ${category.code === 'mal_oth' ? 'md:grid md:grid-cols-[1.4fr_0.8fr] md:items-center md:gap-10' : ''}`}
+                    className={`h-full border border-[#d7d2c7] bg-[#f8f5ee] p-6 md:p-7 ${category.code === 'MAL_OTH' ? 'md:grid md:grid-cols-[1.4fr_0.8fr] md:items-center md:gap-10' : ''}`}
                   >
                     <div>
                       <div className="flex items-start justify-between gap-4">
@@ -252,9 +255,10 @@ export function AboutPage() {
                       </div>
                       <p className="mt-3 text-xs font-bold uppercase tracking-[0.12em] text-[#8a5a18]">{category.type}</p>
                       <p className="mt-4 leading-7 text-[#607268]">{category.description}</p>
-                      <p className="mt-3 border-l-2 border-[#d2b17f] pl-3 text-sm leading-6 text-[#607268]"><span className="font-semibold text-[#33443D]">Examples:</span> {category.examples}</p>
+                      <p className="mt-3 border-l-2 border-[#d2b17f] pl-3 text-sm leading-6 text-[#607268]">{category.examples}</p>
+                      {category.notes && <p className="mt-3 text-sm leading-6 text-[#607268]">{category.notes}</p>}
                     </div>
-                    <div className={`mt-5 border-t border-[#d7d2c7] pt-4 ${category.code === 'mal_oth' ? 'md:mt-0 md:border-l md:border-t-0 md:pl-7 md:pt-0' : ''}`}>
+                    <div className={`mt-5 border-t border-[#d7d2c7] pt-4 ${category.code === 'MAL_OTH' ? 'md:mt-0 md:border-l md:border-t-0 md:pl-7 md:pt-0' : ''}`}>
                       <div className="flex items-baseline justify-between gap-3">
                         <p className="text-sm font-semibold text-[#33443D]">System-wide reported accuracy</p>
                         <p className="font-display text-xl font-bold text-[#2f604e]">
