@@ -5,18 +5,47 @@ import { ArrowRight, Camera, ScanLine, BookOpen } from 'lucide-react';
 import { ImageGalleryModal } from './ImageGalleryModal';
 import { Header } from './Header';
 
-const benignImages = [
-  'https://www.dermatologyadvisor.com/wp-content/uploads/sites/20/2019/03/ch851.fig1_.jpg',
-  'https://tse1.explicit.bing.net/th/id/OIP.Q2wHP02-iJlTY2paGnEjdQHaF2?r=0&rs=1&pid=ImgDetMain&o=7&rm=3',
-  'https://tse4.mm.bing.net/th/id/OIP.pmuyGwpvlZQHzoUFh74hKAHaHa?r=0&w=1000&h=1000&rs=1&pid=ImgDetMain&o=7&rm=3',
-  'https://www.beyondskinderm.com/wp-content/uploads/2025/05/benign-lesion-removal-banner-2.jpg',
+type GalleryImage = {
+  src: string;
+  label: string;
+};
+
+const benignImages: GalleryImage[] = [
+  {
+    src: 'https://images.everydayhealth.com/images/healthyliving/healthy-aging/how-to-identify-moles-1440x810.jpg',
+    label: 'Common nevus (mole)',
+  },
+  {
+    src: 'https://encolombia.com/wp-content/uploads/2018/02/queratosis-seborreica.jpg',
+    label: 'Seborrheic keratosis',
+  },
+  {
+    src: 'https://images.everydayhealth.com/images/skin/what-is-dermatofibroma-1440x810.jpg',
+    label: 'Dermatofibroma',
+  },
+  {
+    src: 'https://www.aad.org/-/media/Images/Members/Member-Only/AK-derm-summer-1.ashx',
+    label: 'Solar lentigo',
+  },
 ];
 
-const malignantImages = [
-  'https://tse1.explicit.bing.net/th/id/OIP._Jpih-fxAbmyjVYE8PKn3QHaGD?r=0&rs=1&pid=ImgDetMain&o=7&rm=3',
-  'https://images.everydayhealth.com/images/cancer/skin-cancer/what-is-basal-cell-carcinoma-skin-cancer-1440x810.jpg?sfvrsn=f0aac5ff_5',
-  'https://torontodermatologycentre.com/wp-content/uploads/2020/06/malignant-melanoma.jpg',
-  'https://citydermatologyclinic.com/wp-content/uploads/2025/09/Squamous-Cell-Carcinoma-1024x1024.jpg',
+const malignantImages: GalleryImage[] = [
+  {
+    src: 'https://images.everydayhealth.com/images/cancer/skin-cancer/what-is-basal-cell-carcinoma-skin-cancer-1440x810.jpg?sfvrsn=f0aac5ff_5',
+    label: 'Basal cell carcinoma (BCC)',
+  },
+  {
+    src: 'https://torontodermatologycentre.com/wp-content/uploads/2020/06/malignant-melanoma.jpg',
+    label: 'Melanoma',
+  },
+  {
+    src: 'https://citydermatologyclinic.com/wp-content/uploads/2025/09/Squamous-Cell-Carcinoma-1024x1024.jpg',
+    label: 'Squamous cell carcinoma (SCC)',
+  },
+  {
+    src: 'https://images.everydayhealth.com/images/cancer/skin-cancer/what-is-melanoma-skin-cancer-1440x810.jpg',
+    label: 'Atypical pigmented lesion',
+  },
 ];
 
 const steps = [
@@ -82,8 +111,8 @@ export function LandingPage() {
                   <div className="absolute -inset-3 rounded-[2rem] bg-accent/10 rotate-2" />
                   <div className="relative mx-auto lg:ml-auto aspect-[4/5] w-full max-w-[320px] sm:max-w-sm overflow-hidden rounded-[1.5rem] bg-muted shadow-2xl">
                     <img
-                      src={benignImages[0]}
-                      alt="Close-up example of skin texture"
+                      src={benignImages[0].src}
+                      alt={benignImages[0].label}
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute inset-x-3 sm:inset-x-4 bottom-3 sm:bottom-4 bg-card/95 backdrop-blur-sm border border-white/70 rounded-xl p-3 sm:p-4 shadow-lg">
@@ -172,8 +201,16 @@ export function LandingPage() {
             </div>
 
             <div className="grid md:grid-cols-2 gap-4 sm:gap-5">
-              <InfoCard title="Common benign patterns" description="Explore examples of spots that are often harmless, while remembering that changes still deserve attention." onClick={() => setModalOpen('benign')} />
-              <InfoCard title="Patterns to discuss promptly" description="Review examples associated with higher concern and learn why an in-person evaluation matters." onClick={() => setModalOpen('malignant')} />
+              <InfoCard
+                title="Common benign patterns"
+                description="Examples such as a common mole, seborrheic keratosis, and dermatofibroma are often benign, though any new or changing lesion still deserves review."
+                onClick={() => setModalOpen('benign')}
+              />
+              <InfoCard
+                title="Patterns to discuss promptly"
+                description="Examples such as melanoma, basal cell carcinoma, and squamous cell carcinoma warrant timely evaluation by a clinician."
+                onClick={() => setModalOpen('malignant')}
+              />
             </div>
           </section>
 
@@ -189,8 +226,8 @@ export function LandingPage() {
           </footer>
         </main>
 
-        <ImageGalleryModal isOpen={modalOpen === 'benign'} onClose={() => setModalOpen(null)} title="Benign Lesions - Sample Images" images={benignImages} />
-        <ImageGalleryModal isOpen={modalOpen === 'malignant'} onClose={() => setModalOpen(null)} title="Lesion Patterns - Sample Images" images={malignantImages} />
+        <ImageGalleryModal isOpen={modalOpen === 'benign'} onClose={() => setModalOpen(null)} title="Benign lesion examples" images={benignImages} />
+        <ImageGalleryModal isOpen={modalOpen === 'malignant'} onClose={() => setModalOpen(null)} title="Malignant lesion examples" images={malignantImages} />
       </div>
     );
   }

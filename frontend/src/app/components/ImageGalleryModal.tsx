@@ -2,11 +2,16 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 
+type GalleryImage = {
+  src: string;
+  label: string;
+};
+
 interface ImageGalleryModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
-  images: string[];
+  images: GalleryImage[];
 }
 
 export function ImageGalleryModal({ isOpen, onClose, title, images }: ImageGalleryModalProps) {
@@ -64,8 +69,8 @@ export function ImageGalleryModal({ isOpen, onClose, title, images }: ImageGalle
               <AnimatePresence mode="wait">
                 <motion.img
                   key={currentIndex}
-                  src={images[currentIndex]}
-                  alt={`${title} sample ${currentIndex + 1}`}
+                  src={images[currentIndex].src}
+                  alt={`${images[currentIndex].label} example`}
                   initial={{ opacity: 0, scale: 1.1 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.95 }}
@@ -93,6 +98,7 @@ export function ImageGalleryModal({ isOpen, onClose, title, images }: ImageGalle
             </div>
 
             <div className="text-center text-sm text-muted-foreground">
+              <p className="font-medium text-foreground">{images[currentIndex].label}</p>
               <p>Image {currentIndex + 1} of {images.length}</p>
               <p className="mt-2 text-xs">Images automatically rotate every 2 seconds</p>
             </div>
