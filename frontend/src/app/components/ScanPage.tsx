@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router';
 import { motion, AnimatePresence } from 'motion/react';
 import { Upload, Camera, ArrowLeft, X, Loader2, Image as ImageIcon, AlertTriangle } from 'lucide-react';
@@ -119,7 +119,7 @@ export function ScanPage() {
     }
   };
 
-  const handleFile = (file: File) => {
+  const handleFile = useCallback((file: File) => {
     if (file && file.type.startsWith('image/')) {
       setRawFile(file); // Store binary payload for backend submission
       setValidationError(null); // Clear previous errors
@@ -128,14 +128,34 @@ export function ScanPage() {
         setSelectedImage(e.target?.result as string);
       };
       reader.readAsDataURL(file);
+    } else {
+      setValidationError('Please choose or paste a valid image file.');
     }
-  };
+  }, []);
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       handleFile(e.target.files[0]);
     }
   };
+
+  useEffect(() => {
+    if (selectedImage || isProcessing) return;
+
+    const handlePaste = (event: ClipboardEvent) => {
+      const imageItem = Array.from(event.clipboardData?.items ?? []).find(
+        (item) => item.kind === 'file' && item.type.startsWith('image/'),
+      );
+      const file = imageItem?.getAsFile();
+      if (!file) return;
+
+      event.preventDefault();
+      handleFile(file);
+    };
+
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
+  }, [handleFile, isProcessing, selectedImage]);
 
   const handleTakePhoto = async () => {
     const devices = await navigator.mediaDevices?.enumerateDevices().catch(() => []);
@@ -446,6 +466,10 @@ export function ScanPage() {
                         Take Photo
                       </motion.button>
                     </div>
+                    <p className="mt-4 text-sm text-[#607268]">You can also paste a copied image with Ctrl+V (or Command+V on Mac).</p>
+                    {validationError && (
+                      <p role="alert" className="mt-3 text-sm font-medium text-[#8d3f34]">{validationError}</p>
+                    )}
 
                     <input
                       ref={fileInputRef}
