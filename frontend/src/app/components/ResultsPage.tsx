@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { AnimatePresence, motion } from 'motion/react';
 import {
-  ArrowLeft, AlertTriangle, Info, Home, CheckCircle,
+  ArrowLeft, AlertTriangle, Info, Home, CheckCircle, ScanLine,
   Layers, Download, FileText, Activity,
   ShieldCheck, MapPin, Calendar, ExternalLink, BookOpen, Clock
 } from 'lucide-react';
@@ -1134,6 +1134,14 @@ export function ResultsPage() {
             >
               <FileText className="w-5 h-5" /> Export Clinical PDF Report
             </button>
+            {!user && (
+              <button
+                onClick={() => navigate('/scan')}
+                className="flex items-center justify-center gap-3 border border-[#b9c7a9] bg-transparent px-7 py-3.5 font-medium text-[#2f604e] transition-colors hover:bg-[#e3ebdf]"
+              >
+                <ScanLine className="w-5 h-5" /> Scan Again
+              </button>
+            )}
             <button
               onClick={() => navigate('/')}
               className="flex items-center justify-center gap-3 border border-[#b9c7a9] bg-transparent px-7 py-3.5 font-medium text-[#2f604e] transition-colors hover:bg-[#e3ebdf]"
