@@ -8,24 +8,34 @@ import { Header } from './Header';
 type GalleryImage = {
   src: string;
   label: string;
+  credit?: string;
+  sourceUrl?: string;
 };
 
 const benignImages: GalleryImage[] = [
   {
-    src: 'https://images.everydayhealth.com/images/healthyliving/healthy-aging/how-to-identify-moles-1440x810.jpg',
+    src: 'https://upload.wikimedia.org/wikipedia/commons/4/44/Nevus_NCI.jpg',
     label: 'Common nevus (mole)',
+    credit: 'National Cancer Institute — Public Domain',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Nevus_NCI.jpg',
   },
   {
-    src: 'https://encolombia.com/wp-content/uploads/2018/02/queratosis-seborreica.jpg',
+    src: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/8/84/Seborrheic_keratosis_on_human_back.jpg/1280px-Seborrheic_keratosis_on_human_back.jpg',
     label: 'Seborrheic keratosis',
+    credit: 'James Heilman, MD — CC BY-SA 3.0',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Seborrheic_keratosis_on_human_back.jpg',
   },
   {
-    src: 'https://images.everydayhealth.com/images/skin/what-is-dermatofibroma-1440x810.jpg',
+    src: 'https://upload.wikimedia.org/wikipedia/commons/2/23/Dermatofibroma_new_image_to_help_in_diagnosis.jpg',
     label: 'Dermatofibroma',
+    credit: 'Mohammad2018 — CC BY-SA 4.0',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Dermatofibroma_new_image_to_help_in_diagnosis.jpg',
   },
   {
-    src: 'https://www.aad.org/-/media/Images/Members/Member-Only/AK-derm-summer-1.ashx',
-    label: 'Solar lentigo',
+    src: 'https://upload.wikimedia.org/wikipedia/commons/a/aa/Liver_spot_on_left_forearm.JPG',
+    label: 'Solar lentigo (age spot)',
+    credit: 'Invertzoo — CC BY-SA 4.0',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Liver_spot_on_left_forearm.JPG',
   },
 ];
 
@@ -43,8 +53,10 @@ const malignantImages: GalleryImage[] = [
     label: 'Squamous cell carcinoma (SCC)',
   },
   {
-    src: 'https://images.everydayhealth.com/images/cancer/skin-cancer/what-is-melanoma-skin-cancer-1440x810.jpg',
-    label: 'Atypical pigmented lesion',
+    src: 'https://upload.wikimedia.org/wikipedia/commons/8/8b/Malignant_Melanoma_Left_Forearm.jpg',
+    label: 'Melanoma',
+    credit: 'Dermanonymous — CC BY-SA 4.0',
+    sourceUrl: 'https://commons.wikimedia.org/wiki/File:Malignant_Melanoma_Left_Forearm.jpg',
   },
 ];
 

@@ -5,6 +5,8 @@ import { X } from 'lucide-react';
 type GalleryImage = {
   src: string;
   label: string;
+  credit?: string;
+  sourceUrl?: string;
 };
 
 interface ImageGalleryModalProps {
@@ -100,6 +102,18 @@ export function ImageGalleryModal({ isOpen, onClose, title, images }: ImageGalle
             <div className="text-center text-sm text-muted-foreground">
               <p className="font-medium text-foreground">{images[currentIndex].label}</p>
               <p>Image {currentIndex + 1} of {images.length}</p>
+              {images[currentIndex].credit && images[currentIndex].sourceUrl && (
+                <p>
+                  <a
+                    href={images[currentIndex].sourceUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline underline-offset-2"
+                  >
+                    {images[currentIndex].credit}
+                  </a>
+                </p>
+              )}
               <p className="mt-2 text-xs">Images automatically rotate every 2 seconds</p>
             </div>
           </div>
