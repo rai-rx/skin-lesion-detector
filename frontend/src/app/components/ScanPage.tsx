@@ -10,6 +10,8 @@ import { apiFetch } from '../../services/apiUrl';
 import { supabase } from '../../services/supabaseClient';
 import { useEffect } from 'react';
 
+const MAX_IMAGE_SIZE_BYTES = 20 * 1024 * 1024;
+
 // Interface matching the pixel data payload needed by the backend
 interface CroppedPixels {
   x: number;
@@ -120,17 +122,23 @@ export function ScanPage() {
   };
 
   const handleFile = useCallback((file: File) => {
-    if (file && file.type.startsWith('image/')) {
-      setRawFile(file); // Store binary payload for backend submission
-      setValidationError(null); // Clear previous errors
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setSelectedImage(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setValidationError('Please choose or paste a valid image file.');
+    if (!file || !file.type.startsWith('image/')) {
+      setValidationError('Please choose or paste an image file.');
+      return;
     }
+
+    if (file.size > MAX_IMAGE_SIZE_BYTES) {
+      setValidationError('Image files must be 20 MB or smaller.');
+      return;
+    }
+
+    setRawFile(file);
+    setValidationError(null);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setSelectedImage(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
   }, []);
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -465,7 +473,7 @@ export function ScanPage() {
                         Take Photo
                       </motion.button>
                     </div>
-                    <p className="mt-4 text-sm text-[#607268]">You can also paste a copied image with Ctrl+V (or Command+V on Mac).</p>
+                    <p className="mt-4 text-sm text-[#607268]">Images only, up to 20 MB. You can also paste a copied image with Ctrl+V (or Command+V on Mac).</p>
                     {validationError && (
                       <p role="alert" className="mt-3 text-sm font-medium text-[#8d3f34]">{validationError}</p>
                     )}

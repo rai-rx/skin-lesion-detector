@@ -17,7 +17,7 @@ try:
     import tensorflow as tf
 except ImportError:
     tf = None
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 import cv2
 
 # Import the inference functions
@@ -38,6 +38,7 @@ from predictions.inference import (
 
 router = APIRouter()
 MINIMUM_ACCURACY_FEEDBACK_COUNT = 30
+MAX_IMAGE_UPLOAD_SIZE_BYTES = 20 * 1024 * 1024
 
 
 @router.get("/system/accuracy")
@@ -161,8 +162,18 @@ async def predict_lesion(
     scan_note: Optional[str] = Form(None),
     user: Optional[Dict[str, Any]] = Depends(get_optional_user)
 ):
-    contents = await file.read()
-    original_img = Image.open(io.BytesIO(contents)).convert("RGB")
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=415, detail="Only image files are accepted")
+    if file.size is not None and file.size > MAX_IMAGE_UPLOAD_SIZE_BYTES:
+        raise HTTPException(status_code=413, detail="Image files must be 20 MB or smaller")
+
+    contents = await file.read(MAX_IMAGE_UPLOAD_SIZE_BYTES + 1)
+    if len(contents) > MAX_IMAGE_UPLOAD_SIZE_BYTES:
+        raise HTTPException(status_code=413, detail="Image files must be 20 MB or smaller")
+    try:
+        original_img = Image.open(io.BytesIO(contents)).convert("RGB")
+    except (UnidentifiedImageError, OSError) as error:
+        raise HTTPException(status_code=400, detail="Please upload a valid image file") from error
     orig_w, orig_h = original_img.size
 
     # 1. Pre-processing
@@ -330,10 +341,24 @@ async def import_pending_scan(
     result = payload.get("result") or {}
     if not isinstance(image_data, str) or not image_data.startswith("data:"):
         raise HTTPException(status_code=400, detail="Temporarily saved scan image is invalid")
+    try:
+        image_header, encoded_image = image_data.split(",", 1)
+    except ValueError as error:
+        raise HTTPException(status_code=400, detail="Temporarily saved scan image is invalid") from error
+    if not image_header.lower().startswith("data:image/") or ";base64" not in image_header.lower():
+        raise HTTPException(status_code=415, detail="Only image files are accepted")
+    max_encoded_image_size = 4 * ((MAX_IMAGE_UPLOAD_SIZE_BYTES + 2) // 3)
+    if len(encoded_image) > max_encoded_image_size:
+        raise HTTPException(status_code=413, detail="Image files must be 20 MB or smaller")
 
     try:
         image_bytes, image_extension = _decode_data_url(image_data)
-        image_for_validation = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        if len(image_bytes) > MAX_IMAGE_UPLOAD_SIZE_BYTES:
+            raise HTTPException(status_code=413, detail="Image files must be 20 MB or smaller")
+        try:
+            image_for_validation = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        except (UnidentifiedImageError, OSError) as error:
+            raise HTTPException(status_code=400, detail="Please upload a valid image file") from error
         if not verify_is_skin_tissue(image_for_validation):
             raise HTTPException(
                 status_code=400,
