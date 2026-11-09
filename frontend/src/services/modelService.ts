@@ -1,4 +1,4 @@
-import { getApiUrl } from './apiUrl';
+import { apiFetch } from './apiUrl';
 
 export type ModelPrediction = {
   name: string;
@@ -27,9 +27,7 @@ export async function analyzeSkinLesion(base64Image: string): Promise<ModelResul
 
   try {
     // This looks at the "VITE_API_URL" you set in the Vercel Dashboard
-    const baseUrl = getApiUrl();
-
-    const apiResponse = await fetch(`${baseUrl}/predict`, {
+    const apiResponse = await apiFetch('/predict', {
         method: 'POST',
         headers: {
             // These headers tell ngrok/localtunnel to let the data through

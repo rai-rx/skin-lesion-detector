@@ -7,6 +7,7 @@ import { Activity, Mail, Lock, Loader2, ArrowRight, Eye, EyeOff } from 'lucide-r
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { importPendingScans } from '../../../services/pendingScans';
+import { reportServerError } from '../../../services/apiUrl';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -36,6 +37,9 @@ export function LoginPage() {
         setError('Sign-in did not create a session. Please try again.');
       }
     } catch (error) {
+      if (error instanceof Error && (error.name === 'TypeError' || error.name === 'AuthRetryableFetchError')) {
+        reportServerError();
+      }
       setError(error instanceof Error ? error.message : 'Unable to reach the authentication service. Check your connection and try again.');
     } finally {
       setIsLoading(false);

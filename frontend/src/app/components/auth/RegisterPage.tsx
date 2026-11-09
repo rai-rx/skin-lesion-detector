@@ -7,6 +7,7 @@ import { Activity, Mail, Lock, User, Loader2, ArrowRight, Eye, EyeOff } from 'lu
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { importPendingScans } from '../../../services/pendingScans';
+import { reportServerError } from '../../../services/apiUrl';
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -44,6 +45,9 @@ export function RegisterPage() {
         setConfirmationSent(true);
       }
     } catch (error) {
+      if (error instanceof Error && (error.name === 'TypeError' || error.name === 'AuthRetryableFetchError')) {
+        reportServerError();
+      }
       setError(error instanceof Error ? error.message : 'Unable to reach the authentication service. Check your connection and try again.');
     } finally {
       setIsLoading(false);

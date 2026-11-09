@@ -37,32 +37,35 @@ from predictions.inference import (
 )
 
 router = APIRouter()
+MINIMUM_ACCURACY_FEEDBACK_COUNT = 30
 
 
 @router.get("/system/accuracy")
 async def get_system_accuracy():
-    feedback_count = 0
-    accurate_count = 0
-    offset = 0
-    page_size = 1000
+    accurate_response = (
+        supabase.table("scans")
+        .select("id", count="exact", head=True)
+        .eq("user_accuracy_feedback", "accurate")
+        .execute()
+    )
+    inaccurate_response = (
+        supabase.table("scans")
+        .select("id", count="exact", head=True)
+        .eq("user_accuracy_feedback", "inaccurate")
+        .execute()
+    )
+    if accurate_response.count is None or inaccurate_response.count is None:
+        raise HTTPException(status_code=500, detail="Unable to calculate system accuracy")
 
-    while True:
-        response = (
-            supabase.table("scans")
-            .select("user_accuracy_feedback")
-            .not_.is_("user_accuracy_feedback", "null")
-            .range(offset, offset + page_size - 1)
-            .execute()
-        )
-        feedback_rows = response.data or []
-        feedback_count += len(feedback_rows)
-        accurate_count += sum(row.get("user_accuracy_feedback") == "accurate" for row in feedback_rows)
-        if len(feedback_rows) < page_size:
-            break
-        offset += page_size
+    accurate_count = accurate_response.count
+    feedback_count = accurate_count + inaccurate_response.count
 
     return {
-        "accuracyRate": round(accurate_count / feedback_count * 100, 1) if feedback_count else None,
+        "accuracyRate": (
+            round(accurate_count / feedback_count * 100, 1)
+            if feedback_count >= MINIMUM_ACCURACY_FEEDBACK_COUNT
+            else None
+        ),
         "feedbackCount": feedback_count,
     }
 

@@ -3,7 +3,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import { Users, Activity, AlertTriangle, Loader2, Check, BarChart3, Target } from 'lucide-react';
 import { Bar, BarChart, CartesianGrid, Cell, Line, LineChart, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { getApiUrl } from '../../../services/apiUrl';
+import { apiFetch } from '../../../services/apiUrl';
 
 type Analytics = {
   totalUsers: number;
@@ -48,7 +48,7 @@ export function AdminDashboard() {
     if (!session?.access_token) return;
 
     try {
-      const res = await fetch(`${getApiUrl()}/admin/analytics`, {
+      const res = await apiFetch('/admin/analytics', {
         headers: {
           'Authorization': `Bearer ${session?.access_token}`,
           'ngrok-skip-browser-warning': 'true'

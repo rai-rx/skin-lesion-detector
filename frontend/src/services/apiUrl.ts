@@ -1,3 +1,9 @@
+export const SERVER_ERROR_EVENT = 'skineleven:server-error';
+
+export function reportServerError(): void {
+  window.dispatchEvent(new Event(SERVER_ERROR_EVENT));
+}
+
 export function getApiUrl(): string {
   if (import.meta.env.DEV) {
     return 'http://localhost:8000';
@@ -54,8 +60,21 @@ export async function apiFetch(path: string, options: RequestInit = {}): Promise
     headers.set('ngrok-skip-browser-warning', 'true');
   }
 
-  return fetch(url, {
-    ...options,
-    headers,
-  });
+  try {
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    if (response.status >= 500) {
+      reportServerError();
+    }
+
+    return response;
+  } catch (error) {
+    if (!(error instanceof Error) || error.name !== 'AbortError') {
+      reportServerError();
+    }
+    throw error;
+  }
 }

@@ -6,7 +6,7 @@ import Cropper from 'react-easy-crop';
 import { Header } from './Header';
 import { useLocation } from 'react-router';
 import { useAuth } from '../../contexts/AuthContext';
-import { getApiUrl, apiFetch } from '../../services/apiUrl';
+import { apiFetch } from '../../services/apiUrl';
 import { supabase } from '../../services/supabaseClient';
 import { useEffect } from 'react';
 
@@ -258,8 +258,7 @@ export function ScanPage() {
       }
 
       // Direct API call configuration to handle explicit HTTP status errors cleanly
-      const apiUrl = `${getApiUrl()}/predict?ngrok-skip-browser-warning=true`;
-      const response = await fetch(apiUrl, {
+      const response = await apiFetch('/predict?ngrok-skip-browser-warning=true', {
         method: 'POST',
         headers,
         body: formData,

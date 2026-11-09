@@ -1,13 +1,22 @@
 # Backend Folder
 
-This folder is reserved for backend model logic and API endpoints.
+## Running the API
 
-## What is included
+The ASGI app is defined in `main.py`. From the repository root, start it with:
 
-- `model.ts`: a stubbed prediction module with typed model output.
-- `seed.py`: Database seeding script for creating admin users
+```powershell
+python -m uvicorn main:app --app-dir backend --reload
+```
 
-## Setup & Database Seeding
+Alternatively, change to this folder and run:
+
+```powershell
+python -m uvicorn main:app --reload
+```
+
+Running `uvicorn main:app` from the repository root without `--app-dir backend` fails because `main.py` is inside `backend`.
+
+## Database Seeding
 
 ### Creating an Admin User
 

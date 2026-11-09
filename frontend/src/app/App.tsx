@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router';
 import { LandingPage } from './components/LandingPage';
 import { ScanPage } from './components/ScanPage';
@@ -17,6 +17,8 @@ import { UserDirectory } from './components/admin/UserDirectory';
 import { useAuth } from '../contexts/AuthContext';
 import { AccountSettings } from './components/dashboard/AccountSettings';
 import { AboutPage } from './components/AboutPage';
+import { ServerErrorPage } from './components/ServerErrorPage';
+import { SERVER_ERROR_EVENT } from '../services/apiUrl';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -75,11 +77,20 @@ const router = createBrowserRouter([
 ]);
 
 export default function App() {
+  const [serverError, setServerError] = useState(false);
   const [agreementAccepted, setAgreementAccepted] = useState(() => (
     window.localStorage.getItem(DATA_AGREEMENT_KEY) === 'true'
   ));
   const [termsChecked, setTermsChecked] = useState(false);
   const [agreementDeclined, setAgreementDeclined] = useState(false);
+
+  useEffect(() => {
+    const handleServerError = () => setServerError(true);
+    window.addEventListener(SERVER_ERROR_EVENT, handleServerError);
+    return () => window.removeEventListener(SERVER_ERROR_EVENT, handleServerError);
+  }, []);
+
+  if (serverError) return <ServerErrorPage />;
 
   const acceptAgreement = () => {
     window.localStorage.setItem(DATA_AGREEMENT_KEY, 'true');

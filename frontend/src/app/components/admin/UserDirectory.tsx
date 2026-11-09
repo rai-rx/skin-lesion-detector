@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
-import { getApiUrl } from '../../../services/apiUrl';
+import { apiFetch } from '../../../services/apiUrl';
 
 export function UserDirectory() {
   const { session } = useAuth();
@@ -19,7 +19,7 @@ export function UserDirectory() {
     if (!session?.access_token) return;
 
     try {
-      const res = await fetch(`${getApiUrl()}/admin/users`, {
+      const res = await apiFetch('/admin/users', {
         headers: {
           'Authorization': `Bearer ${session?.access_token}`,
           'ngrok-skip-browser-warning': 'true'

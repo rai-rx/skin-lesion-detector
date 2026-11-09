@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from './ui/dialog';
 import { Button } from './ui/button';
-import { getApiUrl } from '../../services/apiUrl';
+import { apiFetch } from '../../services/apiUrl';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -38,7 +38,7 @@ export function Header({ onMenuClick, showMenu = true }: HeaderProps) {
     setContactStatus(null);
 
     try {
-      const response = await fetch(`${getApiUrl()}/contact`, {
+      const response = await apiFetch('/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(contactForm),

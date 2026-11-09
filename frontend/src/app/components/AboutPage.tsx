@@ -1,7 +1,6 @@
 import { BrainCircuit, Database, Eye, FlaskConical, Layers3 } from 'lucide-react';
-import { useEffect, useState, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
-import { apiFetch } from '../../services/apiUrl';
 import { Header } from './Header';
 
 const systemSteps = [
@@ -127,36 +126,6 @@ function ScrollReveal({ children, className, delay = 0 }: { children: ReactNode;
 }
 
 export function AboutPage() {
-  const [systemAccuracy, setSystemAccuracy] = useState<number | null>(null);
-  const [accuracyFeedbackCount, setAccuracyFeedbackCount] = useState(0);
-  const [accuracyLoaded, setAccuracyLoaded] = useState(false);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    apiFetch('/system/accuracy')
-      .then((response) => response.ok ? response.json() : Promise.reject())
-      .then((data: { accuracyRate: number | null; feedbackCount: number }) => {
-        if (isMounted) {
-          setSystemAccuracy(data.accuracyRate);
-          setAccuracyFeedbackCount(data.feedbackCount);
-        }
-      })
-      .catch(() => {
-        if (isMounted) {
-          setSystemAccuracy(null);
-          setAccuracyFeedbackCount(0);
-        }
-      })
-      .finally(() => {
-        if (isMounted) setAccuracyLoaded(true);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
   return (
     <div className="min-h-screen bg-[#f4f0e8] text-[#24332d]">
       <Header />
@@ -245,9 +214,7 @@ export function AboutPage() {
                   className={category.code === 'MAL_OTH' ? 'md:col-span-2' : undefined}
                   delay={(index % 2) * 0.08}
                 >
-                  <article
-                    className={`h-full border border-[#d7d2c7] bg-[#f8f5ee] p-6 md:p-7 ${category.code === 'MAL_OTH' ? 'md:grid md:grid-cols-[1.4fr_0.8fr] md:items-center md:gap-10' : ''}`}
-                  >
+                  <article className="h-full border border-[#d7d2c7] bg-[#f8f5ee] p-6 md:p-7">
                     <div>
                       <div className="flex items-start justify-between gap-4">
                         <h3 className="font-display text-xl font-semibold leading-snug text-[#24332d]">{category.title}</h3>
@@ -257,17 +224,6 @@ export function AboutPage() {
                       <p className="mt-4 leading-7 text-[#607268]">{category.description}</p>
                       <p className="mt-3 border-l-2 border-[#d2b17f] pl-3 text-sm leading-6 text-[#607268]">{category.examples}</p>
                       {category.notes && <p className="mt-3 text-sm leading-6 text-[#607268]">{category.notes}</p>}
-                    </div>
-                    <div className={`mt-5 border-t border-[#d7d2c7] pt-4 ${category.code === 'MAL_OTH' ? 'md:mt-0 md:border-l md:border-t-0 md:pl-7 md:pt-0' : ''}`}>
-                      <div className="flex items-baseline justify-between gap-3">
-                        <p className="text-sm font-semibold text-[#33443D]">System-wide reported accuracy</p>
-                        <p className="font-display text-xl font-bold text-[#2f604e]">
-                          {!accuracyLoaded ? 'Loading...' : systemAccuracy === null ? 'N/A' : `${systemAccuracy}%`}
-                        </p>
-                      </div>
-                      <p className="mt-2 text-xs leading-5 text-[#607268]">
-                        Based on {accuracyFeedbackCount} user feedback reports; this is not an independent clinical validation.
-                      </p>
                     </div>
                   </article>
                 </ScrollReveal>
